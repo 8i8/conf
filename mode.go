@@ -9,17 +9,25 @@ import (
 	"strings"
 )
 
+// Mode contains the required data to create a program operating mode flag, the
+// sub heading of a program run mode for its specific operating flags.
 type Mode struct {
 	id   int
 	Name string
+	// The help output for the particular mode displayed when -h is used.
 	Help string
 }
 type modelist []Mode
 
 var (
-	list  modelist               // List of modes set by the user.
-	index = 1                    // The flag to set in the mode bitfield.
-	limit = math.MaxInt64>>1 + 1 // no more than 64 base modes are possible.
+	// list contains the modes created by the user.
+	list modelist
+	// index contains the value of the previously created bitflag used to
+	// maintain an incremental value that is agmented every time that a new
+	// program mode is created.
+	index = 1
+	// limit ensures that no more than 64 base modes are possible.
+	limit = math.MaxInt64>>1 + 1
 )
 
 // ID returns the current bitfield that describes the Mode.
@@ -27,8 +35,8 @@ func (m Mode) ID() int {
 	return m.id
 }
 
-// SetModes returns the bitfield containing of all the given bit flags.
-func SetModes(modes ...Mode) int {
+// SetBits returns a bitfield with all the given flags set.
+func SetBits(modes ...Mode) int {
 	m := 0
 	for _, mode := range modes {
 		m = m | mode.id
@@ -70,11 +78,6 @@ func Parse() {
 	loadMode("def")
 }
 
-// Help sets the base for the programs help output.
-func Help(help string) {
-	c.help = help
-}
-
 // Modes adds a name to the list of possible modes.
 func Modes(modes ...*Mode) error {
 	for i := range modes {
@@ -105,7 +108,7 @@ func loadMode(mode string) {
 		log.Fatal(fname, ": ", err)
 	}
 	c.flagSet = flag.NewFlagSet(c.Mode.String(), flag.ExitOnError)
-	c.setOptionsToFlags()
+	c.optionsToFlagSet()
 	c.flagSet.Usage = func() {
 		fmt.Println(c.help)
 		fmt.Println(c.Mode.Help)
@@ -124,6 +127,7 @@ func loadMode(mode string) {
 	}
 }
 
+// loadFlagHelpMsg writes the help message for each individual flag.
 func loadFlagHelpMsg(f *flag.Flag) {
 	s := fmt.Sprintf("        -%s", f.Name)
 	name, usage := flag.UnquoteUsage(f)

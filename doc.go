@@ -1,20 +1,12 @@
-### conf
-
-Conf is a command line application flag and option package designed to
-facilitate the construction of organised flag options with cleanly structured
-help output.  Simplifying the use of sub menus and subcommands enabling richer
-application possibilities with greater ease.
-
-#### Example use
-
-```go
+/*
+package conf example
 package main
 
 import (
 	"log"
 
 	"github.com/8i8/conf/conf"
-	"github.com/8i8/conf/conf/types"
+	"github.com/8i8/conf/types"
 )
 
 func main() {
@@ -120,7 +112,5 @@ var thing = `This is the default string thing, so as to best exemplify
 the use of this package in its current state I thought it
 best to write something very wordy here.
 `
-```
-
-GNU Lesser General Public License v3 (LGPL-3.0)
-See lgpl-3.0.md for a full version of the licence.
+*/
+package conf

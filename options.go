@@ -1,7 +1,7 @@
 package conf
 
 import (
-	"github.com/8i8/cmd/conf/types"
+	"github.com/8i8/conf/types"
 )
 
 // Option contains all of the data required for setting a default flag and
