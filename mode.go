@@ -9,15 +9,15 @@ import (
 	"strings"
 )
 
-// Mode contains the required data to create a program operating mode flag, the
+// mode contains the required data to create a program operating mode flag, the
 // sub heading of a program run mode for its specific operating flags.
-type Mode struct {
+type mode struct {
 	id   int
-	Name string
+	name string
 	// The help output for the particular mode displayed when -h is used.
-	Help string
+	help string
 }
-type modelist []Mode
+type modelist []mode
 
 var (
 	// list contains the modes created by the user.
@@ -30,13 +30,25 @@ var (
 	limit = math.MaxInt64>>1 + 1
 )
 
+// Mode creates a new mode, returning the bitflag requred to set that mode.
+func Mode(name, help string) (bitflag int) {
+	if index >= limit {
+		log.Fatal("index overflow, to many program modes")
+	}
+	m := mode{id: index, name: name, help: help}
+	list = append(list, m)
+	bitflag = index
+	index = index << 1
+	return
+}
+
 // ID returns the current bitfield that describes the Mode.
-func (m Mode) ID() int {
+func (m mode) ID() int {
 	return m.id
 }
 
 // SetBits returns a bitfield with all the given flags set.
-func SetBits(modes ...Mode) int {
+func SetBits(modes ...mode) int {
 	m := 0
 	for _, mode := range modes {
 		m = m | mode.id
@@ -47,7 +59,7 @@ func SetBits(modes ...Mode) int {
 // isMode returns true if the given mode exists and false if it does not.
 func (l modelist) is(mode string) bool {
 	for _, m := range l {
-		if strings.Compare(mode, m.Name) == 0 {
+		if strings.Compare(mode, m.name) == 0 {
 			return true
 		}
 	}
@@ -57,8 +69,8 @@ func (l modelist) is(mode string) bool {
 // setMode defines the programs current running mode.
 func (o *config) setMode(mode string) error {
 	for _, m := range list {
-		if strings.Compare(mode, m.Name) == 0 {
-			o.Mode = m
+		if strings.Compare(mode, m.name) == 0 {
+			o.mode = m
 			return nil
 		}
 	}
@@ -79,7 +91,7 @@ func Parse() {
 }
 
 // Modes adds a name to the list of possible modes.
-func Modes(modes ...*Mode) error {
+func Modes(modes ...*mode) error {
 	for i := range modes {
 		if index >= limit {
 			return fmt.Errorf("index overflow, to many program modes")
@@ -91,13 +103,13 @@ func Modes(modes ...*Mode) error {
 	return nil
 }
 
-func (m Mode) String() string {
-	return m.Name
+func (m mode) String() string {
+	return m.name
 }
 
 // GetMode returns the current set program mode.
 func (c *config) GetMode() string {
-	return c.Mode.Name
+	return c.mode.name
 }
 
 // loadMode sets the programs operating mode.
@@ -107,11 +119,11 @@ func loadMode(mode string) {
 	if err := c.setMode(mode); err != nil {
 		log.Fatal(fname, ": ", err)
 	}
-	c.flagSet = flag.NewFlagSet(c.Mode.String(), flag.ExitOnError)
+	c.flagSet = flag.NewFlagSet(c.mode.String(), flag.ExitOnError)
 	c.optionsToFlagSet()
 	c.flagSet.Usage = func() {
 		fmt.Println(c.help)
-		fmt.Println(c.Mode.Help)
+		fmt.Println(c.mode.help)
 		c.flagSet.VisitAll(loadFlagHelpMsg)
 	}
 	if mode == "def" {

@@ -15,7 +15,7 @@ type config struct {
 	// Mode is the running mode of the program, this package facilitates
 	// the generation of different substates to help keep the use of
 	// option flags simple.
-	Mode
+	mode
 	// The string that is displayed as the help output header for the entire program.
 	help string
 	// flagset is where the flags are places once parsed.
@@ -49,7 +49,7 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 // been specified that are within the current working set.
 func (c *config) optionsToFlagSet() {
 	for k, opt := range c.options {
-		if c.Mode.id&opt.Modes > 0 {
+		if c.mode.id&opt.Modes > 0 {
 			c.options[k].toFlagSet(c.flagSet)
 		}
 	}
