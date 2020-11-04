@@ -6,6 +6,7 @@ type T uint64
 
 const (
 	Int T = iota
+	Float
 	String
 	Bool
 	Duration
