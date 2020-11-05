@@ -139,14 +139,26 @@ func loadMode(mode string) {
 	}
 }
 
+func space(b []byte, l int) string {
+	w := len(b)
+	for i := 0; i < l; i++ {
+		b[w] = ' '
+		w--
+	}
+	return string(b[w:])
+}
+
 // loadFlagHelpMsg writes the help message for each individual flag.
 func loadFlagHelpMsg(f *flag.Flag) {
-	s := fmt.Sprintf("        -%s", f.Name)
+	l := len(f.Name)
+	var buf [8]byte
+	sp := space(buf[:], l)
+	s := fmt.Sprintf("        -%s%s", f.Name, sp)
 	_, usage := flag.UnquoteUsage(f)
 	// if len(name) > 0 {
 	// 	s += " " + name
 	// }
-	if len(f.Name) > 5 {
+	if l > 5 {
 		s += "\n        \t"
 	}
 	s += strings.ReplaceAll(usage, "\n", "\n            \t")
