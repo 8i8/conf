@@ -188,7 +188,7 @@ func load(mode string) error {
 	const fname = "Mode"
 
 	if err := c.setMode(mode); err != nil {
-		log.Fatal(fname, ": ", err)
+		return fmt.Errorf("%s: %q: %w", fname, mode, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.mode.name, flag.ExitOnError)
 	c.optionsToFlagSet()
