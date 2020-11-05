@@ -3,6 +3,7 @@ package conf
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/8i8/conf/types"
 )
@@ -42,6 +43,8 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 		o.flag = fs.Bool(o.Key, o.Default.(bool), o.Help)
 	case types.Float:
 		o.flag = fs.Float64(o.Key, o.Default.(float64), o.Help)
+	case types.Duration:
+		o.flag = fs.Duration(o.Key, o.Default.(time.Duration), o.Help)
 	default:
 		log.Fatalf("conf: internal error: flag type not recognised "+
 			"%q (%v, %T)", o.Name, o.Type)
