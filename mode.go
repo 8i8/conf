@@ -160,5 +160,6 @@ func loadFlagHelpMsg(f *flag.Flag) {
 		s += "\n        \t"
 	}
 	s += strings.ReplaceAll(usage, "\n", "\n            \t")
+	fmt.Fprint(os.Stdout, "FLAGS\n")
 	fmt.Fprint(os.Stdout, s, "\n\n")
 }
