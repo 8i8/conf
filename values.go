@@ -17,22 +17,6 @@ func Value(flag string) (interface{}, types.T, bool) {
 	return o.flag, o.Type, true
 }
 
-// ValueString returns the value of a string options.
-func ValueString(flag string) (string, error) {
-	const fname = "ValueString"
-	o, ok := c.options[flag]
-	if !ok {
-		return "", fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
-	}
-	v, ok := o.flag.(string)
-	if !ok {
-		return "", fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type)
-	}
-	return v, nil
-}
-
 // ValueInt returns the value of an int option.
 func ValueInt(flag string) (int, error) {
 	const fname = "ValueInt"
@@ -65,6 +49,22 @@ func ValueFloat(flag string) (float64, error) {
 	return v, nil
 }
 
+// ValueString returns the value of a string options.
+func ValueString(flag string) (string, error) {
+	const fname = "ValueString"
+	o, ok := c.options[flag]
+	if !ok {
+		return "", fmt.Errorf("%s: %s: %q flag not found",
+			pkg, fname, flag)
+	}
+	v, ok := o.flag.(string)
+	if !ok {
+		return "", fmt.Errorf("%s: %s: %q flag type error "+
+			"(%v, %T)", pkg, fname, flag, o.Type)
+	}
+	return v, nil
+}
+
 // ValueBool returns the value of a boolean options.
 func ValueBool(flag string) (bool, error) {
 	const fname = "ValueBool"
@@ -76,7 +76,7 @@ func ValueBool(flag string) (bool, error) {
 	v, ok := o.flag.(bool)
 	if !ok {
 		return false, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type)
+			"(%v, %T)", pkg, fname, flag, o.flag, o.flag)
 	}
 	return v, nil
 }
@@ -92,7 +92,7 @@ func ValueDuration(flag string) (time.Duration, error) {
 	v, ok := o.flag.(time.Duration)
 	if !ok {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q flag type error",
-			"(%v, %T)", pkg, fname, flag, o.Type)
+			"(%v, %T)", pkg, fname, flag, o.flag, o.flag)
 	}
 	return v, nil
 }

@@ -63,7 +63,7 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 		o.flag = fs.Duration(o.Key, o.Default.(time.Duration), o.Help)
 	default:
 		log.Fatalf("conf: internal error: flag type not recognised "+
-			"%q (%v, %T)", o.Name, o.Type)
+			"(%q, %s)", o.Name, o.Type)
 	}
 }
 
