@@ -142,11 +142,13 @@ func loadMode(mode string) {
 // loadFlagHelpMsg writes the help message for each individual flag.
 func loadFlagHelpMsg(f *flag.Flag) {
 	s := fmt.Sprintf("        -%s", f.Name)
-	name, usage := flag.UnquoteUsage(f)
-	if len(name) > 0 {
-		s += " " + name
+	_, usage := flag.UnquoteUsage(f)
+	// if len(name) > 0 {
+	// 	s += " " + name
+	// }
+	if len(f.Name) > 5 {
+		s += "\n        \t"
 	}
-	s += "\n        \t"
 	s += strings.ReplaceAll(usage, "\n", "\n            \t")
 	fmt.Fprint(os.Stdout, s, "\n")
 }
