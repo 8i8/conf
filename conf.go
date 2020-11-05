@@ -33,39 +33,49 @@ func Mode(name, help string) (bitflag int) {
 
 // Parse sets the running mode from the command line arguments and then parses
 // the flagset.
-func Parse() {
+func Parse() error {
+	const fname = "Parse"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if list.is(os.Args[1]) {
-			load(os.Args[1])
-			return
+			if err := load(os.Args[1]); err != nil {
+				return fmt.Errorf("%s: %w", fname, err)
+			}
+			return nil
 		}
-		fmt.Printf("unknown mode: %q\n", os.Args[1])
-		return
+		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
-	load("def")
+	if err := load(os.Args[1]); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+	if err := c.checkOptions(); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+	return nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Config
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// The program options.
+// config contains the programs data and is the center of its
+// functioning.
 var c config
 var pkg = "conf"
 
 // config contains all the program configuration config and flags.
 type config struct {
 	// Mode is the running mode of the program, this package facilitates
-	// the generation of different substates to help keep the use of
-	// option flags simple.
+	// the generation of substates.
 	mode
-	// The string that is displayed as the help output header for the entire program.
+	// The help output header for the program.
 	help string
-	// flagset is where the flags are places once parsed.
+	// flagset is the programs flagset.
 	flagSet *flag.FlagSet
-	// options are where the complete data for each flag is stored, this
+	// options are where the data for each flag or option is stored, this
 	// includes the value of the key its default value and help string
-	// along with the actual data once the flag has been parsed.
+	// along with the actual data once the flag or config option has been
+	// parsed, it also contains a fuction by which the value that has been
+	// set may be checked.
 	options map[string]*Option
 }
 
@@ -79,12 +89,43 @@ func (c *config) optionsToFlagSet() {
 	}
 }
 
+// names maintains a record of used names, insuraing that no duplicates are
+// created.
+var names map[string]bool
+
 // loadOptions loads all of the given options into the option map.
 func (c *config) loadOptions(opts ...Option) {
 	c.options = make(map[string]*Option)
-	for i, opt := range opts {
-		c.options[opt.Name] = &opts[i]
+	if names == nil {
+		names = make(map[string]bool)
 	}
+	for i, opt := range opts {
+		if names[opt.Name] {
+			log.Fatal("conf: loadOptions: duplicate option error")
+		}
+		c.options[opt.Name] = &opts[i]
+		names[opt.Name] = true
+	}
+}
+
+// checkOptions runs all user given check functions for the option set, called
+// after having parsed all option data.
+func (c *config) checkOptions() error {
+	const fname = "checkOptions"
+	if c.options == nil {
+		return fmt.Errorf("%s: %s: option set empty", pkg, fname)
+	}
+	for _, o := range c.options {
+		if o.Check != nil {
+			err := o.Check(o.data)
+			if err != nil {
+				return fmt.Errorf("%s: %s: %q: "+
+					"option check failed",
+					pkg, fname, o.Name)
+			}
+		}
+	}
+	return nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -135,7 +176,7 @@ func (o *config) setMode(mode string) error {
 
 // load sets the programs operating mode and loads all required
 // options and thier help data into the relevent flagset.
-func load(mode string) {
+func load(mode string) error {
 	const fname = "Mode"
 
 	if err := c.setMode(mode); err != nil {
@@ -151,14 +192,15 @@ func load(mode string) {
 	if mode == "def" {
 		err := c.flagSet.Parse(os.Args[1:])
 		if err != nil {
-			fmt.Println(fname, ": ", err)
+			return fmt.Errorf("%s: %w", fname, err)
 		}
-		return
+		return nil
 	}
 	err := c.flagSet.Parse(os.Args[2:])
 	if err != nil {
-		fmt.Println(fname, ": ", err)
+		return fmt.Errorf("%s: %w", fname, err)
 	}
+	return nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,11 +222,6 @@ type Option struct {
 	set     bool        // Can the value be overridden?
 	Modes   int         // Which program modes should the flag be included in?
 	Check   ckFunc      // Function to verify option data.
-}
-
-// check runs the ckFunc against the options data.
-func (o Option) check() error {
-	return o.Check(o.data)
 }
 
 // toFlagSet generates a flag within the given flagset for the current option.
