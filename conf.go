@@ -31,6 +31,14 @@ func Mode(name, help string) (bitflag int) {
 	return
 }
 
+// Options initialises the programs options.
+func Options(opts ...Option) {
+
+	// Load all default options.
+	c.loadOptions(opts...)
+	//c.loadConfig()
+}
+
 // Parse sets the running mode from the command line arguments and then parses
 // the flagset.
 func Parse() error {
