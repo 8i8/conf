@@ -151,7 +151,7 @@ func space(b []byte, l int) string {
 
 // loadFlagHelpMsg writes the help message for each individual flag.
 func loadFlagHelpMsg(f *flag.Flag) {
-	l := len(f.Name)
+	l := len(f.Name) + 1 // for the '-' char.
 	var buf [8]byte
 	sp := space(buf[:], l)
 	s := fmt.Sprintf("        -%s%s", f.Name, sp)
