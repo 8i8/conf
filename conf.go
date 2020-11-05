@@ -219,8 +219,10 @@ func load(mode string) error {
  *  Option
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// ckFunc is a function to check an options input data.
-type ckFunc func(interface{}) error
+// CkFunc defines a function to check an options input data, the funciton is
+// passed into the option when it is created by the user and run when the
+// intput flags and any configuration options are parsed.
+type CkFunc func(interface{}) error
 
 // Option contains all of the data required for setting a default flag and
 // receiving subsequent option settings.
@@ -233,7 +235,7 @@ type Option struct {
 	Default interface{} // Default data
 	set     bool        // Can the value be overridden?
 	Modes   int         // Which program modes should the flag be included in?
-	Check   ckFunc      // Function to verify option data.
+	Check   CkFunc      // Function to verify option data.
 }
 
 // toFlagSet generates a flag within the given flagset for the current option.
