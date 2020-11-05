@@ -1,9 +1,32 @@
 ### conf
 
-Conf is a command line application flag and option package designed to
-facilitate the construction of organised flag options with cleanly structured
-help output.  Simplifying the use of sub menus and subcommands enabling richer
-application possibilities with greater ease.
+package conf helps to organise and maintain package options and flags including
+program operating modes that may be set from the command line.
+
+MODES operating modes can be created by using the conf.Mode function, the
+function returns a bit flag with the appropriate bit set to enable the mode
+when creating an option.
+
+```go
+	newmode = conf.Mode("name", helpData)
+```
+
+The newmode flag is then used when defining an option in the Modes field, the
+option will appear in all of the modes that are specified in this declaration.
+
+```go
+conf.Option{
+	Modes: (newmode | mode1 | mode2)
+}
+```
+
+OPTIONS contain the data required to create a flag when included within the
+current flag set, however they may also be set from configuration files or
+other methods, an option also contains a user definable function that may be
+set to verify the data when it is set.
+
+The following is an example of the conf package in use:
+
 
 #### Example use
 
@@ -11,58 +34,68 @@ application possibilities with greater ease.
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/8i8/conf"
-	"github.com/8i8/conf/types"
+)
+
+var (
+	def = conf.Mode("def", helpDef)
+	one = conf.Mode("one", helpOne)
+	two = conf.Mode("two", helpTwo)
 )
 
 func main() {
 	conf.Help(helpBase)
-	if err := conf.Modes(&def, &one, &two); err != nil {
-		log.Fatal("Config: ", err)
+	conf.Options(opts...)
+	if err := conf.Parse(); err != nil {
+		fmt.Println(err)
 	}
-	conf.Options(options()...)
-	conf.Parse()
 }
 
-var (
-	def = conf.Mode{Name: "def", Help: helpDef}
-	one = conf.Mode{Name: "one", Help: helpOne}
-	two = conf.Mode{Name: "two", Help: helpTwo}
-)
-
-func options() []conf.Option {
-	return []conf.Option{
-		{Name: "intie",
-			Type:    types.Int,
-			Key:     "n",
-			Default: 12,
-			Help:    intie,
-			Modes:   conf.SetBits(def, one, two),
+var opts = []conf.Option{
+	{Name: "intie",
+		Type:    conf.Int,
+		Key:     "n",
+		Default: 12,
+		Help:    intie,
+		Modes:   (def | one | two),
+		Check: func(v interface{}) error {
+			i := v.(*int)
+			if *i != 12 {
+				return fmt.Errorf("-n must be 12")
+			}
+			return nil
 		},
-		{Name: "thing",
-			Type:    types.String,
-			Key:     "s",
-			Default: "Some thing",
-			Help:    thing,
-			Modes:   conf.SetBits(def, one, two),
+	},
+	{Name: "thing",
+		Type:    conf.String,
+		Key:     "s",
+		Default: "Some thing",
+		Help:    thing,
+		Modes:   (def | one | two),
+		Check: func(v interface{}) error {
+			s := v.(*string)
+			if len(*s) == 0 {
+				return fmt.Errorf("What ... No text?")
+			}
+			return nil
 		},
-		{Name: "none",
-			Type:    types.Int,
-			Key:     "i",
-			Default: 16,
-			Help:    "the i is the none of all the ints",
-			Modes:   conf.SetBits(def),
-		},
-		{Name: "verbosity",
-			Type:    types.Int,
-			Key:     "v",
-			Default: 0,
-			Help:    "The overall chattiness of it all",
-			Modes:   conf.SetBits(def, one, two),
-		},
-	}
+	},
+	{Name: "none",
+		Type:    conf.Int,
+		Key:     "i",
+		Default: 16,
+		Help:    "the i is the none of all the ints",
+		Modes:   (def | one | two),
+	},
+	{Name: "verbosity",
+		Type:    conf.Int,
+		Key:     "v",
+		Default: 0,
+		Help:    "The overall chattiness of it all",
+		Modes:   (def | one | two),
+	},
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -113,13 +146,11 @@ FLAGS`
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var intie = `This is the very default value in the most simple mode, to test
-if another way of writing the messages might be better.
-`
+if another way of writing the messages might be better.`
 
 var thing = `This is the default string thing, so as to best exemplify
 the use of this package in its current state I thought it
-best to write something very wordy here.
-`
+best to write something very wordy here.`
 ```
 
 GNU Lesser General Public License v3 (LGPL-3.0)

@@ -25,10 +25,9 @@ The following is an example of the conf package in use:
 package main
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/8i8/conf/conf"
-	"github.com/8i8/conf/types"
+	"github.com/8i8/conf"
 )
 
 var (
@@ -39,41 +38,55 @@ var (
 
 func main() {
 	conf.Help(helpBase)
-	conf.Options(options()...)
-	conf.Parse()
+	conf.Options(opts...)
+	if err := conf.Parse(); err != nil {
+		fmt.Println(err)
+	}
 }
 
-func options() []conf.Option {
-	return []conf.Option{
-		{Name: "intie",
-			Type:    types.Int,
-			Key:     "n",
-			Default: 12,
-			Help:    intie,
-			Modes:   (def | one | two),
+var opts = []conf.Option{
+	{Name: "intie",
+		Type:    conf.Int,
+		Key:     "n",
+		Default: 12,
+		Help:    intie,
+		Modes:   (def | one | two),
+		Check: func(v interface{}) error {
+			i := v.(*int)
+			if *i != 12 {
+				return fmt.Errorf("-n must be 12")
+			}
+			return nil
 		},
-		{Name: "thing",
-			Type:    types.String,
-			Key:     "s",
-			Default: "Some thing",
-			Help:    thing,
-			Modes:   (def | one | two),
+	},
+	{Name: "thing",
+		Type:    conf.String,
+		Key:     "s",
+		Default: "Some thing",
+		Help:    thing,
+		Modes:   (def | one | two),
+		Check: func(v interface{}) error {
+			s := v.(*string)
+			if len(*s) == 0 {
+				return fmt.Errorf("What ... No text?")
+			}
+			return nil
 		},
-		{Name: "none",
-			Type:    types.Int,
-			Key:     "i",
-			Default: 16,
-			Help:    "the i is the none of all the ints",
-			Modes:   (def),
-		},
-		{Name: "verbosity",
-			Type:    types.Int,
-			Key:     "v",
-			Default: 0,
-			Help:    "The overall chattiness of it all",
-			Modes:   (def | one | two),
-		},
-	}
+	},
+	{Name: "none",
+		Type:    conf.Int,
+		Key:     "i",
+		Default: 16,
+		Help:    "the i is the none of all the ints",
+		Modes:   (def | one | two),
+	},
+	{Name: "verbosity",
+		Type:    conf.Int,
+		Key:     "v",
+		Default: 0,
+		Help:    "The overall chattiness of it all",
+		Modes:   (def | one | two),
+	},
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,12 +137,10 @@ FLAGS`
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var intie = `This is the very default value in the most simple mode, to test
-if another way of writing the messages might be better.
-`
+if another way of writing the messages might be better.`
 
 var thing = `This is the default string thing, so as to best exemplify
 the use of this package in its current state I thought it
-best to write something very wordy here.
-`
+best to write something very wordy here.`
 */
 package conf
