@@ -43,7 +43,8 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 	case types.Float:
 		o.flag = fs.Float64(o.Key, o.Default.(float64), o.Help)
 	default:
-		log.Fatal("conf: internal error: flag type not recognised")
+		log.Fatalf("conf: internal error: flag type not recognised %q",
+			o.Type)
 	}
 }
 
