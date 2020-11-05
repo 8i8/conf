@@ -40,8 +40,10 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 		o.flag = fs.String(o.Key, o.Default.(string), o.Help)
 	case types.Bool:
 		o.flag = fs.Bool(o.Key, o.Default.(bool), o.Help)
+	case types.Float:
+		o.flag = fs.Float64(o.Key, o.Default.(float64), o.Help)
 	default:
-		log.Fatal("flag type not recognised")
+		log.Fatal("conf: internal error: flag type not recognised")
 	}
 }
 

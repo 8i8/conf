@@ -13,8 +13,8 @@ package main
 import (
 	"log"
 
-	"github.com/8i8/conf/conf"
-	"github.com/8i8/conf/conf/types"
+	"github.com/8i8/conf"
+	"github.com/8i8/conf/types"
 )
 
 func main() {
