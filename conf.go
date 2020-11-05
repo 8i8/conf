@@ -12,6 +12,7 @@ import (
 
 // The program options.
 var c config
+var pkg = "conf"
 
 // config contains all the program configuration config and flags.
 type config struct {
@@ -45,16 +46,6 @@ func Parse() {
 // Help sets the basis for the programs help output, the 'help header'.
 func Help(help string) {
 	c.help = help
-}
-
-// Value returns the content of a an option flag its type and also a boolen
-// that expresse whether or not the flag has been found.
-func Value(flag string) (types.T, interface{}, bool) {
-	o, ok := c.options[flag]
-	if !ok {
-		return types.Nul, nil, false
-	}
-	return o.Type, o.flag, true
 }
 
 // toFlagSet generates a flag within the given flagset for the current option.
