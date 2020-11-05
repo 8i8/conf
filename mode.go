@@ -77,19 +77,6 @@ func (o *config) setMode(mode string) error {
 	return fmt.Errorf("setMode: mode not found")
 }
 
-// Parse sets the running mode from the command line arguments.
-func Parse() {
-	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if list.is(os.Args[1]) {
-			loadMode(os.Args[1])
-			return
-		}
-		fmt.Printf("unknown mode: %q\n", os.Args[1])
-		return
-	}
-	loadMode("def")
-}
-
 // Modes adds a name to the list of possible modes.
 func Modes(modes ...*mode) error {
 	for i := range modes {

@@ -5,7 +5,8 @@ package types
 type T uint64
 
 const (
-	Int T = iota
+	Nul T = iota
+	Int
 	Float
 	String
 	Bool

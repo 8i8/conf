@@ -2,7 +2,9 @@ package conf
 
 import (
 	"flag"
+	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/8i8/conf/types"
@@ -27,9 +29,32 @@ type config struct {
 	options map[string]*Option
 }
 
+// Parse sets the running mode from the command line arguments.
+func Parse() {
+	if len(os.Args) > 1 && os.Args[1][0] != '-' {
+		if list.is(os.Args[1]) {
+			loadMode(os.Args[1])
+			return
+		}
+		fmt.Printf("unknown mode: %q\n", os.Args[1])
+		return
+	}
+	loadMode("def")
+}
+
 // Help sets the basis for the programs help output, the 'help header'.
 func Help(help string) {
 	c.help = help
+}
+
+// Value returns the content of a an option flag its type and also a boolen
+// that expresse whether or not the flag has been found.
+func Value(flag string) (types.T, interface{}, bool) {
+	o, ok := c.options[flag]
+	if !ok {
+		return types.Nul, nil, false
+	}
+	return o.Type, o.flag, true
 }
 
 // toFlagSet generates a flag within the given flagset for the current option.
