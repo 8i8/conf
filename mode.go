@@ -142,8 +142,8 @@ func loadMode(mode string) {
 func space(b []byte, l int) string {
 	w := len(b)
 	for i := 0; i < l; i++ {
-		b[w] = ' '
 		w--
+		b[w] = ' '
 	}
 	return string(b[w:])
 }
