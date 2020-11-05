@@ -129,9 +129,9 @@ func (c *config) checkOptions() error {
 		if o.Check != nil {
 			err := o.Check(o.data)
 			if err != nil {
-				return fmt.Errorf("%s: %s: %q: "+
+				return fmt.Errorf("%s: %s: %q: %w"+
 					"option check failed",
-					pkg, fname, o.Name)
+					pkg, fname, o.Name, err)
 			}
 		}
 	}
