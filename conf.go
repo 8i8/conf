@@ -240,15 +240,25 @@ type Option struct {
 func (o *Option) toFlagSet(fs *flag.FlagSet) {
 	switch o.Type {
 	case Int:
-		o.data = fs.Int(o.Key, o.Default.(int), o.Help)
+		var i int
+		fs.IntVar(&i, o.Key, o.Default.(int), o.Help)
+		o.data = i
 	case String:
-		o.data = fs.String(o.Key, o.Default.(string), o.Help)
+		var s string
+		fs.StringVar(&s, o.Key, o.Default.(string), o.Help)
+		o.data = s
 	case Bool:
-		o.data = fs.Bool(o.Key, o.Default.(bool), o.Help)
+		var b bool
+		fs.BoolVar(&b, o.Key, o.Default.(bool), o.Help)
+		o.data = b
 	case Float:
-		o.data = fs.Float64(o.Key, o.Default.(float64), o.Help)
+		var f float64
+		fs.Float64Var(&f, o.Key, o.Default.(float64), o.Help)
+		o.data = f
 	case Duration:
-		o.data = fs.Duration(o.Key, o.Default.(time.Duration), o.Help)
+		var d time.Duration
+		fs.DurationVar(&d, o.Key, o.Default.(time.Duration), o.Help)
+		o.data = d
 	default:
 		log.Fatalf("conf: internal error: flag type not recognised "+
 			"(%q, %s)", o.Name, o.Type)
