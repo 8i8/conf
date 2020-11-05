@@ -127,9 +127,9 @@ func (c *config) checkOptions() error {
 	}
 	for _, o := range c.options {
 		if o.Check != nil {
-			err := o.Check(o.data)
-			if err != nil {
-				log.Fatal(err)
+			if err := o.Check(o.data); err != nil {
+				fmt.Println(err)
+				os.Exit(0)
 			}
 		}
 	}
