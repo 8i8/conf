@@ -156,10 +156,7 @@ func loadFlagHelpMsg(f *flag.Flag) {
 	sp := space(buf[:], l)
 	s := fmt.Sprintf("        -%s%s", f.Name, sp)
 	_, usage := flag.UnquoteUsage(f)
-	// if len(name) > 0 {
-	// 	s += " " + name
-	// }
-	if l > 5 {
+	if l > 6 {
 		s += "\n        \t"
 	}
 	s += strings.ReplaceAll(usage, "\n", "\n            \t")
