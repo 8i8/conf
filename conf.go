@@ -108,6 +108,8 @@ type Config struct {
 	// parsed, it also contains a fuction by which the value that has been
 	// set may be checked.
 	options map[string]*Option
+	// names makes certain that no option name duplicates exist.
+	names map[string]bool
 }
 
 // NewConfig returns a new confiuration struct.
@@ -179,22 +181,18 @@ func (c *Config) optionsToFlagSet() {
 	}
 }
 
-// names maintains a record of used names, insuraing that no duplicates are
-// created.
-var names map[string]bool
-
 // loadOptions loads all of the given options into the option map.
 func (c *Config) loadOptions(opts ...Option) {
 	c.options = make(map[string]*Option)
-	if names == nil {
-		names = make(map[string]bool)
+	if c.names == nil {
+		c.names = make(map[string]bool)
 	}
 	for i, opt := range opts {
-		if names[opt.Name] {
-			log.Fatal("conf: loadOptions: duplicate option error")
+		if c.names[opt.Name] {
+			log.Fatal("conf: loadOptions: duplicate option name")
 		}
 		c.options[opt.Name] = &opts[i]
-		names[opt.Name] = true
+		c.names[opt.Name] = true
 	}
 }
 
@@ -390,7 +388,7 @@ func ValueInt(flag string) (int, error) {
 	v, ok := o.data.(int)
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type, flag)
+			"(%v, %T)", pkg, fname, flag, o.data, o.data)
 	}
 	return v, nil
 }
@@ -406,7 +404,7 @@ func ValueFloat(flag string) (float64, error) {
 	v, ok := o.data.(float64)
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type)
+			"(%v, %T)", pkg, fname, flag, o.data, o.data)
 	}
 	return v, nil
 }
@@ -422,7 +420,7 @@ func ValueString(flag string) (string, error) {
 	v, ok := o.data.(string)
 	if !ok {
 		return "", fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type)
+			"(%v, %T)", pkg, fname, flag, o.data, o.data)
 	}
 	return v, nil
 }
