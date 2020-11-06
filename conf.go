@@ -385,11 +385,11 @@ func ValueInt(flag string) (int, error) {
 		return 0, fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v, ok := o.data.(int)
-	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	}
+	v := *o.data.(*int)
+	// if !ok {
+	// 	return 0, fmt.Errorf("%s: %s: %q flag type error "+
+	// 		"(%v, %T)", pkg, fname, flag, o.data, o.data)
+	// }
 	return v, nil
 }
 
