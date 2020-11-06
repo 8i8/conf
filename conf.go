@@ -47,7 +47,7 @@ func Mode(name, help string) (bitflag int) {
 	return
 }
 
-// GetMode return the current set modes name.
+// GetMode return the current running modes name.
 func GetMode() string {
 	return c.mode.name
 }
@@ -132,7 +132,7 @@ func (c *Config) Mode(name, help string) (bitflag int) {
 	return
 }
 
-// GetMode return the current set modes name.
+// GetMode return the current running modes name.
 func (c Config) GetMode() string {
 	return c.mode.name
 }
@@ -390,7 +390,7 @@ func ValueInt(flag string) (int, error) {
 	v, ok := o.data.(int)
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.Type)
+			"(%v, %T)", pkg, fname, flag, o.Type, flag)
 	}
 	return v, nil
 }
