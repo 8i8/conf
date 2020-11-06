@@ -385,12 +385,7 @@ func ValueInt(flag string) (int, error) {
 		return 0, fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v := *o.data.(*int)
-	// if !ok {
-	// 	return 0, fmt.Errorf("%s: %s: %q flag type error "+
-	// 		"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	// }
-	return v, nil
+	return *o.data.(*int), nil
 }
 
 // ValueFloat64 returns the value of int options.
@@ -401,12 +396,7 @@ func ValueFloat(flag string) (float64, error) {
 		return 0, fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v, ok := o.data.(float64)
-	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	}
-	return v, nil
+	return *o.data.(*float64), nil
 }
 
 // ValueString returns the value of a string options.
@@ -417,12 +407,7 @@ func ValueString(flag string) (string, error) {
 		return "", fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v, ok := o.data.(string)
-	if !ok {
-		return "", fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	}
-	return v, nil
+	return *o.data.(*string), nil
 }
 
 // ValueBool returns the value of a boolean options.
@@ -433,12 +418,7 @@ func ValueBool(flag string) (bool, error) {
 		return false, fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v, ok := o.data.(bool)
-	if !ok {
-		return false, fmt.Errorf("%s: %s: %q flag type error "+
-			"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	}
-	return v, nil
+	return *o.data.(*bool), nil
 }
 
 // ValueDuration returs the value of a time.Duration option.
@@ -449,10 +429,5 @@ func ValueDuration(flag string) (time.Duration, error) {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q flag not found",
 			pkg, fname, flag)
 	}
-	v, ok := o.data.(time.Duration)
-	if !ok {
-		return time.Duration(0), fmt.Errorf("%s: %s: %q flag type error",
-			"(%v, %T)", pkg, fname, flag, o.data, o.data)
-	}
-	return v, nil
+	return *o.data.(*time.Duration), nil
 }
