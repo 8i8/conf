@@ -20,6 +20,11 @@ current flag set, however they may also be set from configuration files or
 other methods, an option also contains a user definable function that may be
 set to verify the data when it is set.
 
+The programs current running mode can be returned at any time by calling the
+GetMode() function.
+
+	mode := GetMode()
+
 The following is an example of the conf package in use:
 
 package main
@@ -36,14 +41,6 @@ var (
 	two = conf.Mode("two", helpTwo)
 )
 
-func main() {
-	conf.Help(helpBase)
-	conf.Options(opts...)
-	if err := conf.Parse(); err != nil {
-		fmt.Println(err)
-	}
-}
-
 var opts = []conf.Option{
 	{Name: "intie",
 		Type:    conf.Int,
@@ -51,12 +48,12 @@ var opts = []conf.Option{
 		Default: 12,
 		Help:    intie,
 		Modes:   (def | one | two),
-		Check: func(v interface{}) error {
-			i := v.(*int)
-			if *i != 12 {
-				return fmt.Errorf("-n must be 12")
+		Check: func(v interface{}) (interface{}, error) {
+			i := *v.(*int)
+			if i != 12 {
+				return v, fmt.Errorf("-n must be 12")
 			}
-			return nil
+			return v, nil
 		},
 	},
 	{Name: "thing",
@@ -65,12 +62,12 @@ var opts = []conf.Option{
 		Default: "Some thing",
 		Help:    thing,
 		Modes:   (def | one | two),
-		Check: func(v interface{}) error {
-			s := v.(*string)
-			if len(*s) == 0 {
-				return fmt.Errorf("What ... No text?")
+		Check: func(v interface{}) (interface{}, error) {
+			s := *v.(*string)
+			if len(s) == 0 {
+				return v, fmt.Errorf("What ... No text?")
 			}
-			return nil
+			return v, nil
 		},
 	},
 	{Name: "none",
@@ -87,6 +84,15 @@ var opts = []conf.Option{
 		Help:    "The overall chattiness of it all",
 		Modes:   (def | one | two),
 	},
+}
+
+func main() {
+	conf.Help(helpBase)
+	conf.Options(opts...)
+	if err := conf.Parse(); err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("The current running mode is %q\n", conf.GetMode())
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
