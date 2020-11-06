@@ -47,6 +47,11 @@ func Mode(name, help string) (bitflag int) {
 	return
 }
 
+// GetMode return the current set modes name.
+func GetMode() string {
+	return c.mode.name
+}
+
 // Options initialises the programs options.
 func Options(opts ...Option) {
 
@@ -125,6 +130,11 @@ func (c *Config) Mode(name, help string) (bitflag int) {
 	bitflag = c.index
 	c.index = c.index << 1
 	return
+}
+
+// GetMode return the current set modes name.
+func (c Config) GetMode() string {
+	return c.mode.name
 }
 
 // Options initialises the programs options.
