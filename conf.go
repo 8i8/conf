@@ -96,7 +96,7 @@ type Config struct {
 	// mode.
 	index int
 	// Mode is the running mode of the program, this package facilitates
-	// the generation of substates.
+	// the generation of sub states.
 	mode
 	// The help output header for the program.
 	help string
@@ -105,11 +105,13 @@ type Config struct {
 	// options are where the data for each flag or option is stored, this
 	// includes the value of the key its default value and help string
 	// along with the actual data once the flag or config option has been
-	// parsed, it also contains a fuction by which the value that has been
+	// parsed, it also contains a function by which the value that has been
 	// set may be checked.
 	options map[string]*Option
 	// names makes certain that no option name duplicates exist.
 	names map[string]bool
+	// keys makes certain that no key duplicates exist.
+	keys map[string]bool
 }
 
 // NewConfig returns a new confiuration struct.
@@ -189,10 +191,16 @@ func (c *Config) loadOptions(opts ...Option) {
 	}
 	for i, opt := range opts {
 		if c.names[opt.Name] {
-			log.Fatal("conf: loadOptions: duplicate option name")
+			log.Fatal("conf: loadOptions: %q: duplicate "+
+				"option name", opt.Name)
+		}
+		if c.keys[opt.Key] {
+			log.Fatal("conf: loadOptions: %q: duplicate "+
+				"option key", opt.Key)
 		}
 		c.options[opt.Name] = &opts[i]
 		c.names[opt.Name] = true
+		c.keys[opt.Key] = true
 	}
 }
 
