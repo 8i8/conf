@@ -186,6 +186,8 @@ func (c *Config) optionsToFlagSet() {
 // loadOptions loads all of the given options into the option map.
 func (c *Config) loadOptions(opts ...Option) {
 	c.options = make(map[string]*Option)
+	c.names = make(map[string]bool)
+	c.keys = make(map[string]bool)
 	if c.names == nil {
 		c.names = make(map[string]bool)
 	}
