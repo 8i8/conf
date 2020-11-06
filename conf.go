@@ -195,9 +195,10 @@ func (c *Config) checkOptions() error {
 	if c.options == nil {
 		return fmt.Errorf("%s: %s: option set empty", pkg, fname)
 	}
+	var err error
 	for _, o := range c.options {
 		if o.Check != nil {
-			if err := o.Check(o.data); err != nil {
+			if o.data, err = o.Check(o.data); err != nil {
 				fmt.Println(err)
 				os.Exit(0)
 			}
@@ -280,7 +281,7 @@ func (c *Config) load(mode string) error {
 // ckFunc defines a function to check an options input data, the funciton is
 // passed into the option when it is created by the user and run when the
 // intput flags and any configuration options are parsed.
-type ckFunc func(interface{}) error
+type ckFunc func(interface{}) (interface{}, error)
 
 // Option contains all of the data required for setting a default flag and
 // receiving subsequent option settings.
