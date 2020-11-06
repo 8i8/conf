@@ -10,6 +10,22 @@ import (
 	"time"
 )
 
+var (
+	// Global package name functnion used in help output.
+	pkg = "conf"
+	// limit ensures that no more than 64 base modes are possible.
+	limit = math.MaxInt64>>1 + 1
+	// config contains the program data for the default settings struct used when
+	// not running on an exported struct.
+	c Config
+	// list contains the modes created by the user.
+	list modelist
+	// index contains the value of the previously created bitflag used to
+	// maintain an incremental value that is agmented every time that a new
+	// program mode is created.
+	index = 1
+)
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Main package functions
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -45,7 +61,7 @@ func Parse() error {
 	const fname = "Parse"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if list.is(os.Args[1]) {
-			if err := load(os.Args[1]); err != nil {
+			if err := c.load(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
 			return nil
@@ -53,7 +69,7 @@ func Parse() error {
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
 	// Load the default arguments.
-	if err := load("def"); err != nil {
+	if err := c.load("def"); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Check all set verifications against parsed data.
@@ -67,13 +83,13 @@ func Parse() error {
  *  Config
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// config contains the programs data and is the center of its
-// functioning.
-var c config
-var pkg = "conf"
-
-// config contains all the program configuration config and flags.
-type config struct {
+// Config contains all the program configuration Config and flags.
+type Config struct {
+	// list is a list of the possible configuration submodes.
+	list modelist
+	// index holds the next value to use as a bitflag for the next modelist
+	// mode.
+	index int
 	// Mode is the running mode of the program, this package facilitates
 	// the generation of substates.
 	mode
@@ -89,9 +105,63 @@ type config struct {
 	options map[string]*Option
 }
 
+// NewConfig returns a new confiuration struct.
+func NewConfig() Config {
+	return Config{}
+}
+
+// Help sets the basis for the programs help output, the 'help header'.
+func (c *Config) Help(help string) {
+	c.help = help
+}
+
+// Mode creates a new mode, returning the bitflag requred to set that mode.
+func (c *Config) Mode(name, help string) (bitflag int) {
+	if c.index >= limit {
+		log.Fatal("index overflow, to many program modes")
+	}
+	m := mode{id: index, name: name, help: help}
+	c.list = append(c.list, m)
+	bitflag = c.index
+	c.index = c.index << 1
+	return
+}
+
+// Options initialises the programs options.
+func (c *Config) Options(opts ...Option) {
+
+	// Load all default options.
+	c.loadOptions(opts...)
+	//c.loadConfig()
+}
+
+// Parse sets the running mode from the command line arguments and then parses
+// the flagset.
+func (c *Config) Parse() error {
+	const fname = "Parse"
+	if len(os.Args) > 1 && os.Args[1][0] != '-' {
+		if c.list.is(os.Args[1]) {
+			if err := c.load(os.Args[1]); err != nil {
+				return fmt.Errorf("%s: %w", fname, err)
+			}
+			return nil
+		}
+		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
+	}
+	// Load the default arguments.
+	if err := c.load("def"); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+	// Check all set verifications against parsed data.
+	if err := c.checkOptions(); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+	return nil
+}
+
 // optionsToFlagSet defines flags within the flagset for all options that have
 // been specified that are within the current working set.
-func (c *config) optionsToFlagSet() {
+func (c *Config) optionsToFlagSet() {
 	for k, opt := range c.options {
 		if c.mode.id&opt.Modes > 0 {
 			c.options[k].toFlagSet(c.flagSet)
@@ -104,7 +174,7 @@ func (c *config) optionsToFlagSet() {
 var names map[string]bool
 
 // loadOptions loads all of the given options into the option map.
-func (c *config) loadOptions(opts ...Option) {
+func (c *Config) loadOptions(opts ...Option) {
 	c.options = make(map[string]*Option)
 	if names == nil {
 		names = make(map[string]bool)
@@ -120,7 +190,7 @@ func (c *config) loadOptions(opts ...Option) {
 
 // checkOptions runs all user given check functions for the option set, called
 // after having parsed all option data.
-func (c *config) checkOptions() error {
+func (c *Config) checkOptions() error {
 	const fname = "checkOptions"
 	if c.options == nil {
 		return fmt.Errorf("%s: %s: option set empty", pkg, fname)
@@ -150,17 +220,6 @@ type mode struct {
 }
 type modelist []mode
 
-var (
-	// list contains the modes created by the user.
-	list modelist
-	// index contains the value of the previously created bitflag used to
-	// maintain an incremental value that is agmented every time that a new
-	// program mode is created.
-	index = 1
-	// limit ensures that no more than 64 base modes are possible.
-	limit = math.MaxInt64>>1 + 1
-)
-
 // is returns true if the given mode exists and false if it does not.
 func (l modelist) is(mode string) bool {
 	for _, m := range l {
@@ -172,7 +231,7 @@ func (l modelist) is(mode string) bool {
 }
 
 // setMode defines the programs current running mode.
-func (o *config) setMode(mode string) error {
+func (o *Config) setMode(mode string) error {
 	if mode == "def" {
 		o.mode = list[0]
 	}
@@ -187,7 +246,7 @@ func (o *config) setMode(mode string) error {
 
 // load sets the programs operating mode and loads all required
 // options and thier help data into the relevent flagset.
-func load(mode string) error {
+func (c *Config) load(mode string) error {
 	const fname = "Mode"
 
 	if err := c.setMode(mode); err != nil {
