@@ -85,6 +85,12 @@ func Parse() error {
 	return nil
 }
 
+// ArgList returns the full command line argument list as a string as it
+// was input.
+func ArgList() string {
+	return c.input
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Config
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
