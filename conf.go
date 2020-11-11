@@ -15,14 +15,14 @@ var (
 	pkg = "conf"
 	// limit ensures that no more than 64 base modes are possible.
 	limit = math.MaxInt64>>1 + 1
-	// config contains the program data for the default settings struct used when
-	// not running on an exported struct.
+	// config contains the program data for the default settings
+	// struct used when not running on an exported struct.
 	c Config
 	// list contains the modes created by the user.
 	list modelist
-	// index contains the value of the previously created bitflag used to
-	// maintain an incremental value that is agmented every time that a new
-	// program mode is created.
+	// index contains the value of the previously created bitflag used
+	// to maintain an incremental value that is agmented every time
+	// that a new program mode is created.
 	index = 1
 )
 
@@ -35,7 +35,8 @@ func Help(help string) {
 	c.help = help
 }
 
-// Mode creates a new mode, returning the bitflag requred to set that mode.
+// Mode creates a new mode, returning the bitflag requred to set that
+// mode.
 func Mode(name, help string) (bitflag int) {
 	if index >= limit {
 		log.Fatal("index overflow, to many program modes")
@@ -55,13 +56,13 @@ func GetMode() string {
 // Options initialises the programs options.
 func Options(opts ...Option) {
 
-	// Load all default options.
+	c.saveArgs()
 	c.loadOptions(opts...)
 	//c.loadConfig()
 }
 
-// Parse sets the running mode from the command line arguments and then parses
-// the flagset.
+// Parse sets the running mode from the command line arguments and then
+// parses the flagset.
 func Parse() error {
 	const fname = "Parse"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
@@ -90,23 +91,26 @@ func Parse() error {
 
 // Config contains all the program configuration Config and flags.
 type Config struct {
+	// input is the string of arguments that was entered on the
+	// command line.
+	input string
 	// list is a list of the possible configuration submodes.
 	list modelist
-	// index holds the next value to use as a bitflag for the next modelist
-	// mode.
+	// index holds the next value to use as a bitflag for the next
+	// modelist mode.
 	index int
-	// Mode is the running mode of the program, this package facilitates
-	// the generation of sub states.
+	// Mode is the running mode of the program, this package
+	// facilitates the generation of sub states.
 	mode
 	// The help output header for the program.
 	help string
 	// flagset is the programs flagset.
 	flagSet *flag.FlagSet
-	// options are where the data for each flag or option is stored, this
-	// includes the value of the key its default value and help string
-	// along with the actual data once the flag or config option has been
-	// parsed, it also contains a function by which the value that has been
-	// set may be checked.
+	// options are where the data for each flag or option is stored,
+	// this includes the value of the key its default value and help
+	// string along with the actual data once the flag or config
+	// option has been parsed, it also contains a function by which
+	// the value that has been set may be checked.
 	options map[string]*Option
 	// names makes certain that no option name duplicates exist.
 	names map[string]bool
@@ -124,7 +128,8 @@ func (c *Config) Help(help string) {
 	c.help = help
 }
 
-// Mode creates a new mode, returning the bitflag requred to set that mode.
+// Mode creates a new mode, returning the bitflag requred to set that
+// mode.
 func (c *Config) Mode(name, help string) (bitflag int) {
 	if c.index >= limit {
 		log.Fatal("index overflow, to many program modes")
@@ -144,13 +149,13 @@ func (c Config) GetMode() string {
 // Options initialises the programs options.
 func (c *Config) Options(opts ...Option) {
 
-	// Load all default options.
+	c.saveArgs()
 	c.loadOptions(opts...)
 	//c.loadConfig()
 }
 
-// Parse sets the running mode from the command line arguments and then parses
-// the flagset.
+// Parse sets the running mode from the command line arguments and then
+// parses the flagset.
 func (c *Config) Parse() error {
 	const fname = "Parse"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
@@ -173,8 +178,25 @@ func (c *Config) Parse() error {
 	return nil
 }
 
-// optionsToFlagSet defines flags within the flagset for all options that have
-// been specified that are within the current working set.
+// ArgList returns the full command line argument list as a string as it
+// was input.
+func (c Config) ArgList() string {
+	return c.input
+}
+
+// saveArgs records the input argumeants as a string for display output.
+func (c *Config) saveArgs() {
+	var str strings.Builder
+	str.WriteString(os.Args[0])
+	for _, arg := range os.Args[1:] {
+		str.WriteByte(' ')
+		str.WriteString(arg)
+	}
+	c.input = str.String()
+}
+
+// optionsToFlagSet defines flags within the flagset for all options that
+// have been specified that are within the current working set.
 func (c *Config) optionsToFlagSet() {
 	for k, opt := range c.options {
 		if c.mode.id&opt.Modes > 0 {
@@ -206,8 +228,8 @@ func (c *Config) loadOptions(opts ...Option) {
 	}
 }
 
-// checkOptions runs all user given check functions for the option set, called
-// after having parsed all option data.
+// checkOptions runs all user given check functions for the option set,
+// called after having parsed all option data.
 func (c *Config) checkOptions() error {
 	const fname = "checkOptions"
 	if c.options == nil {
@@ -229,12 +251,14 @@ func (c *Config) checkOptions() error {
  *  Mode
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// mode contains the required data to create a program operating mode flag, the
-// sub heading of a program run mode for its specific operating flags.
+// mode contains the required data to create a program operating mode
+// flag, the sub heading of a program run mode for its specific operating
+// flags.
 type mode struct {
 	id   int
 	name string
-	// The help output for the particular mode displayed when -h is used.
+	// The help output for the particular mode displayed when -h is
+	// used.
 	help string
 }
 type modelist []mode
@@ -296,26 +320,36 @@ func (c *Config) load(mode string) error {
  *  Option
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// ckFunc defines a function to check an options input data, the funciton is
-// passed into the option when it is created by the user and run when the
-// intput flags and any configuration options are parsed.
+// ckFunc defines a function to check an options input data, the funciton
+// is passed into the option when it is created by the user and run when
+// the intput flags and any configuration options are parsed.
 type ckFunc func(interface{}) (interface{}, error)
 
 // Option contains all of the data required for setting a default flag and
 // receiving subsequent option settings.
 type Option struct {
-	Name    string      // The name of the option, also used as a key in the options map.
-	Type                // Type of flag
-	Key     string      // Keypress required to activate the flag.
-	Help    string      // Help string
-	data    interface{} // Data
-	Default interface{} // Default data
-	set     bool        // Can the value be overridden?
-	Modes   int         // Which program modes should the flag be included in?
-	Check   ckFunc      // Function to verify option data.
+	// The name of the option, also used as a key in the options map.
+	Name string
+	// Type of flag.
+	Type
+	// Keypress required to activate the flag.
+	Key string
+	// Help string.
+	Help string
+	// Data.
+	data interface{}
+	// Default data.
+	Default interface{}
+	// Can the value be overridden?
+	set bool
+	// Which program modes should the flag be included in?
+	Modes int
+	// Function to verify option data.
+	Check ckFunc
 }
 
-// toFlagSet generates a flag within the given flagset for the current option.
+// toFlagSet generates a flag within the given flagset for the current
+// option.
 func (o *Option) toFlagSet(fs *flag.FlagSet) {
 	switch o.Type {
 	case Int:
@@ -327,10 +361,11 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 	case Float:
 		o.data = fs.Float64(o.Key, o.Default.(float64), o.Help)
 	case Duration:
-		o.data = fs.Duration(o.Key, o.Default.(time.Duration), o.Help)
+		o.data = fs.Duration(
+			o.Key, o.Default.(time.Duration), o.Help)
 	default:
-		log.Fatalf("conf: internal error: flag type not recognised "+
-			"(%q, %s)", o.Name, o.Type)
+		log.Fatalf("conf: internal error: flag type not "+
+			"recognised (%q, %s)", o.Name, o.Type)
 	}
 }
 
@@ -364,8 +399,8 @@ func flagHelpMsg(f *flag.Flag) {
  *  Values and Types
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Type defines the type of the configuration option, essential when setting
-// flags, converting from interfaces.
+// Type defines the type of the configuration option, essential when
+// setting flags, converting from interfaces.
 type Type uint64
 
 const (
@@ -436,8 +471,8 @@ func ValueDuration(flag string) (time.Duration, error) {
 	const fname = "ValueDuration"
 	o, ok := c.options[flag]
 	if !ok {
-		return time.Duration(0), fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
+		return time.Duration(0), fmt.Errorf("%s: %s: %q "+
+			"flag not found", pkg, fname, flag)
 	}
 	return *o.data.(*time.Duration), nil
 }
