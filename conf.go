@@ -343,6 +343,9 @@ type Option struct {
 	Name string
 	// Type of flag.
 	Type
+	// Value is used when passing user defined flag types into a
+	// flagset
+	Value flag.Value
 	// Keypress required to activate the flag.
 	Key string
 	// Help string.
@@ -374,6 +377,8 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) {
 	case Duration:
 		o.data = fs.Duration(
 			o.Key, o.Default.(time.Duration), o.Help)
+	case Var:
+		fs.Var(o.Value, o.Key, o.Help)
 	default:
 		log.Fatalf("conf: internal error: flag type not "+
 			"recognised (%q, %s)", o.Name, o.Type)
@@ -421,6 +426,7 @@ const (
 	String
 	Bool
 	Duration
+	Var
 )
 
 // Value returns the content of an option flag its type and also a boolean
