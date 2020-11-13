@@ -75,7 +75,7 @@ func Parse() error {
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
 	// Load the default arguments.
-	if err := c.load("def"); err != nil {
+	if err := c.load("default"); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Check all set verifications against parsed data.
@@ -173,8 +173,8 @@ func (c *Config) Parse() error {
 		}
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
-	// Load the default arguments.
-	if err := c.load("def"); err != nil {
+	// If no other mode has been specified, load the default.
+	if err := c.load("default"); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Check all set verifications against parsed data.
