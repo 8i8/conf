@@ -155,8 +155,13 @@ func (c Config) GetMode() string {
 // Options initialises the programs options.
 func (c *Config) Options(opts ...Option) {
 
+	// Record the original input string.
 	c.saveArgs()
+	// Generate flags and help data.
 	c.loadOptions(opts...)
+	// TODO write a standard config file addition that records config
+	// when in mode 'config' and that reads in any settings that have
+	// been previously recorded or written.
 	//c.loadConfig()
 }
 
@@ -257,9 +262,9 @@ func (c *Config) checkOptions() error {
  *  Mode
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// mode contains the required data to create a program operating mode
-// flag, the sub heading of a program run mode for its specific operating
-// flags.
+// mode contains the required data to create a programs operating mode and
+// its flag, the sub heading of a program run mode for its specific
+// operating flags.
 type mode struct {
 	id   int
 	name string
