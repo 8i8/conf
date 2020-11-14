@@ -321,7 +321,7 @@ func (c *Config) load(mode string) error {
 		fmt.Println(c.mode.help)
 		c.flagSet.VisitAll(flagHelpMsg)
 	}
-	if mode == "def" {
+	if mode == "default" {
 		err := c.flagSet.Parse(os.Args[1:])
 		if err != nil {
 			return fmt.Errorf("%s: %w", fname, err)
