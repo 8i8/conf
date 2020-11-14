@@ -70,6 +70,10 @@ func Parse() error {
 			if err := c.load(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
+			// Check all set verifications against parsed data.
+			if err := c.checkOptions(); err != nil {
+				return fmt.Errorf("%s: %w", fname, err)
+			}
 			return nil
 		}
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
