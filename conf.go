@@ -428,7 +428,7 @@ func flagHelpMsg(f *flag.Flag) {
 type Type uint64
 
 const (
-	Nul Type = iota
+	Nil Type = iota
 	Int
 	Float
 	String
@@ -439,65 +439,90 @@ const (
 
 // Value returns the content of an option flag its type and also a boolean
 // that expresses whether or not the flag has been found.
-func Value(flag string) (interface{}, Type, bool) {
-	o, ok := c.options[flag]
+func Value(key string) (interface{}, Type, error) {
+	const fname = "Value"
+	o, ok := c.options[key]
 	if !ok {
-		return nil, Nul, false
+		return nil, Nil, fmt.Errorf("%s: %s: %q key not found",
+			pkg, fname, key)
 	}
-	return o.data, o.Type, true
+	if o.data == nil {
+		return nil, Nil, fmt.Errorf("%s: %s: nil pointer",
+			pkg, fname)
+	}
+	return o.data, o.Type, nil
 }
 
 // ValueInt returns the value of an int option.
-func ValueInt(flag string) (int, error) {
+func ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
-	o, ok := c.options[flag]
+	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
+		return 0, fmt.Errorf("%s: %s: %q key not found",
+			pkg, fname, key)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: %s: nil pointer",
+			pkg, fname)
 	}
 	return *o.data.(*int), nil
 }
 
 // ValueFloat64 returns the value of int options.
-func ValueFloat(flag string) (float64, error) {
+func ValueFloat(key string) (float64, error) {
 	const fname = "ValueFloat"
-	o, ok := c.options[flag]
+	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
+		return 0, fmt.Errorf("%s: %s: %q key not found",
+			pkg, fname, key)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: %s: nil pointer",
+			pkg, fname)
 	}
 	return *o.data.(*float64), nil
 }
 
 // ValueString returns the value of a string options.
-func ValueString(flag string) (string, error) {
+func ValueString(key string) (string, error) {
 	const fname = "ValueString"
-	o, ok := c.options[flag]
+	o, ok := c.options[key]
 	if !ok {
-		return "", fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
+		return "", fmt.Errorf("%s: %s: %q key not found",
+			pkg, fname, key)
+	}
+	if o.data == nil {
+		return "", fmt.Errorf("%s: %s: nil pointer",
+			pkg, fname)
 	}
 	return *o.data.(*string), nil
 }
 
 // ValueBool returns the value of a boolean options.
-func ValueBool(flag string) (bool, error) {
+func ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
-	o, ok := c.options[flag]
+	o, ok := c.options[key]
 	if !ok {
-		return false, fmt.Errorf("%s: %s: %q flag not found",
-			pkg, fname, flag)
+		return false, fmt.Errorf("%s: %s: %q key not found",
+			pkg, fname, key)
+	}
+	if o.data == nil {
+		return false, fmt.Errorf("%s: %s: nil pointer",
+			pkg, fname)
 	}
 	return *o.data.(*bool), nil
 }
 
 // ValueDuration returs the value of a time.Duration option.
-func ValueDuration(flag string) (time.Duration, error) {
+func ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
-	o, ok := c.options[flag]
+	o, ok := c.options[key]
 	if !ok {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q "+
-			"flag not found", pkg, fname, flag)
+			"key not found", pkg, fname, key)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: nil pointer", fname)
 	}
 	return *o.data.(*time.Duration), nil
 }
