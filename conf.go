@@ -178,6 +178,10 @@ func (c *Config) Parse() error {
 			if err := c.load(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
+			// Check all set verifications against parsed data.
+			if err := c.checkOptions(); err != nil {
+				return fmt.Errorf("%s: %w", fname, err)
+			}
 			return nil
 		}
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
@@ -290,7 +294,7 @@ func (l modelist) is(mode string) bool {
 
 // setMode defines the programs current running mode.
 func (o *Config) setMode(mode string) error {
-	if mode == "def" {
+	if mode == "default" {
 		o.mode = list[0]
 	}
 	for _, m := range list {
@@ -303,9 +307,9 @@ func (o *Config) setMode(mode string) error {
 }
 
 // load sets the programs operating mode and loads all required
-// options and thier help data into the relevent flagset.
+// options along with their help data into the relevant flagset.
 func (c *Config) load(mode string) error {
-	const fname = "Mode"
+	const fname = "load"
 
 	if err := c.setMode(mode); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, mode, err)
