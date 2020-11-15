@@ -734,9 +734,54 @@ func ValueInt(key string) (int, error) {
 	return *o.data.(*int), nil
 }
 
-// ValueFloat64 returns the value of int options.
-func ValueFloat(key string) (float64, error) {
-	const fname = "ValueFloat"
+// ValueInt64 returns the value of an int64 option.
+func ValueInt64(key string) (int64, error) {
+	const fname = "ValueInt64"
+	o, ok := c.options[key]
+	if !ok {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
+	}
+	return *o.data.(*int64), nil
+}
+
+// ValueUint returns the value of an uint option.
+func ValueUint(key string) (uint, error) {
+	const fname = "ValueUint"
+	o, ok := c.options[key]
+	if !ok {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
+	}
+	return *o.data.(*uint), nil
+}
+
+// ValueUint64 returns the value of an uint64 option.
+func ValueUint64(key string) (uint64, error) {
+	const fname = "ValueUint64"
+	o, ok := c.options[key]
+	if !ok {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
+	}
+	if o.data == nil {
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
+	}
+	return *o.data.(*uint64), nil
+}
+
+// ValueFloat64 returns the value a float64 options.
+func ValueFloat64(key string) (float64, error) {
+	const fname = "ValueFloat64"
 	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
