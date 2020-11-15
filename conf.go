@@ -29,9 +29,14 @@ var (
  *  Main package functions
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Help sets the basis for the programs help output, the 'help header'.
-func Help(help string) {
-	c.help = help
+// Setup sets the basis for the programs help output, the 'help header'
+// and help 'Sub header', it also returns the bitflag for the modes field
+// for use in the creation of Options, consiquent calls to c.Mode will
+// create and return further more flags.
+func Setup(heading string, subheading string) (mode int) {
+	c.help = heading
+	mode = Mode("default", subheading)
+	return
 }
 
 // Mode creates a new mode, returning the bitflag requred to set that
@@ -113,16 +118,14 @@ type Config struct {
 	help string
 	// flagset is the programs flagset.
 	flagSet *flag.FlagSet
+	// names makes certain that no option name duplicates exist.
+	names map[string]bool
 	// options are where the data for each flag or option is stored,
 	// this includes the value of the key its default value and help
 	// string along with the actual data once the flag or config
 	// option has been parsed, it also contains a function by which
 	// the value that has been set may be checked.
 	options map[string]*Option
-	// names makes certain that no option name duplicates exist.
-	names map[string]bool
-	// keys makes certain that no key duplicates exist.
-	keys map[string]bool
 }
 
 // NewConfig returns a new confiuration struct.
@@ -130,9 +133,14 @@ func NewConfig() Config {
 	return Config{}
 }
 
-// Help sets the basis for the programs help output, the 'help header'.
-func (c *Config) Help(help string) {
-	c.help = help
+// Setup sets the basis for the programs help output, the 'help header'
+// and help 'Sub header', it also returns the bitflag for the modes field
+// for use in the creation of Options, consiquent calls to c.Mode will
+// create and return further more flags.
+func (c *Config) Setup(heading string, subheading string) (mode int) {
+	c.help = heading
+	mode = c.Mode("default", subheading)
+	return
 }
 
 // Mode creates a new mode, returning the bitflag requred to set that
@@ -231,16 +239,17 @@ func (c *Config) optionsToFlagSet() error {
 func (c *Config) loadOptions(opts ...Option) {
 	const fname = "Option"
 	c.options = make(map[string]*Option)
-	c.names = make(map[string]bool)
-	c.keys = make(map[string]bool)
 	if c.names == nil {
 		c.names = make(map[string]bool)
+	}
+	for i := range c.list {
+		if c.list[i].keys == nil {
+			c.list[i].keys = make(map[string]bool)
+		}
 	}
 	for i, opt := range opts {
 		c.checkOption(opt)
 		c.options[opt.Name] = &opts[i]
-		c.names[opt.Name] = true
-		c.keys[opt.Key] = true
 	}
 }
 
@@ -259,42 +268,56 @@ func (c Config) checkOption(o Option) {
 }
 
 var (
-	errType      = errors.New("type error")
-	errTypeNil   = errors.New("the type is not defined")
-	errNoValue   = errors.New("value required")
-	errDuplicate = errors.New("duplicate value")
-	errNotInSet  = errors.New(
+	errType       = errors.New("type error")
+	errTypeNil    = errors.New("the type is not defined")
+	errTypeUnkown = errors.New("unknown type")
+	errNoValue    = errors.New("value required")
+	errDuplicate  = errors.New("duplicate value")
+	errNotInSet   = errors.New(
 		"specified mode not within the current set")
 )
 
 // chekcName checks that the name is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkName(o Option) {
-	const msg = "Option: Name"
+	const msg = "Option"
 	if len(o.Name) == 0 {
-		log.Fatalf("%s: %s: %s", pkg, msg, errNoValue)
+		log.Fatalf("%s: %s: %q: %s", pkg, msg,
+			o.Name, errNoValue)
 	}
 	if c.names[o.Name] {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
-			errDuplicate)
+		log.Fatalf("%s: %s: %q: %s", pkg, msg,
+			o.Name, errDuplicate)
 	}
+	c.names[o.Name] = true
 }
 
 // chekcName checks that the key is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkKey(o Option) {
-	const msg = "Option: Key"
-	if c.keys[o.Key] {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Key,
-			errDuplicate)
+	const msg = "Option"
+	if len(o.Key) == 0 {
+		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
+			errNoValue)
+	}
+	for i := range c.list {
+		// If the option name is already regiastered for this
+		// mode fail.
+		if c.list[i].id&o.Modes > 0 {
+			if c.list[i].keys[o.Key] {
+				log.Fatalf("%s: %s: %q: %q: %s", pkg,
+					msg, o.Name, o.Key, errDuplicate)
+			}
+			c.list[i].keys[o.Key] = true
+		}
 	}
 }
 
 // checkType checks that the option has a type set.
 func (c *Config) checkType(o Option) {
-	const msg = "Option: Type"
+	const msg = "Option"
 	if o.Type == Nil {
-		log.Fatalf("%s: %s: %q: %+v: %s",
+		log.Fatalf("%s: %s: %q: %q: %s",
 			pkg, msg, o.Name, o.Type, errTypeNil)
 	}
 }
@@ -302,51 +325,51 @@ func (c *Config) checkType(o Option) {
 // checkDefault checks that the options default value has the correct
 // type.
 func (c *Config) checkDefault(o Option) {
-	const msg = "Option: Default"
+	const msg = "Option"
 	switch o.Type {
 	case Int:
 		if _, ok := o.Default.(int); !ok {
-			log.Fatalf("%s: %s: %q: %+v: %s",
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
 	case String:
 		if _, ok := o.Default.(string); !ok {
-			log.Fatalf("%s: %s: %q: %+v: %s",
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Bool:
 		if _, ok := o.Default.(bool); !ok {
-			log.Fatalf("%s: %s: %q: %+v: %s",
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Float:
 		if _, ok := o.Default.(float64); !ok {
-			log.Fatalf("%s: %s: %q: %+v: %s",
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Duration:
 		if _, ok := o.Default.(time.Duration); !ok {
-			log.Fatalf("%s: %s: %q: %+v: %s",
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Var:
 		// The default is usualy nil but could be anything as var
 		// represents and interface.
 	case Nil:
-		log.Fatalf("%s: %s: %q: %+v: %s",
+		log.Fatalf("%s: %s: %q: Default: %+v: %s",
 			pkg, msg, o.Name, o.Type, errTypeNil)
 	default:
-		log.Fatalf("%s: %s: %q: %+v: %s",
-			pkg, msg, o.Name, o.Type, errType)
+		log.Fatalf("%s: %s: %q: Default: %+v: %s",
+			pkg, msg, o.Name, o.Type, errTypeUnkown)
 	}
 }
 
 // checkMode verifies that an option has a mode set and if it does that
 // that mode is contained within the existing sets.
-func (c *Config) checkMode(o Option) {
-	const msg = "Option: Modes"
+func (c Config) checkMode(o Option) {
+	const msg = "Option"
 	if !c.list.flagIs(o.Modes) {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
+		log.Fatalf("%s: %s: %q: Modes: %s", pkg, msg, o.Name,
 			errNotInSet)
 	}
 }
@@ -387,6 +410,8 @@ type mode struct {
 	// The help output for the particular mode displayed when -h is
 	// used.
 	help string
+	// keys makes certain that no key duplicates exist.
+	keys map[string]bool
 }
 type modelist []mode
 
