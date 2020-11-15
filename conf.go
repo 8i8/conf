@@ -323,42 +323,42 @@ func (c *Config) checkType(o Option) {
 func (c *Config) checkDefault(o Option) {
 	const msg = "Option"
 	switch o.Type {
-	case Int:
+	case Int, IntVar:
 		if _, ok := o.Default.(int); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Int64:
+	case Int64, Int64Var:
 		if _, ok := o.Default.(int64); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Uint:
+	case Uint, UintVar:
 		if _, ok := o.Default.(uint); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Uint64:
+	case Uint64, Uint64Var:
 		if _, ok := o.Default.(uint64); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case String:
+	case String, StringVar:
 		if _, ok := o.Default.(string); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Bool:
+	case Bool, BoolVar:
 		if _, ok := o.Default.(bool); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Float64:
+	case Float64, Float64Var:
 		if _, ok := o.Default.(float64); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Duration:
+	case Duration, DurationVar:
 		if _, ok := o.Default.(time.Duration); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
@@ -515,6 +515,9 @@ type Option struct {
 	// Value is used when passing user defined flag types into a
 	// flagset
 	Value flag.Value
+	// Var is used to pass values by reference into the Var flag
+	// types.
+	Var interface{}
 	// Key defines the flag required to modify the option.
 	Key string
 	// Help string.
@@ -534,72 +537,170 @@ type Option struct {
 // toFlagSet generates a flag within the given flagset for the current
 // option.
 // TODO add types.
-func (o *Option) toFlagSet(fs *flag.FlagSet) error {
+func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 	const fname = "toFlagSet"
 	const msg = "Option"
+	const def = "Default"
+	const va = "Var"
 	switch o.Type {
 	case Int:
 		i, ok := o.Default.(int)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, def, errType)
 		}
-		o.data = fs.Int(o.Key, i, o.Help)
+		o.data = fls.Int(o.Key, i, o.Help)
+	case IntVar:
+		i, ok := o.Default.(int)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, def, errType)
+		}
+		v, ok := o.Var.(*int)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.IntVar(v, o.Key, i, o.Help)
 	case Int64:
 		i, ok := o.Default.(int64)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Int64(o.Key, i, o.Help)
+		o.data = fls.Int64(o.Key, i, o.Help)
+	case Int64Var:
+		i, ok := o.Default.(int64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*int64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.Int64Var(v, o.Key, i, o.Help)
 	case Uint:
 		i, ok := o.Default.(uint)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Uint(o.Key, i, o.Help)
+		o.data = fls.Uint(o.Key, i, o.Help)
+	case UintVar:
+		i, ok := o.Default.(uint)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*uint)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.UintVar(v, o.Key, i, o.Help)
 	case Uint64:
 		i, ok := o.Default.(uint64)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Uint64(o.Key, i, o.Help)
+		o.data = fls.Uint64(o.Key, i, o.Help)
+	case Uint64Var:
+		i, ok := o.Default.(uint64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*uint64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.Uint64Var(v, o.Key, i, o.Help)
 	case String:
 		s, ok := o.Default.(string)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.String(o.Key, s, o.Help)
+		o.data = fls.String(o.Key, s, o.Help)
+	case StringVar:
+		s, ok := o.Default.(string)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*string)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.StringVar(v, o.Key, s, o.Help)
 	case Bool:
 		b, ok := o.Default.(bool)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Bool(o.Key, b, o.Help)
+		o.data = fls.Bool(o.Key, b, o.Help)
+	case BoolVar:
+		b, ok := o.Default.(bool)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*bool)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.BoolVar(v, o.Key, b, o.Help)
 	case Float64:
 		f, ok := o.Default.(float64)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Float64(o.Key, f, o.Help)
+		o.data = fls.Float64(o.Key, f, o.Help)
+	case Float64Var:
+		f, ok := o.Default.(float64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*float64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.Float64Var(v, o.Key, f, o.Help)
 	case Duration:
 		d, ok := o.Default.(time.Duration)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errType)
 		}
-		o.data = fs.Duration(o.Key, d, o.Help)
+		o.data = fls.Duration(o.Key, d, o.Help)
+	case DurationVar:
+		d, ok := o.Default.(time.Duration)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		v, ok := o.Var.(*time.Duration)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %q: %w",
+				pkg, msg, o.Type, va, errType)
+		}
+		fls.DurationVar(v, o.Key, d, o.Help)
 	case Var:
 		if o.Value == nil {
 			return fmt.Errorf("%s: %s: %s: %w",
 				pkg, msg, o.Type, errNoValue)
 		}
-		fs.Var(o.Value, o.Key, o.Help)
+		fls.Var(o.Value, o.Key, o.Help)
 	default:
 		log.Fatalf("%s: %s: internal error: (%q, %s) %s",
 			pkg, fname, o.Name, o.Type, errTypeUnkown)
@@ -639,7 +740,6 @@ func flagHelpMsg(f *flag.Flag) {
 
 // Type defines the type of the configuration option, essential when
 // setting flags, converting from interfaces.
-// TODO add types.
 // uint8       the set of all unsigned  8-bit integers (0 to 255)
 // uint16      the set of all unsigned 16-bit integers (0 to 65535)
 // uint32      the set of all unsigned 32-bit integers (0 to 4294967295)
@@ -655,18 +755,27 @@ func flagHelpMsg(f *flag.Flag) {
 
 // complex64   the set of all complex numbers with float32 real and imaginary parts
 // complex128  the set of all complex numbers with float64 real and imaginary parts
+// TODO add types.
 type Type uint64
 
 const (
 	Nil Type = iota
 	Int
+	IntVar
 	Int64
+	Int64Var
 	Uint
+	UintVar
 	Uint64
+	Uint64Var
 	Float64
+	Float64Var
 	String
+	StringVar
 	Bool
+	BoolVar
 	Duration
+	DurationVar
 	Var
 )
 
@@ -682,20 +791,36 @@ func (t Type) String() string {
 		return "nil"
 	case Int:
 		return "int"
+	case IntVar:
+		return "*int"
 	case Int64:
 		return "int64"
+	case Int64Var:
+		return "*int64"
 	case Uint:
 		return "uint"
+	case UintVar:
+		return "*uint"
 	case Uint64:
 		return "uint64"
+	case Uint64Var:
+		return "*uint64"
 	case Float64:
 		return "float64"
+	case Float64Var:
+		return "*float64"
 	case String:
 		return "string"
+	case StringVar:
+		return "*string"
 	case Bool:
 		return "bool"
+	case BoolVar:
+		return "*bool"
 	case Duration:
 		return "time.Duration"
+	case DurationVar:
+		return "*time.Duration"
 	case Var:
 		return "interface{}"
 	default:
