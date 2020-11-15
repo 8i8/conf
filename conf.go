@@ -328,6 +328,21 @@ func (c *Config) checkDefault(o Option) {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
+	case Int64:
+		if _, ok := o.Default.(int64); !ok {
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
+		}
+	case Uint:
+		if _, ok := o.Default.(uint); !ok {
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
+		}
+	case Uint64:
+		if _, ok := o.Default.(uint64); !ok {
+			log.Fatalf("%s: %s: %q: Default: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
+		}
 	case String:
 		if _, ok := o.Default.(string); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
@@ -338,7 +353,7 @@ func (c *Config) checkDefault(o Option) {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
 		}
-	case Float:
+	case Float64:
 		if _, ok := o.Default.(float64); !ok {
 			log.Fatalf("%s: %s: %q: Default: %+v: %s",
 				pkg, msg, o.Name, o.Type, errType)
@@ -530,6 +545,27 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) error {
 				pkg, msg, o.Type, errType)
 		}
 		o.data = fs.Int(o.Key, i, o.Help)
+	case Int64:
+		i, ok := o.Default.(int64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		o.data = fs.Int64(o.Key, i, o.Help)
+	case Uint:
+		i, ok := o.Default.(uint)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		o.data = fs.Uint(o.Key, i, o.Help)
+	case Uint64:
+		i, ok := o.Default.(uint64)
+		if !ok {
+			return fmt.Errorf("%s: %s: %s: %w",
+				pkg, msg, o.Type, errType)
+		}
+		o.data = fs.Uint64(o.Key, i, o.Help)
 	case String:
 		s, ok := o.Default.(string)
 		if !ok {
@@ -544,7 +580,7 @@ func (o *Option) toFlagSet(fs *flag.FlagSet) error {
 				pkg, msg, o.Type, errType)
 		}
 		o.data = fs.Bool(o.Key, b, o.Help)
-	case Float:
+	case Float64:
 		f, ok := o.Default.(float64)
 		if !ok {
 			return fmt.Errorf("%s: %s: %s: %w",
@@ -624,7 +660,10 @@ type Type uint64
 const (
 	Nil Type = iota
 	Int
-	Float
+	Int64
+	Uint
+	Uint64
+	Float64
 	String
 	Bool
 	Duration
@@ -643,7 +682,13 @@ func (t Type) String() string {
 		return "nil"
 	case Int:
 		return "int"
-	case Float:
+	case Int64:
+		return "int64"
+	case Uint:
+		return "uint"
+	case Uint64:
+		return "uint64"
+	case Float64:
 		return "float64"
 	case String:
 		return "string"
@@ -654,7 +699,7 @@ func (t Type) String() string {
 	case Var:
 		return "interface{}"
 	default:
-		return "type not listed in Stringer"
+		return "error: unknown type"
 	}
 }
 
