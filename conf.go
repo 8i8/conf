@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -216,12 +217,18 @@ func (c *Config) saveArgs() {
 
 // optionsToFlagSet defines flags within the flagset for all options that
 // have been specified that are within the current working set.
-func (c *Config) optionsToFlagSet() {
+func (c *Config) optionsToFlagSet() error {
+	const fname = "optionsToFlagSet"
 	for k, opt := range c.options {
 		if c.mode.id&opt.Modes > 0 {
-			c.options[k].toFlagSet(c.flagSet)
+			err := c.options[k].toFlagSet(c.flagSet)
+			if err != nil {
+				return fmt.Errorf("%s: key %q: %w",
+					fname, k, err)
+			}
 		}
 	}
+	return nil
 }
 
 // loadOptions loads all of the given options into the option map.
@@ -306,16 +313,17 @@ func (o *Config) setMode(mode string) error {
 	return fmt.Errorf("setMode: mode not found")
 }
 
-// load sets the programs operating mode and loads all required
-// options along with their help data into the relevant flagset.
+// load sets the programs operating mode and loads all required options
+// along with their help data into the relevant flagset.
 func (c *Config) load(mode string) error {
 	const fname = "load"
-
 	if err := c.setMode(mode); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, mode, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.mode.name, flag.ExitOnError)
-	c.optionsToFlagSet()
+	if err := c.optionsToFlagSet(); err != nil {
+		return fmt.Errorf("%s: mode %q: %w", fname, mode, err)
+	}
 	c.flagSet.Usage = func() {
 		fmt.Println(c.help)
 		fmt.Println(c.mode.help)
@@ -370,27 +378,54 @@ type Option struct {
 	Check ckFunc
 }
 
+var errType = errors.New("type error")
+
 // toFlagSet generates a flag within the given flagset for the current
 // option.
-func (o *Option) toFlagSet(fs *flag.FlagSet) {
+func (o *Option) toFlagSet(fs *flag.FlagSet) error {
+	const fname = "toFlagSet"
 	switch o.Type {
 	case Int:
-		o.data = fs.Int(o.Key, o.Default.(int), o.Help)
+		i, ok := o.Default.(int)
+		if !ok {
+			return fmt.Errorf("%s: int: %w", fname, errType)
+		}
+		o.data = fs.Int(o.Key, i, o.Help)
 	case String:
-		o.data = fs.String(o.Key, o.Default.(string), o.Help)
+		s, ok := o.Default.(string)
+		if !ok {
+			return fmt.Errorf("%s: string: %w", fname, errType)
+		}
+		o.data = fs.String(o.Key, s, o.Help)
 	case Bool:
-		o.data = fs.Bool(o.Key, o.Default.(bool), o.Help)
+		b, ok := o.Default.(bool)
+		if !ok {
+			return fmt.Errorf("%s: bool: %w", fname, errType)
+		}
+		o.data = fs.Bool(o.Key, b, o.Help)
 	case Float:
-		o.data = fs.Float64(o.Key, o.Default.(float64), o.Help)
+		f, ok := o.Default.(float64)
+		if !ok {
+			return fmt.Errorf("%s: float64 %w", fname, errType)
+		}
+		o.data = fs.Float64(o.Key, f, o.Help)
 	case Duration:
-		o.data = fs.Duration(
-			o.Key, o.Default.(time.Duration), o.Help)
+		d, ok := o.Default.(time.Duration)
+		if !ok {
+			return fmt.Errorf("%s: time.Duration %w",
+				fname, errType)
+		}
+		o.data = fs.Duration(o.Key, d, o.Help)
 	case Var:
+		if o.Value == nil {
+			return fmt.Errorf("%s: Value %w", fname, errType)
+		}
 		fs.Var(o.Value, o.Key, o.Help)
 	default:
 		log.Fatalf("conf: internal error: flag type not "+
 			"recognised (%q, %s)", o.Name, o.Type)
 	}
+	return nil
 }
 
 // space sets a space after the flag name in the help output, aligning the
@@ -462,8 +497,8 @@ func ValueInt(key string) (int, error) {
 			pkg, fname, key)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: nil pointer",
-			pkg, fname)
+		return 0, fmt.Errorf("%s: %s: %q: nil pointer",
+			pkg, fname, key)
 	}
 	return *o.data.(*int), nil
 }
