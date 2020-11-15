@@ -1,27 +1,28 @@
 /*
-package conf helps to organise and maintain package options and flags including
-program operating modes that may be set from the command line.
+package conf helps to organise and maintain package options and flags
+including program operating modes that may be set from the command line.
 
 MODES operating modes can be created by using the conf.Mode function, the
-function returns a bit flag with the appropriate bit set to enable the mode
-when creating an option.
+function returns a bit flag with the appropriate bit set to enable the
+mode when creating an option.
 
 	newmode = conf.Mode("name", helpData)
 
-The newmode flag is then used when defining an option in the Modes field, the
-option will appear in all of the modes that are specified in this declaration.
+The newmode flag is then used when defining an option in the Modes field,
+the option will appear in all of the modes that are specified in this
+declaration.
 
 conf.Option{
 	Modes: (newmode | mode1 | mode2)
 }
 
-OPTIONS contain the data required to create a flag when included within the
-current flag set, however they may also be set from configuration files or
-other methods, an option also contains a user definable function that may be
-set to verify the data when it is set.
+OPTIONS contain the data required to create a flag when included within
+the current flag set, however they may also be set from configuration
+files or other methods, an option also contains a user definable function
+that may be set to verify the data when it is set.
 
-The programs current running mode can be returned at any time by calling the
-GetMode() function.
+The programs current running mode can be returned at any time by calling
+the GetMode() function.
 
 	mode := GetMode()
 
@@ -36,7 +37,7 @@ import (
 )
 
 var (
-	def = conf.Mode("def", helpDef)
+	def = conf.Setup(helpBase, helpDef)
 	one = conf.Mode("one", helpOne)
 	two = conf.Mode("two", helpTwo)
 )
@@ -87,7 +88,6 @@ var opts = []conf.Option{
 }
 
 func main() {
-	conf.Help(helpBase)
 	conf.Options(opts...)
 	if err := conf.Parse(); err != nil {
 		fmt.Println(err)
@@ -118,11 +118,11 @@ MODES
 
 	one     one does all things in the oneiest way.
 
-	two     two, despite appearances is second to none, doing things in an
-	        agreeable two like fashion.
+	two     two, despite appearances is second to none, doing things
+		in an agreeable two like fashion.
 
-	Further detatils of the use of each mode can be found by running the
-	following command.
+	Further detatils of the use of each mode can be found by running
+	the following command.
 
 	conf [mode] -help  or conf [mode] -h
 
@@ -142,11 +142,11 @@ FLAGS`
 //  Flags
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var intie = `This is the very default value in the most simple mode, to test
-if another way of writing the messages might be better.`
+var intie = `This is the very default value in the most simple mode, to
+test if another way of writing the messages might be better.`
 
-var thing = `This is the default string thing, so as to best exemplify
-the use of this package in its current state I thought it
-best to write something very wordy here.`
+var thing = `This is the default string thing, so as to best exemplify the
+use of this package in its current state; I thought it best to write
+something very wordy here.`
 */
 package conf

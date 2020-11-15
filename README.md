@@ -126,7 +126,7 @@ MODES
 	        agreeable two like fashion.
 
 	Further detatils of the use of each mode can be found by running the
-	following command.
+	commands:
 
 	conf [mode] -help  or conf [mode] -h
 
@@ -146,12 +146,13 @@ FLAGS`
 //  Flags
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var intie = `This is the very default value in the most simple mode, to test
-if another way of writing the messages might be better.`
+var intie = `This is a very default value in the most simplest of
+modes, such as to test if another way of writing the
+messages might be better.`
 
-var thing = `This is the default string thing, so as to best exemplify
-the use of this package in its current state I thought it
-best to write something very wordy here.`
+var thing = `This is the default string thing, best exemplify amply in
+the use of this package, given its current state; Here I
+also thought it best to write something very wordy.`
 ```
 
 GNU Lesser General Public License v3 (LGPL-3.0)
