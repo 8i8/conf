@@ -19,8 +19,6 @@ var (
 	// config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
-	// list contains the modes created by the user.
-	list modelist
 	// index contains the value of the previously created bitflag used
 	// to maintain an incremental value that is agmented every time
 	// that a new program mode is created.
@@ -43,7 +41,7 @@ func Mode(name, help string) (bitflag int) {
 		log.Fatal("index overflow, to many program modes")
 	}
 	m := mode{id: index, name: name, help: help}
-	list = append(list, m)
+	c.list = append(c.list, m)
 	bitflag = index
 	index = index << 1
 	return
@@ -67,24 +65,22 @@ func Options(opts ...Option) {
 func Parse() error {
 	const fname = "Parse"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if list.is(os.Args[1]) {
+		// Use specified operating mode.
+		if c.list.is(os.Args[1]) {
 			if err := c.load(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
-			// Check all set verifications against parsed data.
-			if err := c.checkOptions(); err != nil {
-				return fmt.Errorf("%s: %w", fname, err)
-			}
-			return nil
+			goto checkFn
 		}
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
-	// Load the default arguments.
+	// Load the default mode.
 	if err := c.load("default"); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
-	// Check all set verifications against parsed data.
-	if err := c.checkOptions(); err != nil {
+checkFn:
+	// Run all user given check functions.
+	if err := c.runCheckFn(); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	return nil
@@ -180,7 +176,7 @@ func (c *Config) Parse() error {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
 			// Check all set verifications against parsed data.
-			if err := c.checkOptions(); err != nil {
+			if err := c.runCheckFn(); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
 			return nil
@@ -192,7 +188,7 @@ func (c *Config) Parse() error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Check all set verifications against parsed data.
-	if err := c.checkOptions(); err != nil {
+	if err := c.runCheckFn(); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	return nil
@@ -233,6 +229,7 @@ func (c *Config) optionsToFlagSet() error {
 
 // loadOptions loads all of the given options into the option map.
 func (c *Config) loadOptions(opts ...Option) {
+	const fname = "Option"
 	c.options = make(map[string]*Option)
 	c.names = make(map[string]bool)
 	c.keys = make(map[string]bool)
@@ -240,72 +237,136 @@ func (c *Config) loadOptions(opts ...Option) {
 		c.names = make(map[string]bool)
 	}
 	for i, opt := range opts {
-		c.checkTypeDefault(&opt)
-		if c.names[opt.Name] {
-			log.Fatal("conf: loadOptions: %q: duplicate "+
-				"option name", opt.Name)
-		}
-		if c.keys[opt.Key] {
-			log.Fatal("conf: loadOptions: %q: duplicate "+
-				"option key", opt.Key)
-		}
+		c.checkOption(opt)
 		c.options[opt.Name] = &opts[i]
 		c.names[opt.Name] = true
 		c.keys[opt.Key] = true
 	}
 }
 
-// checkTypeDefault checks that the options default value has the correct
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Pre Parse Option Checks
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// checkOption checks the user supplied data within an option including
+// duplicage name and key values.
+func (c Config) checkOption(o Option) {
+	c.checkName(o)
+	c.checkType(o)
+	c.checkKey(o)
+	c.checkDefault(o)
+	c.checkMode(o)
+}
+
+var (
+	errType      = errors.New("type error")
+	errTypeNil   = errors.New("the type is not defined")
+	errNoValue   = errors.New("value required")
+	errDuplicate = errors.New("duplicate value")
+	errNotInSet  = errors.New(
+		"specified mode not within the current set")
+)
+
+// chekcName checks that the name is not empty and that it is not a
+// duplicate value.
+func (c *Config) checkName(o Option) {
+	const msg = "Option: Name"
+	if len(o.Name) == 0 {
+		log.Fatalf("%s: %s: %s", pkg, msg, errNoValue)
+	}
+	if c.names[o.Name] {
+		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
+			errDuplicate)
+	}
+}
+
+// chekcName checks that the key is not empty and that it is not a
+// duplicate value.
+func (c *Config) checkKey(o Option) {
+	const msg = "Option: Key"
+	if c.keys[o.Key] {
+		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Key,
+			errDuplicate)
+	}
+}
+
+// checkType checks that the option has a type set.
+func (c *Config) checkType(o Option) {
+	const msg = "Option: Type"
+	if o.Type == Nil {
+		log.Fatalf("%s: %s: %q: %+v: %s",
+			pkg, msg, o.Name, o.Type, errTypeNil)
+	}
+}
+
+// checkDefault checks that the options default value has the correct
 // type.
-func (c *Config) checkTypeDefault(o *Option) {
-	const fname = "Option: Default"
+func (c *Config) checkDefault(o Option) {
+	const msg = "Option: Default"
 	switch o.Type {
 	case Int:
 		if _, ok := o.Default.(int); !ok {
-			log.Fatalf("%s: %s: %q: %q: %s",
-				pkg, fname, o.Name, o.Type, errType)
+			log.Fatalf("%s: %s: %q: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
 		}
 	case String:
 		if _, ok := o.Default.(string); !ok {
-			log.Fatalf("%s: %s: %q: %q: %s",
-				pkg, fname, o.Name, o.Type, errType)
+			log.Fatalf("%s: %s: %q: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Bool:
 		if _, ok := o.Default.(bool); !ok {
-			log.Fatalf("%s: %s: %q: %q: %s",
-				pkg, fname, o.Name, o.Type, errType)
+			log.Fatalf("%s: %s: %q: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Float:
 		if _, ok := o.Default.(float64); !ok {
-			log.Fatalf("%s: %s: %q: %q: %s",
-				pkg, fname, o.Name, o.Type, errType)
+			log.Fatalf("%s: %s: %q: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Duration:
 		if _, ok := o.Default.(time.Duration); !ok {
-			log.Fatalf("%s: %s: %q: %q: %s",
-				pkg, fname, o.Name, o.Type, errType)
+			log.Fatalf("%s: %s: %q: %+v: %s",
+				pkg, msg, o.Name, o.Type, errType)
 		}
 	case Var:
 		// The default is usualy nil but could be anything as var
 		// represents and interface.
+	case Nil:
+		log.Fatalf("%s: %s: %q: %+v: %s",
+			pkg, msg, o.Name, o.Type, errTypeNil)
 	default:
-		log.Fatalf("%s: %s: %q: %q: %s",
-			pkg, fname, o.Name, o.Type, errType)
+		log.Fatalf("%s: %s: %q: %+v: %s",
+			pkg, msg, o.Name, o.Type, errType)
 	}
 }
 
-// checkOptions runs all user given check functions for the option set,
+// checkMode verifies that an option has a mode set and if it does that
+// that mode is contained within the existing sets.
+func (c *Config) checkMode(o Option) {
+	const msg = "Option: Modes"
+	if !c.list.flagIs(o.Modes) {
+		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
+			errNotInSet)
+	}
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Post Parse Option Checks
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// runCheckFn runs all user given check functions for the option set,
 // called after having parsed all option data.
-func (c *Config) checkOptions() error {
-	const fname = "checkOptions"
+func (c *Config) runCheckFn() error {
+	const msg = "Option: Check"
 	if c.options == nil {
-		return fmt.Errorf("%s: %s: option set empty", pkg, fname)
+		return fmt.Errorf("%s: %s: option set empty", pkg, msg)
 	}
 	var err error
 	for _, o := range c.options {
 		if o.Check != nil {
 			if o.data, err = o.Check(o.data); err != nil {
-				fmt.Println(err)
+				fmt.Printf("%s, %s, %s", pkg, msg, err)
 				os.Exit(0)
 			}
 		}
@@ -339,12 +400,29 @@ func (l modelist) is(mode string) bool {
 	return false
 }
 
+// flagIs returns true if a bitset is entirely contained in the mode list
+// and false if it is not.
+func (l modelist) flagIs(bitflag int) bool {
+	if bitflag == 0 {
+		return false
+	}
+	for _, f := range l {
+		if bitflag&f.id > 0 {
+			bitflag = bitflag ^ f.id
+		}
+	}
+	if bitflag > 0 {
+		return false
+	}
+	return true
+}
+
 // setMode defines the programs current running mode.
 func (o *Config) setMode(mode string) error {
 	if mode == "default" {
-		o.mode = list[0]
+		o.mode = c.list[0]
 	}
-	for _, m := range list {
+	for _, m := range c.list {
 		if strings.Compare(mode, m.name) == 0 {
 			o.mode = m
 			return nil
@@ -406,7 +484,7 @@ type Option struct {
 	Key string
 	// Help string.
 	Help string
-	// Data.
+	// data.
 	data interface{}
 	// Default data.
 	Default interface{}
@@ -417,8 +495,6 @@ type Option struct {
 	// Function to verify option data.
 	Check ckFunc
 }
-
-var errType = errors.New("type error")
 
 // toFlagSet generates a flag within the given flagset for the current
 // option.
