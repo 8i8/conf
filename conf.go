@@ -240,6 +240,7 @@ func (c *Config) loadOptions(opts ...Option) {
 		c.names = make(map[string]bool)
 	}
 	for i, opt := range opts {
+		c.checkTypeDefault(&opt)
 		if c.names[opt.Name] {
 			log.Fatal("conf: loadOptions: %q: duplicate "+
 				"option name", opt.Name)
@@ -251,6 +252,45 @@ func (c *Config) loadOptions(opts ...Option) {
 		c.options[opt.Name] = &opts[i]
 		c.names[opt.Name] = true
 		c.keys[opt.Key] = true
+	}
+}
+
+// checkTypeDefault checks that the options default value has the correct
+// type.
+func (c *Config) checkTypeDefault(o *Option) {
+	const fname = "Option: Default"
+	switch o.Type {
+	case Int:
+		if _, ok := o.Default.(int); !ok {
+			log.Fatalf("%s: %s: %q: %q: %s",
+				pkg, fname, o.Name, o.Type, errType)
+		}
+	case String:
+		if _, ok := o.Default.(string); !ok {
+			log.Fatalf("%s: %s: %q: %q: %s",
+				pkg, fname, o.Name, o.Type, errType)
+		}
+	case Bool:
+		if _, ok := o.Default.(bool); !ok {
+			log.Fatalf("%s: %s: %q: %q: %s",
+				pkg, fname, o.Name, o.Type, errType)
+		}
+	case Float:
+		if _, ok := o.Default.(float64); !ok {
+			log.Fatalf("%s: %s: %q: %q: %s",
+				pkg, fname, o.Name, o.Type, errType)
+		}
+	case Duration:
+		if _, ok := o.Default.(time.Duration); !ok {
+			log.Fatalf("%s: %s: %q: %q: %s",
+				pkg, fname, o.Name, o.Type, errType)
+		}
+	case Var:
+		// The default is usualy nil but could be anything as var
+		// represents and interface.
+	default:
+		log.Fatalf("%s: %s: %q: %q: %s",
+			pkg, fname, o.Name, o.Type, errType)
 	}
 }
 
@@ -472,18 +512,44 @@ const (
 	Var
 )
 
+var (
+	errNoData = errors.New("no data")
+	errNoKey  = errors.New("key not found")
+)
+
+func (t Type) String() string {
+	switch t {
+	case Nil:
+		return "nil"
+	case Int:
+		return "int"
+	case Float:
+		return "float64"
+	case String:
+		return "string"
+	case Bool:
+		return "bool"
+	case Duration:
+		return "time.Duration"
+	case Var:
+		return "interface{}"
+	default:
+		return "type not listed in Stringer"
+	}
+}
+
 // Value returns the content of an option flag its type and also a boolean
 // that expresses whether or not the flag has been found.
 func Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
 	o, ok := c.options[key]
 	if !ok {
-		return nil, Nil, fmt.Errorf("%s: %s: %q key not found",
-			pkg, fname, key)
+		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return nil, Nil, fmt.Errorf("%s: %s: nil pointer",
-			pkg, fname)
+		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
 	}
 	return o.data, o.Type, nil
 }
@@ -493,12 +559,12 @@ func ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q key not found",
-			pkg, fname, key)
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: nil pointer",
-			pkg, fname, key)
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*int), nil
 }
@@ -508,12 +574,12 @@ func ValueFloat(key string) (float64, error) {
 	const fname = "ValueFloat"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q key not found",
-			pkg, fname, key)
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: nil pointer",
-			pkg, fname)
+		return 0, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*float64), nil
 }
@@ -523,12 +589,12 @@ func ValueString(key string) (string, error) {
 	const fname = "ValueString"
 	o, ok := c.options[key]
 	if !ok {
-		return "", fmt.Errorf("%s: %s: %q key not found",
-			pkg, fname, key)
+		return "", fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return "", fmt.Errorf("%s: %s: nil pointer",
-			pkg, fname)
+		return "", fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*string), nil
 }
@@ -538,12 +604,12 @@ func ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
 	o, ok := c.options[key]
 	if !ok {
-		return false, fmt.Errorf("%s: %s: %q key not found",
-			pkg, fname, key)
+		return false, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return false, fmt.Errorf("%s: %s: nil pointer",
-			pkg, fname)
+		return false, fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*bool), nil
 }
@@ -553,11 +619,12 @@ func ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
 	o, ok := c.options[key]
 	if !ok {
-		return time.Duration(0), fmt.Errorf("%s: %s: %q "+
-			"key not found", pkg, fname, key)
+		return time.Duration(0), fmt.Errorf("%s: %s: %q: %w",
+			pkg, fname, key, errNoKey)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: nil pointer", fname)
+		return 0, fmt.Errorf("%s: %s: %w",
+			pkg, fname, errNoData)
 	}
 	return *o.data.(*time.Duration), nil
 }
