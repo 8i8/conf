@@ -19,6 +19,11 @@ var (
 	// Config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
+	// test is set by the test package to stop the flagset from being
+	// parsed when the Parse is called, the test code itself when
+	// called calls flags.Parse, as such it is not necessary to call it
+	// again.
+	test bool
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -158,8 +163,10 @@ func (c *Config) Parse() error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 parse:
-	if err := c.parse(offset); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if !test {
+		if err := c.parse(offset); err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
+		}
 	}
 	// Check all set verifications against parsed data.
 	if err := c.runCheckFn(); err != nil {
@@ -422,14 +429,14 @@ func (c Config) flagIs(bitfield int) bool {
 }
 
 // setMode defines the programs current running mode.
-func (o *Config) setMode(mode string) error {
+func (c *Config) setMode(mode string) error {
 	const fname = "setMode"
 	if mode == "default" {
-		o.mode = c.list[0]
+		c.mode = c.list[0]
 	}
 	for _, m := range c.list {
 		if strings.Compare(mode, m.name) == 0 {
-			o.mode = m
+			c.mode = m
 			return nil
 		}
 	}
@@ -800,7 +807,7 @@ func (t Type) String() string {
 
 // Value returns the content of an option flag its type and also a boolean
 // that expresses whether or not the flag has been found.
-func Value(key string) (interface{}, Type, error) {
+func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
 	o, ok := c.options[key]
 	if !ok {
@@ -814,8 +821,14 @@ func Value(key string) (interface{}, Type, error) {
 	return o.data, o.Type, nil
 }
 
+// Value returns the content of an option flag its type and also a boolean
+// that expresses whether or not the flag has been found.
+func Value(key string) (interface{}, Type, error) {
+	return c.Value(key)
+}
+
 // ValueInt returns the value of an int option.
-func ValueInt(key string) (int, error) {
+func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
 	o, ok := c.options[key]
 	if !ok {
@@ -829,8 +842,13 @@ func ValueInt(key string) (int, error) {
 	return *o.data.(*int), nil
 }
 
+// ValueInt returns the value of an int option.
+func ValueInt(key string) (int, error) {
+	return c.ValueInt(key)
+}
+
 // ValueInt64 returns the value of an int64 option.
-func ValueInt64(key string) (int64, error) {
+func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
 	o, ok := c.options[key]
 	if !ok {
@@ -844,8 +862,13 @@ func ValueInt64(key string) (int64, error) {
 	return *o.data.(*int64), nil
 }
 
+// ValueInt64 returns the value of an int64 option.
+func ValueInt64(key string) (int64, error) {
+	return c.ValueInt64(key)
+}
+
 // ValueUint returns the value of an uint option.
-func ValueUint(key string) (uint, error) {
+func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
 	o, ok := c.options[key]
 	if !ok {
@@ -859,8 +882,13 @@ func ValueUint(key string) (uint, error) {
 	return *o.data.(*uint), nil
 }
 
+// ValueUint returns the value of an uint option.
+func ValueUint(key string) (uint, error) {
+	return c.ValueUint(key)
+}
+
 // ValueUint64 returns the value of an uint64 option.
-func ValueUint64(key string) (uint64, error) {
+func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
 	o, ok := c.options[key]
 	if !ok {
@@ -874,8 +902,13 @@ func ValueUint64(key string) (uint64, error) {
 	return *o.data.(*uint64), nil
 }
 
+// ValueUint64 returns the value of an uint64 option.
+func ValueUint64(key string) (uint64, error) {
+	return c.ValueUint64(key)
+}
+
 // ValueFloat64 returns the value a float64 options.
-func ValueFloat64(key string) (float64, error) {
+func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
 	o, ok := c.options[key]
 	if !ok {
@@ -889,8 +922,13 @@ func ValueFloat64(key string) (float64, error) {
 	return *o.data.(*float64), nil
 }
 
+// ValueFloat64 returns the value a float64 options.
+func ValueFloat64(key string) (float64, error) {
+	return c.ValueFloat64(key)
+}
+
 // ValueString returns the value of a string options.
-func ValueString(key string) (string, error) {
+func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
 	o, ok := c.options[key]
 	if !ok {
@@ -904,8 +942,13 @@ func ValueString(key string) (string, error) {
 	return *o.data.(*string), nil
 }
 
+// ValueString returns the value of a string options.
+func ValueString(key string) (string, error) {
+	return c.ValueString(key)
+}
+
 // ValueBool returns the value of a boolean options.
-func ValueBool(key string) (bool, error) {
+func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
 	o, ok := c.options[key]
 	if !ok {
@@ -919,8 +962,13 @@ func ValueBool(key string) (bool, error) {
 	return *o.data.(*bool), nil
 }
 
+// ValueBool returns the value of a boolean options.
+func ValueBool(key string) (bool, error) {
+	return c.ValueBool(key)
+}
+
 // ValueDuration returs the value of a time.Duration option.
-func ValueDuration(key string) (time.Duration, error) {
+func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
 	o, ok := c.options[key]
 	if !ok {
@@ -932,4 +980,9 @@ func ValueDuration(key string) (time.Duration, error) {
 			pkg, fname, errNoData)
 	}
 	return *o.data.(*time.Duration), nil
+}
+
+// ValueDuration returs the value of a time.Duration option.
+func ValueDuration(key string) (time.Duration, error) {
+	return c.ValueDuration(key)
 }

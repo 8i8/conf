@@ -2,20 +2,30 @@ package conf
 
 import "testing"
 
-// func TestConfig(t *testing.T) {
-// 	c := Config{}
-// 	mode := c.Setup("Usage Heading", "Mode Heading")
-// 	opts := []Option{
-// 		{Name: "one",
-// 			Type:    Int,
-// 			Key:     "i",
-// 			Help:    "like this",
-// 			Default: 2,
-// 			Modes:   mode,
-// 		},
-// 	}
-// 	c.Options(opts...)
-// }
+func TestConfig(t *testing.T) {
+	const fname = "TestConfig"
+	test = true
+	c := Config{}
+	mode := c.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:    Int,
+			Key:     "i",
+			Help:    "like this",
+			Default: 2,
+			Modes:   mode,
+		},
+	}
+	c.Options(opts...)
+	c.Parse()
+	i, err := c.ValueInt("one")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 2 {
+		t.Errorf("%s: recieved %d expected 2", fname, i)
+	}
+}
 
 func TestFlagIs(t *testing.T) {
 	const fname = "TestFlagIs"
