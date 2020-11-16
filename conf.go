@@ -19,10 +19,6 @@ var (
 	// Config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
-	// index contains the value of the previously created bitflag used
-	// to maintain an incremental value that is augmented every time
-	// that a new program mode is created.
-	index = 1
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -34,21 +30,14 @@ var (
 // for use in the creation of Options, consequent calls to c.Mode will
 // create and return further more flags.
 func Setup(heading string, subheading string) (mode int) {
-	c.help = heading
-	mode = Mode("default", subheading)
+	mode = c.Setup(heading, subheading)
 	return
 }
 
 // Mode creates a new mode, returning the bitflag required to set that
 // mode.
 func Mode(name, help string) (bitflag int) {
-	if index >= limit {
-		log.Fatal("index overflow, to many program modes")
-	}
-	m := mode{id: index, name: name, help: help}
-	c.list = append(c.list, m)
-	bitflag = index
-	index = index << 1
+	bitflag = c.Mode(name, help)
 	return
 }
 
@@ -59,35 +48,13 @@ func GetMode() string {
 
 // Options initialises the programs options.
 func Options(opts ...Option) {
-	c.saveArgs()
-	c.loadOptions(opts...)
-	//c.loadConfig()
+	c.Options(opts...)
 }
 
 // Parse sets the running mode from the command line arguments and then
 // parses the flagset.
 func Parse() error {
-	const fname = "Parse"
-	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		// Use specified operating mode.
-		if c.list.is(os.Args[1]) {
-			if err := c.load(os.Args[1]); err != nil {
-				return fmt.Errorf("%s: %w", fname, err)
-			}
-			goto checkFn
-		}
-		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
-	}
-	// Load the default mode.
-	if err := c.load("default"); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
-checkFn:
-	// Run all user given check functions.
-	if err := c.runCheckFn(); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
-	return nil
+	return c.Parse()
 }
 
 // ArgList returns the full command line argument list as a string as it
@@ -143,7 +110,7 @@ func (c *Config) Mode(name, help string) (bitflag int) {
 	if c.index >= limit {
 		log.Fatal("index overflow, to many program modes")
 	}
-	m := mode{id: index, name: name, help: help}
+	m := mode{id: c.index, name: name, help: help}
 	c.list = append(c.list, m)
 	bitflag = c.index
 	c.index = c.index << 1
@@ -171,21 +138,23 @@ func (c *Config) Options(opts ...Option) {
 // parses the flagset.
 func (c *Config) Parse() error {
 	const fname = "Parse"
+	offset := 1
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if c.list.is(os.Args[1]) {
 			if err := c.load(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %w", fname, err)
 			}
-			// Check all set verifications against parsed data.
-			if err := c.runCheckFn(); err != nil {
-				return fmt.Errorf("%s: %w", fname, err)
-			}
-			return nil
+			offset++ // We have used another argument.
+			goto parse
 		}
 		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
 	}
 	// If no other mode has been specified, load the default.
 	if err := c.load("default"); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+parse:
+	if err := c.parse(offset); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Check all set verifications against parsed data.
@@ -484,11 +453,13 @@ func (c *Config) load(mode string) error {
 		fmt.Println(c.mode.help)
 		c.flagSet.VisitAll(flagHelpMsg)
 	}
-	// Offset the cmd line arguments and parse the remaining flags.
-	offset := 2
-	if mode == "default" {
-		offset-- // one fewer args on the command line.
-	}
+	return nil
+}
+
+// parse parses the flagset using the given offest to counter the
+// arguments already used.
+func (c *Config) parse(offset int) error {
+	const fname = "parse"
 	err := c.flagSet.Parse(os.Args[offset:])
 	if err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
