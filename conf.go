@@ -107,6 +107,10 @@ func (c *Config) Setup(heading string, subheading string) (mode int) {
 // Mode creates a new mode, returning the bitflag required to set that
 // mode.
 func (c *Config) Mode(name, help string) (bitflag int) {
+	// Make sure that we start at 1.
+	if c.index == 0 {
+		c.index++
+	}
 	if c.index >= limit {
 		log.Fatal("index overflow, to many program modes")
 	}
@@ -344,11 +348,11 @@ func (c *Config) checkDefault(o Option) {
 	}
 }
 
-// checkMode verifies that an option has a mode set and if it does that
-// that mode is contained within the existing sets.
+// checkMode verifies that an option has modes set and that those modes
+// are contained within the the current mode set.
 func (c Config) checkMode(o Option) {
 	const msg = "Option"
-	if !c.list.flagIs(o.Modes) {
+	if !c.flagIs(o.Modes) {
 		log.Fatalf("%s: %s: %q: Modes: %s", pkg, msg, o.Name,
 			errNotInSet)
 	}
@@ -405,21 +409,16 @@ func (l modelist) is(mode string) bool {
 	return false
 }
 
-// flagIs returns true if a bitfield is entirely contained in the mode
-// list full set, returning false if it is not.
-func (l modelist) flagIs(bitflag int) bool {
-	if bitflag == 0 {
+// flagIs returns true if a bitfield is entirely contained within the
+// configurations full set of modes, returning false if it is not.
+func (c Config) flagIs(bitfield int) bool {
+	if bitfield == 0 {
 		return false
 	}
-	for _, f := range l {
-		if bitflag&f.id > 0 {
-			bitflag = bitflag ^ f.id
-		}
+	if bitfield == (c.index-1)&bitfield {
+		return true
 	}
-	if bitflag > 0 {
-		return false
-	}
-	return true
+	return false
 }
 
 // setMode defines the programs current running mode.

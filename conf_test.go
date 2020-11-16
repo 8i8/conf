@@ -19,30 +19,38 @@ import "testing"
 
 func TestFlagIs(t *testing.T) {
 	const fname = "TestFlagIs"
-	v := c.list.flagIs(0)
+	v := c.flagIs(0)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
-	m1 := Mode("one", "help1")
-	v = c.list.flagIs(m1)
+	m1 := c.Mode("one", "help1")
+	v = c.flagIs(m1)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	m2 := Mode("two", "help2")
-	v = c.list.flagIs(m2)
+	m2 := c.Mode("two", "help2")
+	v = c.flagIs(m2)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	m3 := Mode("three", "help3")
-	v = c.list.flagIs(m3)
+	m3 := c.Mode("three", "help3")
+	v = c.flagIs(m3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.list.flagIs(m1 | m3)
+	v = c.flagIs(m1 | m3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.list.flagIs(m3 << 1)
+	v = c.flagIs(m1 | m2 | m3)
+	if !v {
+		t.Errorf("%s: recieved false expected true", fname)
+	}
+	v = c.flagIs(m3 << 1)
+	if v {
+		t.Errorf("%s: recieved true expected false", fname)
+	}
+	v = c.flagIs(64)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
