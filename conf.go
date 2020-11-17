@@ -19,10 +19,11 @@ var (
 	// Config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
-	// test is set by the test package to stop the flagset from being
-	// parsed when the Parse is called, the test code itself when
-	// called calls flags.Parse, as such it is not necessary to call it
-	// again.
+	// test is used by the test package to stop the flagset from being
+	// parsed when the function Parse is called, the test code itself
+	// when called calls flags.Parse, as such it is not necessary to
+	// call it again. However the function contains other
+	// functionality that we need to run.
 	test bool
 )
 
@@ -31,7 +32,7 @@ var (
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // Setup sets the basis for the programs help output, the 'help header'
-// and help 'Sub header', it also returns the bitflag for the modes field
+// and help 'Sub header', it also returns the bitfield for the modes field
 // for use in the creation of Options, consequent calls to c.Mode will
 // create and return further more flags.
 func Setup(heading string, subheading string) (mode int) {
@@ -39,10 +40,10 @@ func Setup(heading string, subheading string) (mode int) {
 	return
 }
 
-// Mode creates a new mode, returning the bitflag required to set that
+// Mode creates a new mode, returning the bitfield required to set that
 // mode.
-func Mode(name, help string) (bitflag int) {
-	bitflag = c.Mode(name, help)
+func Mode(name, help string) (bitfield int) {
+	bitfield = c.Mode(name, help)
 	return
 }
 
@@ -52,8 +53,8 @@ func GetMode() string {
 }
 
 // Options initialises the programs options.
-func Options(opts ...Option) {
-	c.Options(opts...)
+func Options(opts ...Option) error {
+	return c.Options(opts...)
 }
 
 // Parse sets the running mode from the command line arguments and then
@@ -79,7 +80,7 @@ type Config struct {
 	input string
 	// list is a list of the possible configuration submodes.
 	list modelist
-	// index holds the next value to use as a bitflag for the next
+	// index holds the next value to use as a bitfield for the next
 	// modelist mode.
 	index int
 	// Mode is the running mode of the program, this package
@@ -97,10 +98,13 @@ type Config struct {
 	// option has been parsed, it also contains a function by which
 	// the value that has been set may be checked.
 	options map[string]*Option
+	// Err stores any error triggered on parsing the flagset, it is
+	// then return to the used when any flag is accesssed.
+	Err []error
 }
 
 // Setup sets the basis for the programs help output, the 'help header'
-// and help 'Sub header', it also returns the bitflag for the modes field
+// and help 'Sub header', it also returns the bitfield for the modes field
 // for use in the creation of Options, consequent calls to c.Mode will
 // create and return further more flags.
 func (c *Config) Setup(heading string, subheading string) (mode int) {
@@ -109,19 +113,19 @@ func (c *Config) Setup(heading string, subheading string) (mode int) {
 	return
 }
 
-// Mode creates a new mode, returning the bitflag required to set that
+// Mode creates a new mode, returning the bitfield required to set that
 // mode.
-func (c *Config) Mode(name, help string) (bitflag int) {
+func (c *Config) Mode(name, help string) (bitfield int) {
 	// Make sure that we start at 1.
 	if c.index == 0 {
 		c.index++
 	}
 	if c.index >= limit {
-		log.Fatal("index overflow, to many program modes")
+		log.Fatal("index overflow, too many program modes")
 	}
 	m := mode{id: c.index, name: name, help: help}
 	c.list = append(c.list, m)
-	bitflag = c.index
+	bitfield = c.index
 	c.index = c.index << 1
 	return
 }
@@ -132,15 +136,21 @@ func (c Config) GetMode() string {
 }
 
 // Options initialises the programs options.
-func (c *Config) Options(opts ...Option) {
+func (c *Config) Options(opts ...Option) error {
+	const fname = "Options"
 	// Record the original input string.
-	c.saveArgs()
+	if err := c.saveArgs(); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
 	// Generate flags and help data.
-	c.loadOptions(opts...)
+	if err := c.loadOptions(opts...); err != nil {
+		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
+	}
 	// TODO write a standard config file addition that records config
 	// when in mode 'config' and that reads in any settings that have
 	// been previously recorded or written.
 	//c.loadConfig()
+	return nil
 }
 
 // Parse sets the running mode from the command line arguments and then
@@ -151,7 +161,8 @@ func (c *Config) Parse() error {
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if c.list.is(os.Args[1]) {
 			if err := c.load(os.Args[1]); err != nil {
-				return fmt.Errorf("%s: %w", fname, err)
+				return fmt.Errorf("%s: %s: %w", pkg,
+					fname, err)
 			}
 			offset++ // We have used another argument.
 			goto parse
@@ -160,17 +171,17 @@ func (c *Config) Parse() error {
 	}
 	// If no other mode has been specified, load the default.
 	if err := c.load("default"); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
 parse:
 	if !test {
 		if err := c.parse(offset); err != nil {
-			return fmt.Errorf("%s: %w", fname, err)
+			return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 		}
 	}
 	// Check all set verifications against parsed data.
 	if err := c.runCheckFn(); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
 	return nil
 }
@@ -182,187 +193,226 @@ func (c Config) ArgList() string {
 }
 
 // saveArgs records the input arguments as a string for display output.
-func (c *Config) saveArgs() {
+func (c *Config) saveArgs() error {
+	const fname = "saveArgs"
 	var str strings.Builder
-	str.WriteString(os.Args[0])
-	for _, arg := range os.Args[1:] {
-		str.WriteByte(' ')
-		str.WriteString(arg)
+	_, err := str.WriteString(os.Args[0])
+	if err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
 	}
-	c.input = str.String()
-}
-
-// optionsToFlagSet defines flags within the flagset for all options that
-// have been specified that are within the current working set.
-func (c *Config) optionsToFlagSet() error {
-	const fname = "optionsToFlagSet"
-	for k, opt := range c.options {
-		if c.mode.id&opt.Modes > 0 {
-			err := c.options[k].toFlagSet(c.flagSet)
-			if err != nil {
-				return fmt.Errorf("%s: key %q: %w",
-					fname, k, err)
-			}
+	for _, arg := range os.Args[1:] {
+		if err := str.WriteByte(' '); err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
+		}
+		_, err = str.WriteString(arg)
+		if err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
 		}
 	}
+	c.input = str.String()
 	return nil
 }
 
-// loadOptions loads all of the given options into the option map.
-func (c *Config) loadOptions(opts ...Option) {
-	const fname = "Option"
+// optionsToFsErrAccum defines flags within the flagset for all options that
+// have been specified that are within the current working set. Errors are
+// accumulated into the c.Err field.
+func (c *Config) optionsToFsErrAccum() {
+	const msg = "Option"
+	for key, value := range c.options {
+		if c.mode.id&value.Modes > 0 {
+			err := c.options[key].toFlagSet(c.flagSet)
+			if err != nil {
+				c.Err = append(c.Err,
+					fmt.Errorf("%s: %q: %w",
+						msg, key, err))
+			}
+		}
+	}
+}
+
+// loadOptions loads all of the given options into the option map,
+// running tests on each as they are loaded, errors are accumulated into
+// the c.Err field.
+func (c *Config) loadOptions(opts ...Option) error {
+	const fname = "loadOptions"
 	c.options = make(map[string]*Option)
 	if c.names == nil {
 		c.names = make(map[string]bool)
 	}
+	// Make a duplicate verification map of the keys within the
+	// operation mode struct, keys may not be duplicated within one
+	// program operating mode, however the same key may be used again
+	// for different options in the context of a different operating
+	// modes.
 	for i := range c.list {
 		if c.list[i].keys == nil {
 			c.list[i].keys = make(map[string]bool)
 		}
 	}
 	for i, opt := range opts {
-		c.checkOption(opt)
+		c.checkOptionErrAccum(opt)
 		c.options[opt.Name] = &opts[i]
 	}
+	return c.Error("checkOptionErrAccum", errOption)
+}
+
+// Error returns an error if any have occurred, concatenated into one
+// string and wrapping the given error.
+func (c *Config) Error(msg string, err error) error {
+	if len(c.Err) == 0 {
+		return nil
+	}
+	str := strings.Builder{}
+	str.WriteString(c.Err[0].Error())
+	if len(c.Err) > 1 {
+		for _, err := range c.Err[1:] {
+			str.WriteString(" | ")
+			str.WriteString(err.Error())
+		}
+	}
+	c.Err = c.Err[:0]
+	return fmt.Errorf("%s: %s: %w", msg, str.String(), err)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Pre Parse Option Checks
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// checkOption checks the user supplied data within an option including
-// duplicate name and key values.
-func (c Config) checkOption(o Option) {
-	c.checkName(o)
-	c.checkType(o)
-	c.checkKey(o)
-	c.checkDefault(o)
-	c.checkMode(o)
-}
-
 var (
+	errOption     = errors.New("option error")
 	errType       = errors.New("type error")
 	errTypeNil    = errors.New("the type is not defined")
-	errTypeUnkown = errors.New("unknown type")
+	errTypeUnkown = errors.New("unknown type, please file a bug report")
 	errNoValue    = errors.New("value required")
 	errDuplicate  = errors.New("duplicate value")
 	errNotInSet   = errors.New(
-		"specified mode not within the current set")
+		"mode bitfield is not entirely within the current set")
 )
+
+// checkOptionErrAccum verifies the user supplied data contained within an
+// option including duplicate name and key values, errors are accumulated
+// and stored in the c.Err field.
+func (c *Config) checkOptionErrAccum(o Option) {
+	const fname = "Option"
+	if err := c.checkName(o); err != nil {
+		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+	}
+	if err := c.checkKey(o); err != nil {
+		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+	}
+	if err := c.checkDefault(o); err != nil {
+		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+	}
+	if err := c.checkMode(o); err != nil {
+		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+	}
+}
 
 // chekcName checks that the name is not empty and that it is not a
 // duplicate value.
-func (c *Config) checkName(o Option) {
-	const msg = "Option"
+func (c *Config) checkName(o Option) error {
+	const msg = "check name"
 	if len(o.Name) == 0 {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg,
-			o.Name, errNoValue)
+		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNoValue)
 	}
 	if c.names[o.Name] {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg,
-			o.Name, errDuplicate)
+		return fmt.Errorf("%s: %q: %s", msg, o.Name, errDuplicate)
 	}
 	c.names[o.Name] = true
+	return nil
 }
 
 // chekcName checks that the key is not empty and that it is not a
 // duplicate value.
-func (c *Config) checkKey(o Option) {
-	const msg = "Option"
+func (c *Config) checkKey(o Option) error {
+	const msg = "check key"
 	if len(o.Key) == 0 {
-		log.Fatalf("%s: %s: %q: %s", pkg, msg, o.Name,
-			errNoValue)
+		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNoValue)
 	}
 	for i := range c.list {
-		// If the option key is already registered for this
-		// mode fail it; This limit is specific to each mode, the
-		// same key value may be used for different options if
-		// they are not in the same set.
+		// If the options key has already been registered for the
+		// current mode, return an error; Using the same key in
+		// different modes is fine.
 		if c.list[i].id&o.Modes > 0 {
 			if c.list[i].keys[o.Key] {
-				log.Fatalf("%s: %s: %q: %q: %s", pkg,
+				return fmt.Errorf("%s: %q: %q: %s",
 					msg, o.Name, o.Key, errDuplicate)
 			}
 			c.list[i].keys[o.Key] = true
 		}
 	}
-}
-
-// checkType checks that the option has a type set.
-func (c *Config) checkType(o Option) {
-	const msg = "Option"
-	if o.Type == Nil {
-		log.Fatalf("%s: %s: %q: %q: %s",
-			pkg, msg, o.Name, o.Type, errTypeNil)
-	}
+	return nil
 }
 
 // checkDefault checks that the options default value has the correct
 // type.
-// TODO add types.
-func (c *Config) checkDefault(o Option) {
-	const msg = "Option"
+func (c *Config) checkDefault(o Option) error {
+	const msg = "check Default"
+	// We only check for the ecistance of the Default value on flags
+	// that are being passed by reference, errors are returned when
+	// passing flags by value.
 	switch o.Type {
 	case Int, IntVar:
 		if _, ok := o.Default.(int); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Int64, Int64Var:
 		if _, ok := o.Default.(int64); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Uint, UintVar:
 		if _, ok := o.Default.(uint); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Uint64, Uint64Var:
 		if _, ok := o.Default.(uint64); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case String, StringVar:
 		if _, ok := o.Default.(string); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Bool, BoolVar:
 		if _, ok := o.Default.(bool); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Float64, Float64Var:
 		if _, ok := o.Default.(float64); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Duration, DurationVar:
 		if _, ok := o.Default.(time.Duration); !ok {
-			log.Fatalf("%s: %s: %q: Default: %+v: %s",
-				pkg, msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
 		}
 	case Var:
-		// The default is usually nil but could be anything as var
-		// represents and interface.
+		// Both Var and Default are interfaces as such we can not
+		// test this here, so we let Var pass with no check.
 	case Nil:
-		log.Fatalf("%s: %s: %q: Default: %+v: %s",
-			pkg, msg, o.Name, o.Type, errTypeNil)
+		return fmt.Errorf("%s: %q: %+v: %s",
+			msg, o.Name, o.Type, errTypeNil)
 	default:
-		log.Fatalf("%s: %s: %q: Default: %+v: %s",
+		return fmt.Errorf("%s: %s: %q: %+v: %s",
 			pkg, msg, o.Name, o.Type, errTypeUnkown)
 	}
+	return nil
 }
 
 // checkMode verifies that an option has modes set and that those modes
 // are contained within the the current mode set.
-func (c Config) checkMode(o Option) {
-	const msg = "Option"
+func (c *Config) checkMode(o Option) error {
+	const msg = "check mode"
 	if !c.flagIs(o.Modes) {
-		log.Fatalf("%s: %s: %q: Modes: %s", pkg, msg, o.Name,
-			errNotInSet)
+		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNotInSet)
 	}
+	return nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -451,15 +501,15 @@ func (c *Config) load(mode string) error {
 		return fmt.Errorf("%s: %q: %w", fname, mode, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.mode.name, flag.ExitOnError)
-	if err := c.optionsToFlagSet(); err != nil {
-		return fmt.Errorf("%s: mode %q: %w", fname, mode, err)
-	}
+	// Errors created in this function are for users and need to be
+	// dealt with differently.
+	c.optionsToFsErrAccum()
 	c.flagSet.Usage = func() {
 		fmt.Println(c.help)
 		fmt.Println(c.mode.help)
 		c.flagSet.VisitAll(flagHelpMsg)
 	}
-	return nil
+	return c.Error("optionsToFsErrAccum", errOption)
 }
 
 // parse parses the flagset using the given offest to counter the
@@ -513,173 +563,171 @@ type Option struct {
 
 // toFlagSet generates a flag within the given flagset for the current
 // option.
-// TODO add types.
 func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 	const fname = "toFlagSet"
-	const msg = "Option"
 	const def = "Default"
 	const va = "Var"
 	switch o.Type {
 	case Int:
 		i, ok := o.Default.(int)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, def, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Int(o.Key, i, o.Help)
 	case IntVar:
 		i, ok := o.Default.(int)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, def, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*int)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.IntVar(v, o.Key, i, o.Help)
 	case Int64:
 		i, ok := o.Default.(int64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Int64(o.Key, i, o.Help)
 	case Int64Var:
 		i, ok := o.Default.(int64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*int64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.Int64Var(v, o.Key, i, o.Help)
 	case Uint:
 		i, ok := o.Default.(uint)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Uint(o.Key, i, o.Help)
 	case UintVar:
 		i, ok := o.Default.(uint)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*uint)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.UintVar(v, o.Key, i, o.Help)
 	case Uint64:
 		i, ok := o.Default.(uint64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Uint64(o.Key, i, o.Help)
 	case Uint64Var:
 		i, ok := o.Default.(uint64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*uint64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.Uint64Var(v, o.Key, i, o.Help)
 	case String:
 		s, ok := o.Default.(string)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.String(o.Key, s, o.Help)
 	case StringVar:
 		s, ok := o.Default.(string)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*string)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.StringVar(v, o.Key, s, o.Help)
 	case Bool:
 		b, ok := o.Default.(bool)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Bool(o.Key, b, o.Help)
 	case BoolVar:
 		b, ok := o.Default.(bool)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*bool)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.BoolVar(v, o.Key, b, o.Help)
 	case Float64:
 		f, ok := o.Default.(float64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Float64(o.Key, f, o.Help)
 	case Float64Var:
 		f, ok := o.Default.(float64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*float64)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.Float64Var(v, o.Key, f, o.Help)
 	case Duration:
 		d, ok := o.Default.(time.Duration)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		o.data = fls.Duration(o.Key, d, o.Help)
 	case DurationVar:
 		d, ok := o.Default.(time.Duration)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
 		}
 		v, ok := o.Var.(*time.Duration)
 		if !ok {
-			return fmt.Errorf("%s: %s: %s: %q: %w",
-				pkg, msg, o.Type, va, errType)
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
 		}
 		fls.DurationVar(v, o.Key, d, o.Help)
 	case Var:
 		if o.Value == nil {
-			return fmt.Errorf("%s: %s: %s: %w",
-				pkg, msg, o.Type, errNoValue)
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errNoValue)
 		}
 		fls.Var(o.Value, o.Key, o.Help)
 	default:
-		log.Fatalf("%s: %s: internal error: (%q, %s) %s",
+		return fmt.Errorf("%s: %s: internal error: (%q, %s) %s",
 			pkg, fname, o.Name, o.Type, errTypeUnkown)
 	}
 	return nil
@@ -715,24 +763,6 @@ func flagHelpMsg(f *flag.Flag) {
  *  Values and Types
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Type defines the type of the configuration option, essential when
-// setting flags, converting from interfaces.
-// uint8       the set of all unsigned  8-bit integers (0 to 255)
-// uint16      the set of all unsigned 16-bit integers (0 to 65535)
-// uint32      the set of all unsigned 32-bit integers (0 to 4294967295)
-// uint64      the set of all unsigned 64-bit integers (0 to 18446744073709551615)
-
-// int8        the set of all signed  8-bit integers (-128 to 127)
-// int16       the set of all signed 16-bit integers (-32768 to 32767)
-// int32       the set of all signed 32-bit integers (-2147483648 to 2147483647)
-// int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
-
-// float32     the set of all IEEE-754 32-bit floating-point numbers
-// float64     the set of all IEEE-754 64-bit floating-point numbers
-
-// complex64   the set of all complex numbers with float32 real and imaginary parts
-// complex128  the set of all complex numbers with float64 real and imaginary parts
-// TODO add types.
 type Type uint64
 
 const (
@@ -761,7 +791,6 @@ var (
 	errNoKey  = errors.New("key not found")
 )
 
-// TODO add types.
 func (t Type) String() string {
 	switch t {
 	case Nil:
