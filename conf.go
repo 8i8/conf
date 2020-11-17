@@ -195,6 +195,9 @@ func (c Config) ArgList() string {
 // saveArgs records the input arguments as a string for display output.
 func (c *Config) saveArgs() error {
 	const fname = "saveArgs"
+	if len(os.Args) == 0 {
+		return fmt.Errorf("%s: %w", fname, errNoData)
+	}
 	var str strings.Builder
 	_, err := str.WriteString(os.Args[0])
 	if err != nil {
@@ -218,9 +221,12 @@ func (c *Config) saveArgs() error {
 // accumulated into the c.Err field.
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option"
-	for key, value := range c.options {
-		if c.mode.id&value.Modes > 0 {
-			err := c.options[key].toFlagSet(c.flagSet)
+	for key, o := range c.options {
+		if c.mode.id&o.Modes > 0 {
+			if c.mode.keys[o.Key] > 1 {
+				break
+			}
+			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {
 				c.Err = append(c.Err,
 					fmt.Errorf("%s: %q: %w",
@@ -235,7 +241,9 @@ func (c *Config) optionsToFsErrAccum() {
 // the c.Err field.
 func (c *Config) loadOptions(opts ...Option) error {
 	const fname = "loadOptions"
-	c.options = make(map[string]*Option)
+	if c.options == nil {
+		c.options = make(map[string]*Option)
+	}
 	if c.names == nil {
 		c.names = make(map[string]bool)
 	}
@@ -246,7 +254,7 @@ func (c *Config) loadOptions(opts ...Option) error {
 	// modes.
 	for i := range c.list {
 		if c.list[i].keys == nil {
-			c.list[i].keys = make(map[string]bool)
+			c.list[i].keys = make(map[string]int)
 		}
 	}
 	for i, opt := range opts {
@@ -334,11 +342,12 @@ func (c *Config) checkKey(o Option) error {
 		// current mode, return an error; Using the same key in
 		// different modes is fine.
 		if c.list[i].id&o.Modes > 0 {
-			if c.list[i].keys[o.Key] {
+			if c.list[i].keys[o.Key] > 0 {
+				c.list[i].keys[o.Key]++
 				return fmt.Errorf("%s: %q: %q: %s",
 					msg, o.Name, o.Key, errDuplicate)
 			}
-			c.list[i].keys[o.Key] = true
+			c.list[i].keys[o.Key]++
 		}
 	}
 	return nil
@@ -452,7 +461,7 @@ type mode struct {
 	// used.
 	help string
 	// keys makes certain that no key duplicates exist.
-	keys map[string]bool
+	keys map[string]int
 }
 type modelist []mode
 
