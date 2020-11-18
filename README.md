@@ -1,29 +1,35 @@
 ### conf
 
-package conf helps to organise and maintain package options and flags including
-program operating modes that may be set from the command line.
+package conf helps you to organise and maintain package sub-commands,
+their options and their flags.
 
-MODES operating modes can be created by using the conf.Mode function, the
-function returns a bit flag with the appropriate bit set to enable the mode
-when creating an option.
+COMMANDS sub-commands can be created by using the conf.Command function
+which returns a token set to designate the command as a target when
+creating an option.
 
 ```go
-	newmode = conf.Mode("name", helpData)
+	cmd = conf.Command("doit", doitUsage)
 ```
 
-The newmode flag is then used when defining an option in the Modes field, the
-option will appear in all of the modes that are specified in this declaration.
+The cmd token is then used when defining an option, instructing the
+package that the option is to be assigned to the command. The option will
+appear in all of the commands for which tokens are proveded, the tokes are
+seperated by the | character, indicating that all tokens are to be used.
 
 ```go
 conf.Option{
-	Modes: (newmode | mode1 | mode2)
+	Commands: cmd | cmd1 | cmd2
 }
 ```
 
-OPTIONS contain the data required to create a flag when included within the
-current flag set, however they may also be set from configuration files or
-other methods, an option also contains a user definable function that may be
-set to verify the data when it is set.
+OPTIONS contain the data required to create a flag, which is done when the
+option is present within the active commands flagset, however optoins may also be
+modified by other methods, such as the sers programming code.
+
+The `Check:` field takes a function value that may be defined whilst
+creating an option. This function has the signature `func(interface{})
+(interface{}, error)` which can be uesd to either specify tests and
+conditions for the options value or to change the value as it is passed.
 
 The following is an example of the conf package in use:
 
@@ -54,8 +60,8 @@ var opts = []conf.Option{
 		Commands: def | one | two,
 		Check: func(v interface{}) (interface{}, error) {
 			i := *v.(*int)
-			if i != 12 {
-				return v, fmt.Errorf("-n must be 12")
+			if i < 120 {
+				return v, fmt.Errorf("-n must be greater than 120")
 			}
 			return v, nil
 		},
@@ -69,7 +75,7 @@ var opts = []conf.Option{
 		Check: func(v interface{}) (interface{}, error) {
 			s := *v.(*string)
 			if len(s) == 0 {
-				return v, fmt.Errorf("What ... No text?")
+				return v, fmt.Errorf("What is this ... No text?")
 			}
 			return v, nil
 		},
