@@ -755,6 +755,25 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 				errType)
 		}
 		fls.Uint64Var(v, o.Flag, i, o.Usage)
+	case Float64:
+		f, ok := o.Default.(float64)
+		if !ok {
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
+		}
+		o.data = fls.Float64(o.Flag, f, o.Usage)
+	case Float64Var:
+		f, ok := o.Default.(float64)
+		if !ok {
+			return fmt.Errorf("%s: %q: %w", o.Type, def,
+				errType)
+		}
+		v, ok := o.Var.(*float64)
+		if !ok {
+			return fmt.Errorf("%s: %q: %w", o.Type, va,
+				errType)
+		}
+		fls.Float64Var(v, o.Flag, f, o.Usage)
 	case String:
 		s, ok := o.Default.(string)
 		if !ok {
@@ -793,25 +812,6 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 				errType)
 		}
 		fls.BoolVar(v, o.Flag, b, o.Usage)
-	case Float64:
-		f, ok := o.Default.(float64)
-		if !ok {
-			return fmt.Errorf("%s: %q: %w", o.Type, def,
-				errType)
-		}
-		o.data = fls.Float64(o.Flag, f, o.Usage)
-	case Float64Var:
-		f, ok := o.Default.(float64)
-		if !ok {
-			return fmt.Errorf("%s: %q: %w", o.Type, def,
-				errType)
-		}
-		v, ok := o.Var.(*float64)
-		if !ok {
-			return fmt.Errorf("%s: %q: %w", o.Type, va,
-				errType)
-		}
-		fls.Float64Var(v, o.Flag, f, o.Usage)
 	case Duration:
 		d, ok := o.Default.(time.Duration)
 		if !ok {

@@ -197,7 +197,7 @@ func TestCmdIs(t *testing.T) {
 	_ = config.Setup("", "")
 	_ = config.Command("cmd", "")
 	if !config.cmdNameIs("cmd") {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 }
 
@@ -276,7 +276,7 @@ func TestCheckFn(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 2 {
-		t.Errorf("%s: recieved %d expected 2", fname, i)
+		t.Errorf("%s: received %d expected 2", fname, i)
 	}
 
 	_, err = config.ValueInt("int2")
@@ -426,7 +426,7 @@ func testArgList(t *testing.T) {
 	const fname = "TestArgList"
 	l := ArgString()
 	if l == "" {
-		t.Errorf("%s: recieved an empty string", fname)
+		t.Errorf("%s: received an empty string", fname)
 	}
 }
 
@@ -434,7 +434,7 @@ func testArgListConfig(t *testing.T) {
 	const fname = "TestArgListConf"
 	l := config.ArgString()
 	if l == "" {
-		t.Errorf("%s: recieved an empty string", fname)
+		t.Errorf("%s: received an empty string", fname)
 	}
 }
 
@@ -442,60 +442,60 @@ func testFlagIs(t *testing.T) {
 	const fname = "TestFlagIs"
 	v := c.cmdTokenIs(0)
 	if v {
-		t.Errorf("%s: recieved true expected false", fname)
+		t.Errorf("%s: received true expected false", fname)
 	}
 	v = c.cmdTokenIs(m1)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = c.cmdTokenIs(m2)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = c.cmdTokenIs(m3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = c.cmdTokenIs(m1 | m3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = c.cmdTokenIs(m1 | m2 | m3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = c.cmdTokenIs(c.index)
 	if v {
-		t.Errorf("%s: recieved true expected false", fname)
+		t.Errorf("%s: received true expected false", fname)
 	}
 
 	v = config.cmdTokenIs(0)
 	if v {
-		t.Errorf("%s: recieved true expected false", fname)
+		t.Errorf("%s: received true expected false", fname)
 	}
 	v = config.cmdTokenIs(cm1)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = config.cmdTokenIs(cm2)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = config.cmdTokenIs(cm3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = config.cmdTokenIs(cm1 | cm3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = config.cmdTokenIs(cm1 | cm2 | cm3)
 	if !v {
-		t.Errorf("%s: recieved false expected true", fname)
+		t.Errorf("%s: received false expected true", fname)
 	}
 	v = config.cmdTokenIs(config.index)
 	if v {
-		t.Errorf("%s: recieved true expected false", fname)
+		t.Errorf("%s: received true expected false", fname)
 	}
 }
 
@@ -503,7 +503,7 @@ func testModes(t *testing.T) {
 	const fname = "TestModes"
 	m := GetCmd()
 	if m != "default" {
-		t.Errorf("%s: expected \"default\" recieved %q", fname, m)
+		t.Errorf("%s: expected \"default\" received %q", fname, m)
 	}
 	if !c.cmdTokenIs(m1) {
 		t.Errorf("%s: recived false expected true", fname)
@@ -514,7 +514,7 @@ func testModesConfig(t *testing.T) {
 	const fname = "TestModesConfig"
 	m := c.GetCmd()
 	if m != "default" {
-		t.Errorf("%s: expected default recieved %s", fname, m)
+		t.Errorf("%s: expected default received %s", fname, m)
 	}
 	if !config.cmdTokenIs(cm1) {
 		t.Errorf("%s: recived false expected true", fname)
@@ -528,7 +528,7 @@ func testInt(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 	i, err = ValueInt("intNoDefault")
 	if err == nil {
@@ -560,14 +560,14 @@ func testInt(t *testing.T) {
 // 		t.Errorf("%s: error: %s", fname, err)
 // 	}
 // 	if i != 2 {
-// 		t.Errorf("%s: recieved %d expected 2", fname, i)
+// 		t.Errorf("%s: received %d expected 2", fname, i)
 // 	}
 // }
 
 func testIntVar(t *testing.T) {
 	const fname = "testIntVar"
 	if ptInt != 2345 {
-		t.Errorf("%s: recieved %d expected 2345", fname, ptInt)
+		t.Errorf("%s: received %d expected 2345", fname, ptInt)
 	}
 }
 
@@ -599,7 +599,7 @@ func TestConfInt(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -656,7 +656,7 @@ func TestConfIntVar(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -737,7 +737,7 @@ func TestConfInt64(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -794,7 +794,7 @@ func TestConfInt64Var(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -875,7 +875,7 @@ func TestConfUint(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -932,7 +932,7 @@ func TestConfUintVar(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -1013,7 +1013,7 @@ func TestConfUint64(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -1070,7 +1070,7 @@ func TestConfUint64Var(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != 1 {
-		t.Errorf("%s: recieved %d expected 1", fname, i)
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -1123,6 +1123,144 @@ func TestConfUint64VarDefaultTypeError(t *testing.T) {
 	}
 }
 
+// Float64
+
+func TestConfFloat64(t *testing.T) {
+	const fname = "TestConfFloat64"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  float64(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	i, err := config.ValueFloat64("one")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %f expected 1", fname, i)
+	}
+}
+
+func TestConfFloat64DefaultTypeError(t *testing.T) {
+	const fname = "TestConfFloat64DefaultTypeError"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  "wrongType",
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	_, err = config.ValueFloat64("one")
+	if !errors.Is(err, errType) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// Float64Var
+
+func TestConfFloat64Var(t *testing.T) {
+	const fname = "TestConfFloat64Var"
+	var i float64
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64Var,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  float64(1),
+			Var:      &i,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %f expected 1", fname, i)
+	}
+}
+
+func TestConfFloat64VarTypeError(t *testing.T) {
+	const fname = "TestConfFloat64VarTypeError"
+	var i string
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64Var,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  float64(2),
+			Var:      &i,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfFloat64VarDefaultTypeError(t *testing.T) {
+	const fname = "TestConfFloat64VarDefaultTypeError"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64Var,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  "wrongType",
+			Var:      float64(2),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
 // String
 
 func TestConfString(t *testing.T) {
@@ -1151,7 +1289,7 @@ func TestConfString(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	if i != "string" {
-		t.Errorf("%s: recieved %q expected \"string\"", fname, i)
+		t.Errorf("%s: received %q expected \"string\"", fname, i)
 	}
 }
 
@@ -1181,3 +1319,226 @@ func TestConfStringDefaultTypeError(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 }
+
+// StringVar
+
+func TestConfStringVar(t *testing.T) {
+	const fname = "TestConfStringVar"
+	var str string
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     StringVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  "string",
+			Var:      &str,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if str != "string" {
+		t.Errorf("%s: received %q expected \"string\"", fname, str)
+	}
+}
+
+func TestConfStringVarTypeError(t *testing.T) {
+	const fname = "TestConfStringVarTypeError"
+	var str int
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     StringVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  "string",
+			Var:      &str,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfStringVarDefaultTypeError(t *testing.T) {
+	const fname = "TestConfStringVarDefaultTypeError"
+	config := Config{}
+	str := "string"
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     StringVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Var:      str,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// Bool
+
+func TestConfBool(t *testing.T) {
+	const fname = "TestConfBool"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Bool,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  true,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	i, err := config.ValueBool("one")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != true {
+		t.Errorf("%s: received %t expected \"true\"", fname, i)
+	}
+}
+
+func TestConfBoolDefaultTypeError(t *testing.T) {
+	const fname = "TestConfBoolDefaultTypeError"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Bool,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	_, err = config.ValueBool("one")
+	if !errors.Is(err, errType) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// BoolVar
+
+func TestConfBoolVar(t *testing.T) {
+	const fname = "TestConfBoolVar"
+	var b bool
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     BoolVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  true,
+			Var:      &b,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if b != true {
+		t.Errorf("%s: received %t expected \"true\"", fname, b)
+	}
+}
+
+func TestConfBoolVarTypeError(t *testing.T) {
+	const fname = "TestConfBoolVarTypeError"
+	var b int
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     BoolVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  true,
+			Var:      &b,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfBoolVarDefaultTypeError(t *testing.T) {
+	const fname = "TestConfBoolVarDefaultTypeError"
+	config := Config{}
+	b := true
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     BoolVar,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Var:      &b,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// Duration
+// DurationVar
+// Var
