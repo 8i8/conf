@@ -13,8 +13,8 @@ func init() {
 
 var (
 	m1     = Setup("Usage Heading", "Mode Heading")
-	m2     = Mode("one", "one's heading")
-	m3     = Mode("two", "two's heading")
+	m2     = Command("one", "one's heading")
+	m3     = Command("two", "two's heading")
 	config Config
 	cm1    = config.Setup("Usage Heading", "Mode Heading")
 	cm2    = config.Command("cone", "cone's heading")
@@ -24,24 +24,24 @@ var (
 
 var opts = []Option{
 	{Name: "int",
-		Type:    Int,
+		Type:     Int,
 		Flag:     "a",
 		Usage:    "like this",
-		Default: 1,
-		Commands:   m1 | m2 | m3,
+		Default:  1,
+		Commands: m1 | m2 | m3,
 	},
 	{Name: "intVar",
-		Type:    IntVar,
+		Type:     IntVar,
 		Flag:     "b",
 		Usage:    "do it like this",
-		Default: 2345,
-		Var:     &ptInt,
-		Commands:   m1,
+		Default:  2345,
+		Var:      &ptInt,
+		Commands: m1,
 	},
 	{Name: "intNoDefault",
-		Type:  Int,
-		Flag:   "c",
-		Usage:  "like that",
+		Type:     Int,
+		Flag:     "c",
+		Usage:    "like that",
 		Commands: m1,
 	},
 }
@@ -69,18 +69,18 @@ func TestDoubleNameError(t *testing.T) {
 	m := config.Setup("", "")
 	var opts = []Option{
 		{Name: "errors",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "d",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 		{Name: "errors",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "d",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(opts...)
@@ -95,11 +95,11 @@ func TestEmptyNameError(t *testing.T) {
 	m := config.Setup("", "")
 	var opts = []Option{
 		{Name: "",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "d",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(opts...)
@@ -116,11 +116,11 @@ func TestSaveArgs(t *testing.T) {
 	m := config.Setup("", "")
 	var opts = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(opts...)
@@ -137,18 +137,18 @@ func TestNames(t *testing.T) {
 	m := config.Setup("", "")
 	var similarNames = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "b",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(similarNames...)
@@ -166,18 +166,18 @@ func TestNamesModeNoError(t *testing.T) {
 	m2 := config.Command("modetwo", "")
 	var similarNames = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m1,
+			Default:  1,
+			Commands: m1,
 		},
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "b",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m2,
+			Default:  1,
+			Commands: m2,
 		},
 	}
 	err := config.Options(similarNames...)
@@ -192,11 +192,11 @@ func TestCheckFn(t *testing.T) {
 	m := config.Setup("", "")
 	var opts = []Option{
 		{Name: "int1",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 			Check: func(v interface{}) (interface{}, error) {
 				i := *v.(*int)
 				i++
@@ -204,11 +204,11 @@ func TestCheckFn(t *testing.T) {
 			},
 		},
 		{Name: "int2",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "b",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 			Check: func(v interface{}) (interface{}, error) {
 				i := *v.(*int)
 				if i == 1 {
@@ -249,18 +249,18 @@ func TestKeys(t *testing.T) {
 	m := config.Setup("", "")
 	var similarKeys = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 		{Name: "similarKeys",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(similarKeys...)
@@ -275,10 +275,10 @@ func TestKeyNoValue(t *testing.T) {
 	m := config.Setup("", "")
 	var opts = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(opts...)
@@ -294,11 +294,11 @@ func TestModesNotThere(t *testing.T) {
 	m := 2
 	var opts = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m,
+			Default:  1,
+			Commands: m,
 		},
 	}
 	err := config.Options(opts...)
@@ -316,18 +316,18 @@ func TestKeysModesSimilarKeys(t *testing.T) {
 	m2 := config.Command("modetwo", "")
 	var similarKeys = []Option{
 		{Name: "int",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m1,
+			Default:  1,
+			Commands: m1,
 		},
 		{Name: "similarKeys",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
-			Default: 1,
-			Commands:   m2,
+			Default:  1,
+			Commands: m2,
 		},
 	}
 	err := config.Options(similarKeys...)
@@ -363,7 +363,7 @@ func TestTypes(t *testing.T) {
 
 func testArgList(t *testing.T) {
 	const fname = "TestArgList"
-	l := ArgList()
+	l := ArgString()
 	if l == "" {
 		t.Errorf("%s: recieved an empty string", fname)
 	}
@@ -440,7 +440,7 @@ func testFlagIs(t *testing.T) {
 
 func testModes(t *testing.T) {
 	const fname = "TestModes"
-	m := GetMode()
+	m := GetCmd()
 	if m != "default" {
 		t.Errorf("%s: expected \"default\" recieved %q", fname, m)
 	}
@@ -485,11 +485,11 @@ func testIntConfig(t *testing.T) {
 	mode := c.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
-			Type:    Int,
+			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
-			Default: 2,
-			Commands:   mode,
+			Default:  2,
+			Commands: mode,
 		},
 	}
 	c.Options(opts...)

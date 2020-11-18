@@ -39,15 +39,15 @@ func Setup(heading string, subheading string) (mode int) {
 	return
 }
 
-// Mode creates a new mode, returning the bitfield required to set that
-// mode.
-func Mode(name, help string) (bitfield int) {
+// Command creates a new program operating mode, returning the bitfield
+// token required to set options and their flags for that operating mode.
+func Command(name, help string) (bitfield int) {
 	bitfield = c.Command(name, help)
 	return
 }
 
-// GetMode return the current running modes name.
-func GetMode() string {
+// GetCmd return the current running sub-commands name.
+func GetCmd() string {
 	return c.subcmd.name
 }
 
@@ -56,15 +56,15 @@ func Options(opts ...Option) error {
 	return c.Options(opts...)
 }
 
-// Parse sets the running mode from the command line arguments and then
-// parses the flagset.
+// Parse sets the current running mode from the command line arguments and
+// then parses them to generate its flagset.
 func Parse() error {
 	return c.Parse()
 }
 
-// ArgList returns the full command line argument list as a string as it
+// ArgString returns the full command line argument list as a string as it
 // was input.
-func ArgList() string {
+func ArgString() string {
 	return c.input
 }
 
