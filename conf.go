@@ -442,12 +442,9 @@ func (c *Config) checkMode(o Option) error {
 // called after having parsed all option data.
 func (c *Config) runCheckFn() error {
 	const msg = "Option: Check"
-	if c.options == nil {
-		return fmt.Errorf("%s: %s: option set empty", pkg, msg)
-	}
-	var err error
 	for key, o := range c.options {
 		if o.Check != nil {
+			var err error
 			c.options[key].data, err = o.Check(o.data)
 			if err != nil {
 				c.options[key].Err = fmt.Errorf("%s, %w",
@@ -457,7 +454,7 @@ func (c *Config) runCheckFn() error {
 			}
 		}
 	}
-	return c.Error("optionsToFsErrAccum", errCheck)
+	return c.Error("runCheckFn", errCheck)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
