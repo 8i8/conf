@@ -225,7 +225,7 @@ func (c *Config) optionsToFsErrAccum() {
 	for key, o := range c.options {
 		if c.mode.id&o.Modes > 0 {
 			if c.mode.keys[o.Key] > 1 {
-				break
+				continue
 			}
 			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {
@@ -295,8 +295,7 @@ var (
 	errTypeUnkown = errors.New("unknown type, please file a bug report")
 	errNoValue    = errors.New("value required")
 	errDuplicate  = errors.New("duplicate value")
-	errNotInSet   = errors.New(
-		"mode bitfield is not entirely within the current set")
+	errNotInSet   = errors.New("mode outside of set")
 )
 
 // checkOptionErrAccum verifies the user supplied data contained within an
@@ -310,7 +309,8 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 		c.Err = append(c.Err, o.Err)
 		return o
 	}
-	if err := c.checkKey(o); err != nil {
+	o, err := c.checkKey(o)
+	if err != nil {
 		o.Err = fmt.Errorf("%s: %w", fname, err)
 		c.Err = append(c.Err, o.Err)
 		return o
@@ -340,12 +340,12 @@ func (c *Config) checkName(o Option) error {
 	return nil
 }
 
-// chekcName checks that the key is not empty and that it is not a
+// checkKey checks that the key is not empty and that it is not a
 // duplicate value.
-func (c *Config) checkKey(o Option) error {
+func (c *Config) checkKey(o Option) (Option, error) {
 	const msg = "check key"
 	if len(o.Key) == 0 {
-		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNoValue)
+		return o, fmt.Errorf("%q: %s: %s", o.Name, msg, errNoValue)
 	}
 	for i := range c.list {
 		// If the options key has already been registered for the
@@ -354,13 +354,16 @@ func (c *Config) checkKey(o Option) error {
 		if c.list[i].id&o.Modes > 0 {
 			if c.list[i].keys[o.Key] > 0 {
 				c.list[i].keys[o.Key]++
-				return fmt.Errorf("%s: %q: %q: %s",
-					msg, o.Name, o.Key, errDuplicate)
+				err := fmt.Errorf("%q: %q: %q: %s",
+					o.Name, o.Key, msg,
+					errDuplicate)
+				c.Err = append(c.Err, err)
+				o.Err = err
 			}
 			c.list[i].keys[o.Key]++
 		}
 	}
-	return nil
+	return o, nil
 }
 
 // checkDefault checks that the options default value has the correct
