@@ -38,17 +38,17 @@ import (
 
 var (
 	def = conf.Setup(helpBase, helpDef)
-	one = conf.Mode("one", helpOne)
-	two = conf.Mode("two", helpTwo)
+	one = conf.Command("one", helpOne)
+	two = conf.Command("two", helpTwo)
 )
 
 var opts = []conf.Option{
 	{Name: "intie",
-		Type:    conf.Int,
-		Key:     "n",
-		Default: 12,
-		Help:    intie,
-		Modes:   (def | one | two),
+		Type:     conf.Int,
+		Flag:     "n",
+		Default:  12,
+		Usage:    intie,
+		Commands: def | one | two,
 		Check: func(v interface{}) (interface{}, error) {
 			i := *v.(*int)
 			if i != 12 {
@@ -58,11 +58,11 @@ var opts = []conf.Option{
 		},
 	},
 	{Name: "thing",
-		Type:    conf.String,
-		Key:     "s",
-		Default: "Some thing",
-		Help:    thing,
-		Modes:   (def | one | two),
+		Type:     conf.String,
+		Flag:     "s",
+		Default:  "Some thing",
+		Usage:    thing,
+		Commands: def | one | two,
 		Check: func(v interface{}) (interface{}, error) {
 			s := *v.(*string)
 			if len(s) == 0 {
@@ -72,18 +72,18 @@ var opts = []conf.Option{
 		},
 	},
 	{Name: "none",
-		Type:    conf.Int,
-		Key:     "i",
-		Default: 16,
-		Help:    "the i is the none of all the ints",
-		Modes:   (def | one | two),
+		Type:     conf.Int,
+		Flag:     "i",
+		Default:  16,
+		Usage:    "the i is the none of all the ints",
+		Commands: def | one | two,
 	},
 	{Name: "verbosity",
-		Type:    conf.Int,
-		Key:     "v",
-		Default: 0,
-		Help:    "The overall chattiness of it all",
-		Modes:   (def | one | two),
+		Type:     conf.Int,
+		Flag:     "v",
+		Default:  0,
+		Usage:    "The overall chattiness of it all",
+		Commands: def | one | two,
 	},
 }
 
@@ -92,7 +92,7 @@ func main() {
 	if err := conf.Parse(); err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("The current running mode is %q\n", conf.GetMode())
+	fmt.Printf("The current running mode is %q\n", conf.GetCmd())
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -118,11 +118,11 @@ MODES
 
 	one     one does all things in the oneiest way.
 
-	two     two, despite appearances is second to none, doing things
-		in an agreeable two like fashion.
+	two     two, despite appearances is second to none, doing things in an
+	        agreeable two like fashion.
 
-	Further detatils of the use of each mode can be found by running
-	the following command.
+	Further detatils of the use of each mode can be found by running the
+	following command.
 
 	conf [mode] -help  or conf [mode] -h
 
@@ -142,11 +142,11 @@ FLAGS`
 //  Flags
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var intie = `This is the very default value in the most simple mode, to
-test if another way of writing the messages might be better.`
+var intie = `This is the very default value in the most simple mode, to test
+if another way of writing the messages might be better.`
 
-var thing = `This is the default string thing, so as to best exemplify the
-use of this package in its current state; I thought it best to write
-something very wordy here.`
+var thing = `This is the default string thing, so as to best exemplify
+the use of this package in its current state I thought it
+best to write something very wordy here.`
 */
 package conf
