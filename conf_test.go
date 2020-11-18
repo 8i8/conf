@@ -101,6 +101,39 @@ func TestEmptyNameError(t *testing.T) {
 			Default:  1,
 			Commands: m,
 		},
+		{Name: "errors",
+			Type:     Int,
+			Flag:     "d",
+			Usage:    "like this",
+			Default:  1,
+			Commands: m,
+		},
+		{Name: "errors",
+			Type:     Int,
+			Flag:     "d",
+			Usage:    "like this",
+			Default:  1,
+			Commands: m,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestMultipleErrora(t *testing.T) {
+	const fname = "TestMultipleErrora"
+	config := Config{}
+	m := config.Setup("", "")
+	var opts = []Option{
+		{Name: "",
+			Type:     Int,
+			Flag:     "d",
+			Usage:    "like this",
+			Default:  1,
+			Commands: m,
+		},
 	}
 	err := config.Options(opts...)
 	if !errors.Is(err, errConfig) {
@@ -154,6 +187,17 @@ func TestNames(t *testing.T) {
 	err := config.Options(similarNames...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// TestCmdIs test the fuction that tests if a cmd exists.
+func TestCmdIs(t *testing.T) {
+	const fname = "TestCmdIs"
+	config := Config{}
+	_ = config.Setup("", "")
+	_ = config.Command("cmd", "")
+	if !config.is("cmd") {
+		t.Errorf("%s: recieved false expected true", fname)
 	}
 }
 
@@ -291,7 +335,7 @@ func TestModesNotThere(t *testing.T) {
 	const fname = "TestModesNotThere"
 	config := Config{}
 	_ = config.Setup("", "")
-	m := 2
+	m := cmd(2)
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
