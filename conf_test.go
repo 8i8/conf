@@ -17,32 +17,32 @@ var (
 	m3     = Mode("two", "two's heading")
 	config Config
 	cm1    = config.Setup("Usage Heading", "Mode Heading")
-	cm2    = config.Mode("cone", "cone's heading")
-	cm3    = config.Mode("ctwo", "ctwo's heading")
+	cm2    = config.Command("cone", "cone's heading")
+	cm3    = config.Command("ctwo", "ctwo's heading")
 	ptInt  int
 )
 
 var opts = []Option{
 	{Name: "int",
 		Type:    Int,
-		Key:     "a",
-		Help:    "like this",
+		Flag:     "a",
+		Usage:    "like this",
 		Default: 1,
-		Modes:   m1 | m2 | m3,
+		Commands:   m1 | m2 | m3,
 	},
 	{Name: "intVar",
 		Type:    IntVar,
-		Key:     "b",
-		Help:    "do it like this",
+		Flag:     "b",
+		Usage:    "do it like this",
 		Default: 2345,
 		Var:     &ptInt,
-		Modes:   m1,
+		Commands:   m1,
 	},
 	{Name: "intNoDefault",
 		Type:  Int,
-		Key:   "c",
-		Help:  "like that",
-		Modes: m1,
+		Flag:   "c",
+		Usage:  "like that",
+		Commands: m1,
 	},
 }
 
@@ -55,7 +55,7 @@ func TestToManyModes(t *testing.T) {
 		names[i] = fmt.Sprint(i + '0')
 	}
 	for i := 0; i <= 64; i++ {
-		_ = config.Mode(names[i], "")
+		_ = config.Command(names[i], "")
 	}
 	err := config.Options()
 	if !errors.Is(err, errConfig) {
@@ -70,17 +70,17 @@ func TestDoubleNameError(t *testing.T) {
 	var opts = []Option{
 		{Name: "errors",
 			Type:    Int,
-			Key:     "d",
-			Help:    "like this",
+			Flag:     "d",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 		{Name: "errors",
 			Type:    Int,
-			Key:     "d",
-			Help:    "like this",
+			Flag:     "d",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(opts...)
@@ -96,10 +96,10 @@ func TestEmptyNameError(t *testing.T) {
 	var opts = []Option{
 		{Name: "",
 			Type:    Int,
-			Key:     "d",
-			Help:    "like this",
+			Flag:     "d",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(opts...)
@@ -117,10 +117,10 @@ func TestSaveArgs(t *testing.T) {
 	var opts = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(opts...)
@@ -138,17 +138,17 @@ func TestNames(t *testing.T) {
 	var similarNames = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 		{Name: "int",
 			Type:    Int,
-			Key:     "b",
-			Help:    "like this",
+			Flag:     "b",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(similarNames...)
@@ -163,21 +163,21 @@ func TestNamesModeNoError(t *testing.T) {
 	const fname = "TestNamesModeNoError"
 	config := Config{}
 	m1 := config.Setup("", "")
-	m2 := config.Mode("modetwo", "")
+	m2 := config.Command("modetwo", "")
 	var similarNames = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m1,
+			Commands:   m1,
 		},
 		{Name: "int",
 			Type:    Int,
-			Key:     "b",
-			Help:    "like this",
+			Flag:     "b",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m2,
+			Commands:   m2,
 		},
 	}
 	err := config.Options(similarNames...)
@@ -193,10 +193,10 @@ func TestCheckFn(t *testing.T) {
 	var opts = []Option{
 		{Name: "int1",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 			Check: func(v interface{}) (interface{}, error) {
 				i := *v.(*int)
 				i++
@@ -205,10 +205,10 @@ func TestCheckFn(t *testing.T) {
 		},
 		{Name: "int2",
 			Type:    Int,
-			Key:     "b",
-			Help:    "like this",
+			Flag:     "b",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 			Check: func(v interface{}) (interface{}, error) {
 				i := *v.(*int)
 				if i == 1 {
@@ -250,17 +250,17 @@ func TestKeys(t *testing.T) {
 	var similarKeys = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 		{Name: "similarKeys",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(similarKeys...)
@@ -276,9 +276,9 @@ func TestKeyNoValue(t *testing.T) {
 	var opts = []Option{
 		{Name: "int",
 			Type:    Int,
-			Help:    "like this",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(opts...)
@@ -295,10 +295,10 @@ func TestModesNotThere(t *testing.T) {
 	var opts = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m,
+			Commands:   m,
 		},
 	}
 	err := config.Options(opts...)
@@ -313,21 +313,21 @@ func TestKeysModesSimilarKeys(t *testing.T) {
 	const fname = "TestKeysModesSimilarKeys"
 	config := Config{}
 	m1 := config.Setup("", "")
-	m2 := config.Mode("modetwo", "")
+	m2 := config.Command("modetwo", "")
 	var similarKeys = []Option{
 		{Name: "int",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m1,
+			Commands:   m1,
 		},
 		{Name: "similarKeys",
 			Type:    Int,
-			Key:     "a",
-			Help:    "like this",
+			Flag:     "a",
+			Usage:    "like this",
 			Default: 1,
-			Modes:   m2,
+			Commands:   m2,
 		},
 	}
 	err := config.Options(similarKeys...)
@@ -371,7 +371,7 @@ func testArgList(t *testing.T) {
 
 func testArgListConfig(t *testing.T) {
 	const fname = "TestArgListConf"
-	l := config.ArgList()
+	l := config.ArgString()
 	if l == "" {
 		t.Errorf("%s: recieved an empty string", fname)
 	}
@@ -379,60 +379,60 @@ func testArgListConfig(t *testing.T) {
 
 func testFlagIs(t *testing.T) {
 	const fname = "TestFlagIs"
-	v := c.flagIs(0)
+	v := c.cmdIs(0)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
-	v = c.flagIs(m1)
+	v = c.cmdIs(m1)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.flagIs(m2)
+	v = c.cmdIs(m2)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.flagIs(m3)
+	v = c.cmdIs(m3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.flagIs(m1 | m3)
+	v = c.cmdIs(m1 | m3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.flagIs(m1 | m2 | m3)
+	v = c.cmdIs(m1 | m2 | m3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = c.flagIs(c.index)
+	v = c.cmdIs(c.index)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
 
-	v = config.flagIs(0)
+	v = config.cmdIs(0)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
-	v = config.flagIs(cm1)
+	v = config.cmdIs(cm1)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = config.flagIs(cm2)
+	v = config.cmdIs(cm2)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = config.flagIs(cm3)
+	v = config.cmdIs(cm3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = config.flagIs(cm1 | cm3)
+	v = config.cmdIs(cm1 | cm3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = config.flagIs(cm1 | cm2 | cm3)
+	v = config.cmdIs(cm1 | cm2 | cm3)
 	if !v {
 		t.Errorf("%s: recieved false expected true", fname)
 	}
-	v = config.flagIs(config.index)
+	v = config.cmdIs(config.index)
 	if v {
 		t.Errorf("%s: recieved true expected false", fname)
 	}
@@ -444,18 +444,18 @@ func testModes(t *testing.T) {
 	if m != "default" {
 		t.Errorf("%s: expected \"default\" recieved %q", fname, m)
 	}
-	if !c.flagIs(m1) {
+	if !c.cmdIs(m1) {
 		t.Errorf("%s: recived false expected true", fname)
 	}
 }
 
 func testModesConfig(t *testing.T) {
 	const fname = "TestModesConfig"
-	m := c.GetMode()
+	m := c.GetCmd()
 	if m != "default" {
 		t.Errorf("%s: expected default recieved %s", fname, m)
 	}
-	if !config.flagIs(cm1) {
+	if !config.cmdIs(cm1) {
 		t.Errorf("%s: recived false expected true", fname)
 	}
 }
@@ -486,10 +486,10 @@ func testIntConfig(t *testing.T) {
 	opts := []Option{
 		{Name: "one",
 			Type:    Int,
-			Key:     "i",
-			Help:    "do it like this",
+			Flag:     "i",
+			Usage:    "do it like this",
 			Default: 2,
-			Modes:   mode,
+			Commands:   mode,
 		},
 	}
 	c.Options(opts...)
