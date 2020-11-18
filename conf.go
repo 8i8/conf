@@ -421,9 +421,10 @@ func (c *Config) checkDefault(o Option) error {
 				msg, o.Name, o.Type, errType)
 		}
 	case Var:
-		// Both Var and Default are interfaces as such we cannot
-		// test anything here, we must let Var pass without
-		// verification.
+		if _, ok := o.Value.(flag.Value); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
 	case Nil:
 		return fmt.Errorf("%s: %q: %+v: %s",
 			msg, o.Name, o.Type, errTypeNil)

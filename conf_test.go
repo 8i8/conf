@@ -45,6 +45,55 @@ var opts = []Option{
 		Usage:    "like that",
 		Commands: m1,
 	},
+	{Name: "int64",
+		Type:     Int64,
+		Flag:     "d",
+		Usage:    "like this",
+		Default:  int64(1),
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "uint",
+		Type:     Uint,
+		Flag:     "e",
+		Usage:    "like this",
+		Default:  uint(1),
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "uint64",
+		Type:     Uint64,
+		Flag:     "f",
+		Usage:    "like this",
+		Default:  uint64(1),
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "float64",
+		Type:     Float64,
+		Flag:     "g",
+		Usage:    "like this",
+		Default:  float64(1),
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "string",
+		Type:     String,
+		Flag:     "h",
+		Usage:    "like this",
+		Default:  "string",
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "bool",
+		Type:     Bool,
+		Flag:     "i",
+		Usage:    "like this",
+		Default:  true,
+		Commands: m1 | m2 | m3,
+	},
+	{Name: "duration",
+		Type:     Duration,
+		Flag:     "j",
+		Usage:    "like this",
+		Default:  time.Duration(0),
+		Commands: m1 | m2 | m3,
+	},
 }
 
 func TestToManyModes(t *testing.T) {
@@ -631,6 +680,42 @@ func TestConfIntDefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueIntNotThere(t *testing.T) {
+	const fname = "TestValueIntNotThere"
+	_, err := config.ValueInt("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfIntNoData(t *testing.T) {
+	const fname = "TestConfIntNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  int(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueInt("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
 // IntVar
 
 func TestConfIntVar(t *testing.T) {
@@ -766,6 +851,53 @@ func TestConfInt64DefaultTypeError(t *testing.T) {
 	_, err = config.ValueInt64("one")
 	if !errors.Is(err, errType) {
 		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueInt64NotThere(t *testing.T) {
+	const fname = "TestValueInt64NotThere"
+	_, err := config.ValueInt64("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfInt64NoData(t *testing.T) {
+	const fname = "TestConfInt64NoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int64,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  int64(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueInt64("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueInt64(t *testing.T) {
+	const fname = "TestValueInt64"
+	i, err := ValueInt64("int64")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -907,6 +1039,42 @@ func TestConfUintDefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueUintNotThere(t *testing.T) {
+	const fname = "TestValueUintNotThere"
+	_, err := config.ValueUint("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfUintNoData(t *testing.T) {
+	const fname = "TestConfUintNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Uint,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  uint(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueUint("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
 // UintVar
 
 func TestConfUintVar(t *testing.T) {
@@ -986,6 +1154,17 @@ func TestConfUintVarDefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueUint(t *testing.T) {
+	const fname = "TestValueUint"
+	i, err := ValueUint("uint")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %d expected 1", fname, i)
+	}
+}
+
 // Uint64
 
 func TestConfUint64(t *testing.T) {
@@ -1042,6 +1221,53 @@ func TestConfUint64DefaultTypeError(t *testing.T) {
 	_, err = config.ValueUint64("one")
 	if !errors.Is(err, errType) {
 		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueUint64NotThere(t *testing.T) {
+	const fname = "TestValueUint64NotThere"
+	_, err := config.ValueUint64("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfUint64NoData(t *testing.T) {
+	const fname = "TestConfUint64NoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Uint64,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  uint64(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueUint64("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueUint64(t *testing.T) {
+	const fname = "TestValueUint64"
+	i, err := ValueUint64("uint64")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
@@ -1183,6 +1409,53 @@ func TestConfFloat64DefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueFloat64NotThere(t *testing.T) {
+	const fname = "TestValueFloat64NotThere"
+	_, err := config.ValueFloat64("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfFloat64NoData(t *testing.T) {
+	const fname = "TestConfFloat64NoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Float64,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  float64(1),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueFloat64("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueFloat64(t *testing.T) {
+	const fname = "TestValueFloat64"
+	i, err := ValueFloat64("float64")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != 1 {
+		t.Errorf("%s: received %f expected 1", fname, i)
+	}
+}
+
 // Float64Var
 
 func TestConfFloat64Var(t *testing.T) {
@@ -1318,6 +1591,53 @@ func TestConfStringDefaultTypeError(t *testing.T) {
 	_, err = config.ValueString("one")
 	if !errors.Is(err, errType) {
 		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueStringNotThere(t *testing.T) {
+	const fname = "TestValueStringNotThere"
+	_, err := config.ValueString("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfStringNoData(t *testing.T) {
+	const fname = "TestConfStringNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     String,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  "string",
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueString("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueString(t *testing.T) {
+	const fname = "TestValueString"
+	i, err := ValueString("string")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != "string" {
+		t.Errorf("%s: received %s expected 1", fname, i)
 	}
 }
 
@@ -1460,6 +1780,53 @@ func TestConfBoolDefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueBoolNotThere(t *testing.T) {
+	const fname = "TestValueBoolNotThere"
+	_, err := config.ValueBool("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfBoolNoData(t *testing.T) {
+	const fname = "TestConfBoolNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Bool,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  true,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueBool("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueBool(t *testing.T) {
+	const fname = "TestValueBool"
+	i, err := ValueBool("bool")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != true {
+		t.Errorf("%s: received %t expected \"true\"", fname, i)
+	}
+}
+
 // BoolVar
 
 func TestConfBoolVar(t *testing.T) {
@@ -1599,6 +1966,53 @@ func TestConfDurationDefaultTypeError(t *testing.T) {
 	}
 }
 
+func TestValueDurationNotThere(t *testing.T) {
+	const fname = "TestValueDurationNotThere"
+	_, err := config.ValueDuration("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfDurationNoData(t *testing.T) {
+	const fname = "TestConfDurationNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Duration,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  time.Duration(0),
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, err = config.ValueDuration("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValueDuration(t *testing.T) {
+	const fname = "TestValueDuration"
+	i, err := ValueDuration("duration")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if i != time.Duration(0) {
+		t.Errorf("%s: received %q expected \"0s\"", fname, i)
+	}
+}
+
 // DurationVar
 
 func TestConfDurationVar(t *testing.T) {
@@ -1676,6 +2090,112 @@ func TestConfDurationVarDefaultTypeError(t *testing.T) {
 	err = config.Parse()
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+// Value
+
+func TestConfValue(t *testing.T) {
+	const fname = "TestConfInt"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	i, _, err := config.Value("one")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if *i.(*int) != 1 {
+		t.Errorf("%s: received %d expected 1", fname, i)
+	}
+}
+
+func TestConfValueError(t *testing.T) {
+	const fname = "TestConfInt"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:  Int,
+			Flag:  "i",
+			Usage: "do it like this",
+			//Default:  1,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	_, _, err = config.Value("one")
+	if !errors.Is(err, errType) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfValueNotThere(t *testing.T) {
+	const fname = "TestConfValueNotThere"
+	_, _, err := config.Value("notThere")
+	if !errors.Is(err, errNoKey) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestConfValueNoData(t *testing.T) {
+	const fname = "TestConfDurationNoData"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	config.options["one"].data = nil
+	_, _, err = config.Value("one")
+	if !errors.Is(err, errNoData) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+}
+
+func TestValue(t *testing.T) {
+	const fname = "TestValue"
+	i, _, err := Value("int")
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	if *i.(*int) != 1 {
+		t.Errorf("%s: received %d expected 1", fname, i)
 	}
 }
 
