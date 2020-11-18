@@ -162,7 +162,7 @@ func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if c.is(os.Args[1]) {
+		if c.cmdNameIs(os.Args[1]) {
 			if err := c.loadCmd(os.Args[1]); err != nil {
 				return fmt.Errorf("%s: %s: %w", pkg,
 					fname, err)
@@ -324,6 +324,10 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 		o.Err = fmt.Errorf("%s: %w", fname, err)
 		c.Err = append(c.Err, o.Err)
 	}
+	if err := c.checkVar(o); err != nil {
+		o.Err = fmt.Errorf("%s: %w", fname, err)
+		c.Err = append(c.Err, o.Err)
+	}
 	if err := c.checkCmd(o); err != nil {
 		o.Err = fmt.Errorf("%s: %w", fname, err)
 		c.Err = append(c.Err, o.Err)
@@ -374,7 +378,7 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 // checkDefault checks that the options default value has the correct
 // type.
 func (c *Config) checkDefault(o Option) error {
-	const msg = "check Default"
+	const msg = "Default"
 	switch o.Type {
 	case Int, IntVar:
 		if _, ok := o.Default.(int); !ok {
@@ -430,12 +434,79 @@ func (c *Config) checkDefault(o Option) error {
 	return nil
 }
 
+// checkVar checks that the options var value has the correct type if it
+// is required.
+func (c *Config) checkVar(o Option) error {
+	const msg = "Var"
+	switch o.Type {
+	case Int:
+	case IntVar:
+		if _, ok := o.Var.(*int); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Int64:
+	case Int64Var:
+		if _, ok := o.Var.(*int64); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Uint:
+	case UintVar:
+		if _, ok := o.Var.(*uint); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Uint64:
+	case Uint64Var:
+		if _, ok := o.Var.(*uint64); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case String:
+	case StringVar:
+		if _, ok := o.Var.(*string); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Bool:
+	case BoolVar:
+		if _, ok := o.Var.(*bool); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Float64:
+	case Float64Var:
+		if _, ok := o.Var.(*float64); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Duration:
+	case DurationVar:
+		if _, ok := o.Var.(*time.Duration); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
+	case Var:
+		// Both Var and Default are interfaces as such we cannot
+		// test anything here, we must let Var pass without
+		// verification.
+	case Nil:
+		return fmt.Errorf("%s: %q: %+v: %s",
+			msg, o.Name, o.Type, errTypeNil)
+	default:
+		return fmt.Errorf("%s: %s: %q: %+v: %s",
+			pkg, msg, o.Name, o.Type, errTypeUnkown)
+	}
+	return nil
+}
+
 // checkCmd verifies that the default command has been set and that any
 // other commands are registered as valid commands within the current
 // command set.
 func (c *Config) checkCmd(o Option) error {
 	const msg = "check commands"
-	if !c.cmdIs(o.Commands) {
+	if !c.cmdTokenIs(o.Commands) {
 		return fmt.Errorf("%s: %q: %s", msg, o.Name, errSubCmd)
 	}
 	return nil
@@ -486,8 +557,9 @@ type subcmd struct {
 // Config struct.
 type cmdlist []subcmd
 
-// is returns true if the given command exists and false if it does not.
-func (c Config) is(name string) bool {
+// cmdNameIs returns true if the given sub-command name exists and false
+// if it does not.
+func (c Config) cmdNameIs(name string) bool {
 	for _, m := range c.cmds {
 		if strings.Compare(name, m.name) == 0 {
 			return true
@@ -496,11 +568,13 @@ func (c Config) is(name string) bool {
 	return false
 }
 
+// cmd is the bitfield that defines which commands an option is to be
+// applied to.
 type cmd int
 
-// cmdIs returns true if a sub-command exists within the configuration
-// set of sub-commands, false if it does not.
-func (c Config) cmdIs(bitfield cmd) bool {
+// cmdTokenIs returns true if a sub-command token exists within the
+// configuration set of sub-commands, false if it does not.
+func (c Config) cmdTokenIs(bitfield cmd) bool {
 	if bitfield == 0 {
 		return false
 	}
@@ -510,14 +584,14 @@ func (c Config) cmdIs(bitfield cmd) bool {
 	return false
 }
 
-// setCmd defines the programs current running mode.
-func (c *Config) setCmd(mode string) error {
+// setCmd defines the programs current running state.
+func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
-	if mode == "default" {
+	if name == "default" {
 		c.subcmd = c.cmds[0]
 	}
 	for _, m := range c.cmds {
-		if strings.Compare(mode, m.name) == 0 {
+		if strings.Compare(name, m.name) == 0 {
 			c.subcmd = m
 			return nil
 		}
