@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"math"
 	"os"
 	"strings"
@@ -121,7 +120,8 @@ func (c *Config) Mode(name, help string) (bitfield int) {
 		c.index++
 	}
 	if c.index >= limit {
-		log.Fatal("index overflow, too many program modes")
+		err := errors.New("index overflow, too many program modes")
+		c.Err = append(c.Err, err)
 	}
 	m := mode{id: c.index, name: name, help: help}
 	c.list = append(c.list, m)
@@ -219,6 +219,7 @@ func (c *Config) saveArgs() error {
 // optionsToFsErrAccum defines flags within the flagset for all options that
 // have been specified that are within the current working set. Errors are
 // accumulated into the c.Err field.
+// GROUP Errors
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option"
 	for key, o := range c.options {
@@ -228,9 +229,9 @@ func (c *Config) optionsToFsErrAccum() {
 			}
 			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {
-				c.Err = append(c.Err,
-					fmt.Errorf("%s: %q: %w",
-						msg, key, err))
+				c.options[key].Err = fmt.Errorf(
+					"%s: %q: %w", msg, key, err)
+				c.Err = append(c.Err, c.options[key].Err)
 			}
 		}
 	}
@@ -258,10 +259,10 @@ func (c *Config) loadOptions(opts ...Option) error {
 		}
 	}
 	for i, opt := range opts {
-		c.checkOptionErrAccum(opt)
+		opts[i] = c.checkOptionErrAccum(opt)
 		c.options[opt.Name] = &opts[i]
 	}
-	return c.Error("checkOptionErrAccum", errOption)
+	return c.Error("checkOptionErrAccum", errConfig)
 }
 
 // Error returns an error if any have occurred, concatenated into one
@@ -287,7 +288,8 @@ func (c *Config) Error(msg string, err error) error {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 var (
-	errOption     = errors.New("option error")
+	errCheck      = errors.New("user defined error")
+	errConfig     = errors.New("configuration error")
 	errType       = errors.New("type error")
 	errTypeNil    = errors.New("the type is not defined")
 	errTypeUnkown = errors.New("unknown type, please file a bug report")
@@ -300,20 +302,28 @@ var (
 // checkOptionErrAccum verifies the user supplied data contained within an
 // option including duplicate name and key values, errors are accumulated
 // and stored in the c.Err field.
-func (c *Config) checkOptionErrAccum(o Option) {
+// GROUP Errors
+func (c *Config) checkOptionErrAccum(o Option) Option {
 	const fname = "Option"
 	if err := c.checkName(o); err != nil {
-		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+		o.Err = fmt.Errorf("%s: %w", fname, err)
+		c.Err = append(c.Err, o.Err)
+		return o
 	}
 	if err := c.checkKey(o); err != nil {
-		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+		o.Err = fmt.Errorf("%s: %w", fname, err)
+		c.Err = append(c.Err, o.Err)
+		return o
 	}
 	if err := c.checkDefault(o); err != nil {
-		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+		o.Err = fmt.Errorf("%s: %w", fname, err)
+		c.Err = append(c.Err, o.Err)
 	}
 	if err := c.checkMode(o); err != nil {
-		c.Err = append(c.Err, fmt.Errorf("%s: %w", fname, err))
+		o.Err = fmt.Errorf("%s: %w", fname, err)
+		c.Err = append(c.Err, o.Err)
 	}
+	return o
 }
 
 // chekcName checks that the name is not empty and that it is not a
@@ -436,15 +446,18 @@ func (c *Config) runCheckFn() error {
 		return fmt.Errorf("%s: %s: option set empty", pkg, msg)
 	}
 	var err error
-	for _, o := range c.options {
+	for key, o := range c.options {
 		if o.Check != nil {
-			if o.data, err = o.Check(o.data); err != nil {
-				fmt.Printf("%s, %s, %s", pkg, msg, err)
-				os.Exit(0)
+			c.options[key].data, err = o.Check(o.data)
+			if err != nil {
+				c.options[key].Err = fmt.Errorf("%s, %w",
+					err, errCheck)
+				c.Err = append(c.Err, fmt.Errorf("%s, %w",
+					msg, err))
 			}
 		}
 	}
-	return nil
+	return c.Error("optionsToFsErrAccum", errCheck)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -518,7 +531,7 @@ func (c *Config) load(mode string) error {
 		fmt.Println(c.mode.help)
 		c.flagSet.VisitAll(flagHelpMsg)
 	}
-	return c.Error("optionsToFsErrAccum", errOption)
+	return c.Error("optionsToFsErrAccum", errConfig)
 }
 
 // parse parses the flagset using the given offest to counter the
@@ -566,6 +579,10 @@ type Option struct {
 	set bool
 	// Which program modes should the flag be included in?
 	Modes int
+	// Err stores any errors that the option has triggered whilst
+	// being set up, allowing the option to return the error if it is
+	// polled after setup and the setup error has not been handled.
+	Err error
 	// Function to verify option data.
 	Check ckFunc
 }
@@ -852,6 +869,9 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
 	}
+	if o.Err != nil {
+		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.Err)
+	}
 	if o.data == nil {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoData)
@@ -873,6 +893,9 @@ func (c Config) ValueInt(key string) (int, error) {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
 	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoData)
@@ -892,6 +915,9 @@ func (c Config) ValueInt64(key string) (int64, error) {
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
+	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -913,6 +939,9 @@ func (c Config) ValueUint(key string) (uint, error) {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
 	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoData)
@@ -932,6 +961,9 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
+	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -953,6 +985,9 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
 	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoData)
@@ -972,6 +1007,9 @@ func (c Config) ValueString(key string) (string, error) {
 	if !ok {
 		return "", fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
+	}
+	if o.Err != nil {
+		return "", fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return "", fmt.Errorf("%s: %s: %q: %w",
@@ -993,6 +1031,9 @@ func (c Config) ValueBool(key string) (bool, error) {
 		return false, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
 	}
+	if o.Err != nil {
+		return false, fmt.Errorf("%s: %w", fname, o.Err)
+	}
 	if o.data == nil {
 		return false, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoData)
@@ -1012,6 +1053,9 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 	if !ok {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
+	}
+	if o.Err != nil {
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %w",
