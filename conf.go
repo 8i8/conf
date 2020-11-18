@@ -488,9 +488,10 @@ func (c *Config) checkVar(o Option) error {
 				msg, o.Name, o.Type, errType)
 		}
 	case Var:
-		// Both Var and Default are interfaces as such we cannot
-		// test anything here, we must let Var pass without
-		// verification.
+		if _, ok := o.Value.(flag.Value); !ok {
+			return fmt.Errorf("%s: %q: %+v: %s",
+				msg, o.Name, o.Type, errType)
+		}
 	case Nil:
 		return fmt.Errorf("%s: %q: %+v: %s",
 			msg, o.Name, o.Type, errTypeNil)
@@ -899,6 +900,7 @@ const (
 	Duration
 	DurationVar
 	Var
+	Default
 )
 
 var (
@@ -943,7 +945,7 @@ func (t Type) String() string {
 	case DurationVar:
 		return "*time.Duration"
 	case Var:
-		return "interface{}"
+		return "flag.Value"
 	default:
 		return "error: unknown type"
 	}
