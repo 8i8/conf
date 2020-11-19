@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"os"
@@ -249,7 +251,96 @@ func TestCmdIs(t *testing.T) {
 	if !config.cmdNameIs("cmd") {
 		t.Errorf("%s: received false expected true", fname)
 	}
+	if config.cmdNameIs("notThere") {
+		t.Errorf("%s: received false expected true", fname)
+	}
 }
+
+func TestParseSubCommand(t *testing.T) {
+	const fname = "TestParseSubCommand"
+	config := Config{}
+	_ = config.Setup("Usage Heading", "Mode Heading")
+	_ = config.Command("cmd", "")
+	temp := os.Args
+	os.Args = []string{"test", "cmd"}
+	err := config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	os.Args = []string{"test", "notThere"}
+	err = config.Parse()
+	if err == nil {
+		t.Errorf("%s: expected and error", fname)
+	}
+	os.Args = temp
+}
+
+func TestFlagSetUsageFn(t *testing.T) {
+	const fname = "TestFlagSetUsageFn"
+	config := Config{}
+	mode := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: mode,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	b := bytes.Buffer{}
+	buf := bufio.NewWriter(&b)
+	fn := config.setUsageFn(buf)
+	fn()
+}
+
+func TestParse(t *testing.T) {
+	const fname = "TestParse"
+	//config := Config{}
+
+	// If no sub-command has been specified, load the default cmd.
+	// if err := c.loadCmd("default"); err != nil {
+	// 	t.Errorf("%s: %s: %w", pkg, fname, err)
+	// }
+
+	// parse can not be tested, the 'test' flag is stopping it from
+	// running in test mode.
+	// err = config.parse(1)
+	// if err != nil {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
+}
+
+// func TestFlagSetUsage(t *testing.T) {
+// 	const fname = "TestFlagSetUsage"
+// 	config := Config{}
+// 	m := config.Setup("", "")
+// 	var opts = []Option{
+// 		{Name: "int",
+// 			Type:     Int,
+// 			Usage:    "like this",
+// 			Default:  1,
+// 			Commands: m,
+// 		},
+// 	}
+// 	config.Options(opts...)
+// 	b := bytes.Buffer{}
+// 	buf := bufio.NewWriter(&b)
+// 	config.flagSet.SetOutput(buf)
+// 	os.Args[1] = "-h"
+// 	config.Parse()
+// 	if buf.Buffered() == 0 {
+// 		t.Errorf("%s: recieved 0 expected some text", fname)
+// 	}
+// }
 
 // TestNamesModeNoError test that no two options can have the same name,
 // even when in different modes.
@@ -258,7 +349,7 @@ func TestNamesModeNoError(t *testing.T) {
 	config := Config{}
 	m1 := config.Setup("", "")
 	m2 := config.Command("modetwo", "")
-	var similarNames = []Option{
+	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
 			Flag:     "a",
@@ -274,7 +365,7 @@ func TestNamesModeNoError(t *testing.T) {
 			Commands: m2,
 		},
 	}
-	err := config.Options(similarNames...)
+	err := config.Options(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}

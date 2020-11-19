@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"math"
 	"os"
 	"strings"
@@ -591,6 +592,7 @@ func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
 		c.subcmd = c.cmds[0]
+		return nil
 	}
 	for _, m := range c.cmds {
 		if strings.Compare(name, m.name) == 0 {
@@ -603,18 +605,14 @@ func (c *Config) setCmd(name string) error {
 
 // loadCmd sets the programs operating mode and loads all required options
 // along with their usage data into the relevant flagset.
-func (c *Config) loadCmd(mode string) error {
+func (c *Config) loadCmd(cmd string) error {
 	const fname = "loadCmd"
-	if err := c.setCmd(mode); err != nil {
-		return fmt.Errorf("%s: %q: %w", fname, mode, err)
+	if err := c.setCmd(cmd); err != nil {
+		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.subcmd.name, flag.ExitOnError)
 	c.optionsToFsErrAccum()
-	c.flagSet.Usage = func() {
-		fmt.Println(c.help)
-		fmt.Println(c.subcmd.usage)
-		c.flagSet.VisitAll(flagUsage)
-	}
+	c.flagSet.Usage = c.setUsageFn(os.Stdout)
 	return c.Error("optionsToFsErrAccum", errConfig)
 }
 
@@ -849,6 +847,15 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Usage display output
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// setUsageFn is set as flag.FlagSet.Usage, generating the usage output.
+func (c Config) setUsageFn(w io.Writer) func() {
+	return func() {
+		fmt.Println(c.help)
+		fmt.Println(c.subcmd.usage)
+		c.flagSet.VisitAll(flagUsage)
+	}
+}
 
 // space sets a space after the flag name in the help output, aligning the
 // flags description correctly for output.
