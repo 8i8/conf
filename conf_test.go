@@ -18,10 +18,10 @@ var (
 	m1     = Setup("Usage Heading", "Mode Heading")
 	m2     = Command("one", "one's heading")
 	m3     = Command("two", "two's heading")
-	config Config
-	cm1    = config.Setup("Usage Heading", "Mode Heading")
-	cm2    = config.Command("cone", "cone's heading")
-	cm3    = config.Command("ctwo", "ctwo's heading")
+	global Config
+	cm1    = global.Setup("Usage Heading", "Mode Heading")
+	cm2    = global.Command("cone", "cone's heading")
+	cm3    = global.Command("ctwo", "ctwo's heading")
 	ptInt  int
 )
 
@@ -242,20 +242,6 @@ func TestNames(t *testing.T) {
 	}
 }
 
-// TestCmdIs test the fuction that tests if a cmd exists.
-func TestCmdIs(t *testing.T) {
-	const fname = "TestCmdIs"
-	config := Config{}
-	_ = config.Setup("", "")
-	_ = config.Command("cmd", "")
-	if !config.cmdNameIs("cmd") {
-		t.Errorf("%s: received false expected true", fname)
-	}
-	if config.cmdNameIs("notThere") {
-		t.Errorf("%s: received false expected true", fname)
-	}
-}
-
 func TestParseSubCommand(t *testing.T) {
 	const fname = "TestParseSubCommand"
 	config := Config{}
@@ -338,46 +324,6 @@ func TestFlagDuplicateNoPanic(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 }
-
-func TestParse(t *testing.T) {
-	const fname = "TestParse"
-	//config := Config{}
-
-	// If no sub-command has been specified, load the default cmd.
-	// if err := c.loadCmd("default"); err != nil {
-	// 	t.Errorf("%s: %s: %w", pkg, fname, err)
-	// }
-
-	// parse can not be tested, the 'test' flag is stopping it from
-	// running in test mode.
-	// err = config.parse(1)
-	// if err != nil {
-	// 	t.Errorf("%s: error: %s", fname, err)
-	// }
-}
-
-// func TestFlagSetUsage(t *testing.T) {
-// 	const fname = "TestFlagSetUsage"
-// 	config := Config{}
-// 	m := config.Setup("", "")
-// 	var opts = []Option{
-// 		{Name: "int",
-// 			Type:     Int,
-// 			Usage:    "like this",
-// 			Default:  1,
-// 			Commands: m,
-// 		},
-// 	}
-// 	config.Options(opts...)
-// 	b := bytes.Buffer{}
-// 	buf := bufio.NewWriter(&b)
-// 	config.flagSet.SetOutput(buf)
-// 	os.Args[1] = "-h"
-// 	config.Parse()
-// 	if buf.Buffered() == 0 {
-// 		t.Errorf("%s: recieved 0 expected some text", fname)
-// 	}
-// }
 
 // TestNamesModeNoError test that no two options can have the same name,
 // even when in different modes.
@@ -588,15 +534,20 @@ func TestTypes(t *testing.T) {
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	config.Options(opts...)
-	config.Parse()
+	err = global.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = global.Parse()
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
 	t.Run("ArgList", testArgList)
 	t.Run("c.ArgList", testArgListConfig)
 	t.Run("Modes", testModes)
 	t.Run("c.Modes", testModesConfig)
 	t.Run("flagIs", testFlagIs)
 	t.Run("Int", testInt)
-	//t.Run("c.Int", testIntConfig)
 	t.Run("IntVar", testIntVar)
 }
 
@@ -610,7 +561,7 @@ func testArgList(t *testing.T) {
 
 func testArgListConfig(t *testing.T) {
 	const fname = "TestArgListConf"
-	l := config.ArgString()
+	l := global.ArgString()
 	if l == "" {
 		t.Errorf("%s: received an empty string", fname)
 	}
@@ -647,31 +598,31 @@ func testFlagIs(t *testing.T) {
 		t.Errorf("%s: received true expected false", fname)
 	}
 
-	v = config.cmdTokenIs(0)
+	v = global.cmdTokenIs(0)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
-	v = config.cmdTokenIs(cm1)
+	v = global.cmdTokenIs(cm1)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(cm2)
+	v = global.cmdTokenIs(cm2)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(cm3)
+	v = global.cmdTokenIs(cm3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(cm1 | cm3)
+	v = global.cmdTokenIs(cm1 | cm3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(cm1 | cm2 | cm3)
+	v = global.cmdTokenIs(cm1 | cm2 | cm3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(config.index)
+	v = global.cmdTokenIs(global.index)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
@@ -694,7 +645,7 @@ func testModesConfig(t *testing.T) {
 	if m != "default" {
 		t.Errorf("%s: expected default received %s", fname, m)
 	}
-	if !config.cmdTokenIs(cm1) {
+	if !global.cmdTokenIs(cm1) {
 		t.Errorf("%s: recived false expected true", fname)
 	}
 }
@@ -717,30 +668,6 @@ func testInt(t *testing.T) {
 		t.Errorf("%s: expected an error", fname)
 	}
 }
-
-// func testIntConfig(t *testing.T) {
-// 	const fname = "testConfigInt"
-// 	c := Config{}
-// 	mode := c.Setup("Usage Heading", "Mode Heading")
-// 	opts := []Option{
-// 		{Name: "one",
-// 			Type:     Int,
-// 			Flag:     "i",
-// 			Usage:    "do it like this",
-// 			Default:  2,
-// 			Commands: mode,
-// 		},
-// 	}
-// 	c.Options(opts...)
-// 	c.Parse()
-// 	i, err := c.ValueInt("one")
-// 	if err != nil {
-// 		t.Errorf("%s: error: %s", fname, err)
-// 	}
-// 	if i != 2 {
-// 		t.Errorf("%s: received %d expected 2", fname, i)
-// 	}
-// }
 
 func testIntVar(t *testing.T) {
 	const fname = "testIntVar"
@@ -810,7 +737,7 @@ func TestConfIntDefaultTypeError(t *testing.T) {
 
 func TestValueIntNotThere(t *testing.T) {
 	const fname = "TestValueIntNotThere"
-	_, err := config.ValueInt("notThere")
+	_, err := global.ValueInt("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -984,7 +911,7 @@ func TestConfInt64DefaultTypeError(t *testing.T) {
 
 func TestValueInt64NotThere(t *testing.T) {
 	const fname = "TestValueInt64NotThere"
-	_, err := config.ValueInt64("notThere")
+	_, err := global.ValueInt64("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -1169,7 +1096,7 @@ func TestConfUintDefaultTypeError(t *testing.T) {
 
 func TestValueUintNotThere(t *testing.T) {
 	const fname = "TestValueUintNotThere"
-	_, err := config.ValueUint("notThere")
+	_, err := global.ValueUint("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -1354,7 +1281,7 @@ func TestConfUint64DefaultTypeError(t *testing.T) {
 
 func TestValueUint64NotThere(t *testing.T) {
 	const fname = "TestValueUint64NotThere"
-	_, err := config.ValueUint64("notThere")
+	_, err := global.ValueUint64("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -1539,7 +1466,7 @@ func TestConfFloat64DefaultTypeError(t *testing.T) {
 
 func TestValueFloat64NotThere(t *testing.T) {
 	const fname = "TestValueFloat64NotThere"
-	_, err := config.ValueFloat64("notThere")
+	_, err := global.ValueFloat64("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -1724,7 +1651,7 @@ func TestConfStringDefaultTypeError(t *testing.T) {
 
 func TestValueStringNotThere(t *testing.T) {
 	const fname = "TestValueStringNotThere"
-	_, err := config.ValueString("notThere")
+	_, err := global.ValueString("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -1910,7 +1837,7 @@ func TestConfBoolDefaultTypeError(t *testing.T) {
 
 func TestValueBoolNotThere(t *testing.T) {
 	const fname = "TestValueBoolNotThere"
-	_, err := config.ValueBool("notThere")
+	_, err := global.ValueBool("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -2096,7 +2023,7 @@ func TestConfDurationDefaultTypeError(t *testing.T) {
 
 func TestValueDurationNotThere(t *testing.T) {
 	const fname = "TestValueDurationNotThere"
-	_, err := config.ValueDuration("notThere")
+	_, err := global.ValueDuration("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -2282,7 +2209,7 @@ func TestConfValueError(t *testing.T) {
 
 func TestConfValueNotThere(t *testing.T) {
 	const fname = "TestConfValueNotThere"
-	_, _, err := config.Value("notThere")
+	_, _, err := global.Value("notThere")
 	if !errors.Is(err, errNoKey) {
 		t.Errorf("%s: error: %s", fname, err)
 	}

@@ -31,17 +31,19 @@ var (
  *  Main package functions
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Setup sets the basis for the programs help output, the 'help header'
-// and help 'Sub header', it also returns the bitfield for the modes field
-// for use in the creation of Options, consequent calls to c.Mode will
-// create and return further more flags.
-func Setup(heading string, subheading string) (command cmd) {
-	command = c.Setup(heading, subheading)
+// TODO compaire cmdNameIs and setCmd something is not requited here
+
+// Setup sets the basis for the programs usage output, by way of the
+// 'command' and 'usage' strings. Returning a subcommand token for the
+// 'Option.Commands' field for use in the creation of Options, consequent
+// calls to c.SubCommand will create and return further more tokens.
+func Setup(heading string, usage string) (command cmd) {
+	command = c.Setup(heading, usage)
 	return
 }
 
-// Command creates a new program operating mode, returning the bitfield
-// token required to set options and their flags for that operating mode.
+// Command creates a new sub-command, returning a bitfield token which is
+// used to assign an option and its flags to use within that mode.
 func Command(name, help string) (bitfield cmd) {
 	bitfield = c.Command(name, help)
 	return
@@ -110,14 +112,14 @@ type Config struct {
 // 'command' and 'usage' strings. Returning a subcommand token for the
 // 'Option.Commands' field for use in the creation of Options, consequent
 // calls to c.SubCommand will create and return further more tokens.
-func (c *Config) Setup(name string, usage string) (command cmd) {
-	c.help = name
+func (c *Config) Setup(heading string, usage string) (command cmd) {
+	c.help = heading
 	command = c.Command("default", usage)
 	return
 }
 
-// Command creates a new program operating mode, returning the bitfield
-// token required to set options and their flags for that operating mode.
+// Command creates a new sub-command, returning a bitfield token which is
+// used to assign an option and its flags to use within that mode.
 func (c *Config) Command(name, usage string) (bitfield cmd) {
 	// Make sure that we start at 1.
 	if c.index == 0 {
@@ -163,15 +165,12 @@ func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if c.cmdNameIs(os.Args[1]) {
-			if err := c.loadCmd(os.Args[1]); err != nil {
-				return fmt.Errorf("%s: %s: %w", pkg,
-					fname, err)
-			}
-			offset++ // We have used another argument.
-			goto parse
+		if err := c.loadCmd(os.Args[1]); err != nil {
+			return fmt.Errorf("%s: %s: %w", pkg,
+				fname, err)
 		}
-		return fmt.Errorf("unknown mode: %q\n", os.Args[1])
+		offset++ // We have used another argument.
+		goto parse
 	}
 	// If no sub-command has been specified, load the default cmd.
 	if err := c.loadCmd("default"); err != nil {
@@ -559,17 +558,6 @@ type subcmd struct {
 // The cmdlist type is used to store all of the commands inside of a
 // Config struct.
 type cmdlist []subcmd
-
-// cmdNameIs returns true if the given sub-command name exists and false
-// if it does not.
-func (c Config) cmdNameIs(name string) bool {
-	for _, m := range c.cmds {
-		if strings.Compare(name, m.name) == 0 {
-			return true
-		}
-	}
-	return false
-}
 
 // cmd is the bitfield that defines which commands an option is to be
 // applied to.
