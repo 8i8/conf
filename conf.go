@@ -229,7 +229,7 @@ func (c *Config) optionsToFsErrAccum() {
 	for key, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
 			if c.subcmd.flags[o.Flag] > 1 {
-				continue // TODO create a test for this.
+				continue
 			}
 			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {

@@ -278,14 +278,21 @@ func TestParseSubCommand(t *testing.T) {
 func TestFlagSetUsageFn(t *testing.T) {
 	const fname = "TestFlagSetUsageFn"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
+		},
+		{Name: "two",
+			Type:     Int,
+			Flag:     "flagWithAVeryLongName",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -300,6 +307,36 @@ func TestFlagSetUsageFn(t *testing.T) {
 	buf := bufio.NewWriter(&b)
 	fn := config.setUsageFn(buf)
 	fn()
+}
+
+func TestFlagDuplicateNoPanic(t *testing.T) {
+	const fname = "TestFlagDuplicateNoPanic"
+	config := Config{}
+	cmd := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: cmd,
+		},
+		{Name: "two",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: cmd,
+		},
+	}
+	err := config.Options(opts...)
+	if !errors.Is(err, errConfig) {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
 }
 
 func TestParse(t *testing.T) {
@@ -717,14 +754,14 @@ func testIntVar(t *testing.T) {
 func TestConfInt(t *testing.T) {
 	const fname = "TestConfInt"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -747,14 +784,14 @@ func TestConfInt(t *testing.T) {
 func TestConfIntDefaultTypeError(t *testing.T) {
 	const fname = "TestConfIntDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "wrongType",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -782,14 +819,14 @@ func TestValueIntNotThere(t *testing.T) {
 func TestConfIntNoData(t *testing.T) {
 	const fname = "TestConfIntNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  int(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -813,7 +850,7 @@ func TestConfIntVar(t *testing.T) {
 	const fname = "TestConfIntVar"
 	var i int
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     IntVar,
@@ -821,7 +858,7 @@ func TestConfIntVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  1,
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -841,7 +878,7 @@ func TestConfIntVarTypeError(t *testing.T) {
 	const fname = "TestConfIntVarTypeError"
 	var i string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     IntVar,
@@ -849,7 +886,7 @@ func TestConfIntVarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  2,
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -865,7 +902,7 @@ func TestConfIntVarTypeError(t *testing.T) {
 func TestConfIntVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfIntVarDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     IntVar,
@@ -873,7 +910,7 @@ func TestConfIntVarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "wrongType",
 			Var:      2,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -891,14 +928,14 @@ func TestConfIntVarDefaultTypeError(t *testing.T) {
 func TestConfInt64(t *testing.T) {
 	const fname = "TestConfInt64"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  int64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -921,14 +958,14 @@ func TestConfInt64(t *testing.T) {
 func TestConfInt64DefaultTypeError(t *testing.T) {
 	const fname = "TestConfInt64DefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  2,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -956,14 +993,14 @@ func TestValueInt64NotThere(t *testing.T) {
 func TestConfInt64NoData(t *testing.T) {
 	const fname = "TestConfInt64NoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  int64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -998,7 +1035,7 @@ func TestConfInt64Var(t *testing.T) {
 	const fname = "TestConfInt64Var"
 	var i int64
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64Var,
@@ -1006,7 +1043,7 @@ func TestConfInt64Var(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  int64(1),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1026,7 +1063,7 @@ func TestConfInt64VarTypeError(t *testing.T) {
 	const fname = "TestConfInt64VarTypeError"
 	var i string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64Var,
@@ -1034,7 +1071,7 @@ func TestConfInt64VarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  int64(2),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1050,7 +1087,7 @@ func TestConfInt64VarTypeError(t *testing.T) {
 func TestConfInt64VarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfInt64VarDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int64Var,
@@ -1058,7 +1095,7 @@ func TestConfInt64VarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "wrongType",
 			Var:      int64(2),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1076,14 +1113,14 @@ func TestConfInt64VarDefaultTypeError(t *testing.T) {
 func TestConfUint(t *testing.T) {
 	const fname = "TestConfUint"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  uint(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1106,14 +1143,14 @@ func TestConfUint(t *testing.T) {
 func TestConfUintDefaultTypeError(t *testing.T) {
 	const fname = "TestConfUintDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "wrongType",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1141,14 +1178,14 @@ func TestValueUintNotThere(t *testing.T) {
 func TestConfUintNoData(t *testing.T) {
 	const fname = "TestConfUintNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  uint(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1172,7 +1209,7 @@ func TestConfUintVar(t *testing.T) {
 	const fname = "TestConfUintVar"
 	var i uint
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     UintVar,
@@ -1180,7 +1217,7 @@ func TestConfUintVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  uint(1),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1200,7 +1237,7 @@ func TestConfUintVarTypeError(t *testing.T) {
 	const fname = "TestConfUintVarTypeError"
 	var i string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     UintVar,
@@ -1208,7 +1245,7 @@ func TestConfUintVarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  uint(2),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1224,7 +1261,7 @@ func TestConfUintVarTypeError(t *testing.T) {
 func TestConfUintVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfUintVarDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     UintVar,
@@ -1232,7 +1269,7 @@ func TestConfUintVarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "wrongType",
 			Var:      uint(2),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1261,14 +1298,14 @@ func TestValueUint(t *testing.T) {
 func TestConfUint64(t *testing.T) {
 	const fname = "TestConfUint64"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  uint64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1291,14 +1328,14 @@ func TestConfUint64(t *testing.T) {
 func TestConfUint64DefaultTypeError(t *testing.T) {
 	const fname = "TestConfUint64DefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "wrongType",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1326,14 +1363,14 @@ func TestValueUint64NotThere(t *testing.T) {
 func TestConfUint64NoData(t *testing.T) {
 	const fname = "TestConfUint64NoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  uint64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1368,7 +1405,7 @@ func TestConfUint64Var(t *testing.T) {
 	const fname = "TestConfUint64Var"
 	var i uint64
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64Var,
@@ -1376,7 +1413,7 @@ func TestConfUint64Var(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  uint64(1),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1396,7 +1433,7 @@ func TestConfUint64VarTypeError(t *testing.T) {
 	const fname = "TestConfUint64VarTypeError"
 	var i string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64Var,
@@ -1404,7 +1441,7 @@ func TestConfUint64VarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  uint64(2),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1420,7 +1457,7 @@ func TestConfUint64VarTypeError(t *testing.T) {
 func TestConfUint64VarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfUint64VarDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Uint64Var,
@@ -1428,7 +1465,7 @@ func TestConfUint64VarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "wrongType",
 			Var:      uint64(2),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1446,14 +1483,14 @@ func TestConfUint64VarDefaultTypeError(t *testing.T) {
 func TestConfFloat64(t *testing.T) {
 	const fname = "TestConfFloat64"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  float64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1476,14 +1513,14 @@ func TestConfFloat64(t *testing.T) {
 func TestConfFloat64DefaultTypeError(t *testing.T) {
 	const fname = "TestConfFloat64DefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "wrongType",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1511,14 +1548,14 @@ func TestValueFloat64NotThere(t *testing.T) {
 func TestConfFloat64NoData(t *testing.T) {
 	const fname = "TestConfFloat64NoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  float64(1),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1553,7 +1590,7 @@ func TestConfFloat64Var(t *testing.T) {
 	const fname = "TestConfFloat64Var"
 	var i float64
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64Var,
@@ -1561,7 +1598,7 @@ func TestConfFloat64Var(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  float64(1),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1581,7 +1618,7 @@ func TestConfFloat64VarTypeError(t *testing.T) {
 	const fname = "TestConfFloat64VarTypeError"
 	var i string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64Var,
@@ -1589,7 +1626,7 @@ func TestConfFloat64VarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  float64(2),
 			Var:      &i,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1605,7 +1642,7 @@ func TestConfFloat64VarTypeError(t *testing.T) {
 func TestConfFloat64VarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfFloat64VarDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Float64Var,
@@ -1613,7 +1650,7 @@ func TestConfFloat64VarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "wrongType",
 			Var:      float64(2),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1631,14 +1668,14 @@ func TestConfFloat64VarDefaultTypeError(t *testing.T) {
 func TestConfString(t *testing.T) {
 	const fname = "TestConfString"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     String,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "string",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1661,14 +1698,14 @@ func TestConfString(t *testing.T) {
 func TestConfStringDefaultTypeError(t *testing.T) {
 	const fname = "TestConfStringDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     String,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1696,14 +1733,14 @@ func TestValueStringNotThere(t *testing.T) {
 func TestConfStringNoData(t *testing.T) {
 	const fname = "TestConfStringNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     String,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  "string",
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1738,7 +1775,7 @@ func TestConfStringVar(t *testing.T) {
 	const fname = "TestConfStringVar"
 	var str string
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     StringVar,
@@ -1746,7 +1783,7 @@ func TestConfStringVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "string",
 			Var:      &str,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1766,7 +1803,7 @@ func TestConfStringVarTypeError(t *testing.T) {
 	const fname = "TestConfStringVarTypeError"
 	var str int
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     StringVar,
@@ -1774,7 +1811,7 @@ func TestConfStringVarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  "string",
 			Var:      &str,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1791,7 +1828,7 @@ func TestConfStringVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfStringVarDefaultTypeError"
 	config := Config{}
 	str := "string"
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     StringVar,
@@ -1799,7 +1836,7 @@ func TestConfStringVarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  1,
 			Var:      str,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1817,14 +1854,14 @@ func TestConfStringVarDefaultTypeError(t *testing.T) {
 func TestConfBool(t *testing.T) {
 	const fname = "TestConfBool"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Bool,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  true,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1847,14 +1884,14 @@ func TestConfBool(t *testing.T) {
 func TestConfBoolDefaultTypeError(t *testing.T) {
 	const fname = "TestConfBoolDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Bool,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1882,14 +1919,14 @@ func TestValueBoolNotThere(t *testing.T) {
 func TestConfBoolNoData(t *testing.T) {
 	const fname = "TestConfBoolNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Bool,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  true,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1924,7 +1961,7 @@ func TestConfBoolVar(t *testing.T) {
 	const fname = "TestConfBoolVar"
 	var b bool
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     BoolVar,
@@ -1932,7 +1969,7 @@ func TestConfBoolVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  true,
 			Var:      &b,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1952,7 +1989,7 @@ func TestConfBoolVarTypeError(t *testing.T) {
 	const fname = "TestConfBoolVarTypeError"
 	var b int
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     BoolVar,
@@ -1960,7 +1997,7 @@ func TestConfBoolVarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  true,
 			Var:      &b,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -1977,7 +2014,7 @@ func TestConfBoolVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfBoolVarDefaultTypeError"
 	config := Config{}
 	b := true
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     BoolVar,
@@ -1985,7 +2022,7 @@ func TestConfBoolVarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  1,
 			Var:      &b,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2003,14 +2040,14 @@ func TestConfBoolVarDefaultTypeError(t *testing.T) {
 func TestConfDuration(t *testing.T) {
 	const fname = "TestConfDuration"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Duration,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  time.Duration(0),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2033,14 +2070,14 @@ func TestConfDuration(t *testing.T) {
 func TestConfDurationDefaultTypeError(t *testing.T) {
 	const fname = "TestConfDurationDefaultTypeError"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Duration,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2068,14 +2105,14 @@ func TestValueDurationNotThere(t *testing.T) {
 func TestConfDurationNoData(t *testing.T) {
 	const fname = "TestConfDurationNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Duration,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  time.Duration(0),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2110,7 +2147,7 @@ func TestConfDurationVar(t *testing.T) {
 	const fname = "TestConfDurationVar"
 	var d time.Duration
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     DurationVar,
@@ -2118,7 +2155,7 @@ func TestConfDurationVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  time.Duration(0),
 			Var:      &d,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2138,7 +2175,7 @@ func TestConfDurationVarTypeError(t *testing.T) {
 	const fname = "TestConfDurationVarTypeError"
 	var b int
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     DurationVar,
@@ -2146,7 +2183,7 @@ func TestConfDurationVarTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  time.Duration(0),
 			Var:      &b,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2163,7 +2200,7 @@ func TestConfDurationVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfDurationVarDefaultTypeError"
 	config := Config{}
 	b := time.Duration(0)
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     DurationVar,
@@ -2171,7 +2208,7 @@ func TestConfDurationVarDefaultTypeError(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  1,
 			Var:      &b,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2189,14 +2226,14 @@ func TestConfDurationVarDefaultTypeError(t *testing.T) {
 func TestConfValue(t *testing.T) {
 	const fname = "TestConfInt"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2219,14 +2256,14 @@ func TestConfValue(t *testing.T) {
 func TestConfValueError(t *testing.T) {
 	const fname = "TestConfInt"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:  Int,
 			Flag:  "i",
 			Usage: "do it like this",
 			//Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2254,14 +2291,14 @@ func TestConfValueNotThere(t *testing.T) {
 func TestConfValueNoData(t *testing.T) {
 	const fname = "TestConfDurationNoData"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2308,7 +2345,7 @@ func TestConfVar(t *testing.T) {
 	const fname = "TestConfVar"
 	thing := testValue{str: "string"}
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Var,
@@ -2316,7 +2353,7 @@ func TestConfVar(t *testing.T) {
 			Usage:    "do it like this",
 			Default:  testValue{str: ""},
 			Value:    &thing,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2336,14 +2373,14 @@ func TestConfVarDefaultTypeError(t *testing.T) {
 	const fname = "TestConfVarDefaultTypeError"
 	_ = testValue{str: "string"}
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Var,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  testValue{str: "string"},
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2361,14 +2398,14 @@ func TestConfVarDefaultTypeError(t *testing.T) {
 func TestConfNil(t *testing.T) {
 	const fname = "TestConfNil"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Nil,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  time.Duration(0),
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
@@ -2386,14 +2423,14 @@ func TestConfNil(t *testing.T) {
 func TestConfDefault(t *testing.T) {
 	const fname = "TestConfDefault"
 	config := Config{}
-	mode := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.Setup("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Default,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
-			Commands: mode,
+			Commands: cmd,
 		},
 	}
 	err := config.Options(opts...)
