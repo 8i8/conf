@@ -105,47 +105,54 @@ var helpBase = `NAME
         conf
 
 SYNOPSIS
-        conf | [mode] | -[flag] | -[flag] <value> | -[flag] <'value,value,value'>
+        conf | <command> | -<option> | -<option> <args> |
+	        -<option> <'arg,arg,arg'>
 
 EXAMPLE
-	conf one -n 36 -s "Hello, World!"`
+	conf one -n 36 -s "Hello, World!"
+`
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  Modes
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 var helpDef = `
-MODES
-        conf [mode] -[flag]
+COMMANDS
+        conf <mode> -<flag>
 
 	one     one does all things in the oneiest way.
 
-	two     two, despite appearances is second to none, doing things in an
-	        agreeable two like fashion.
+	two     two, despite appearances is second to none, doing things
+		in an agreeable two like fashion.
 
-	Further detatils of the use of each mode can be found by running the
-	following command.
+	Further details of the use of each mode can be found by running
+	the following command.
 
-	conf [mode] -help  or conf [mode] -h
+	conf <mode> -help  or conf <mode> -h
 
-FLAGS`
+OPTIONS`
 
-var helpOne = `MODE
+var helpOne = `DESCRIPTION
 	conf one
+		Some very helpful information about the use of the one
+		command.
 
-FLAGS`
+OPTIONS`
 
-var helpTwo = `MODE
+var helpTwo = `DESCRIPTION
 	conf two
+		Some very helpful information about the use of the two
+		command.
 
-FLAGS`
+OPTIONS`
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //  Flags
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-var intie = `This is the very default value in the most simple mode, to test
-if another way of writing the messages might be better.`
+var intie = `This is the very default value in the most simple mode, to
+test if another way of writing the messages might be
+better.`
 
 var thing = `This is the default string thing, so as to best exemplify
 the use of this package in its current state I thought it
