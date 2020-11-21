@@ -522,15 +522,16 @@ func (c *Config) checkCmd(o Option) error {
 func (c *Config) runCheckFn() error {
 	const msg = "Option: Check"
 	for key, o := range c.options {
-		if o.Check != nil {
-			var err error
-			c.options[key].data, err = o.Check(o.data)
-			if err != nil {
-				c.options[key].Err = fmt.Errorf("%s, %w",
-					err, errCheck)
-				c.Err = append(c.Err, fmt.Errorf("%s, %w",
-					msg, err))
-			}
+		if o.data == nil || o.Check == nil {
+			continue
+		}
+		var err error
+		c.options[key].data, err = o.Check(o.data)
+		if err != nil {
+			c.options[key].Err = fmt.Errorf("%s, %w",
+				err, errCheck)
+			c.Err = append(c.Err, fmt.Errorf("%s, %w",
+				msg, err))
 		}
 	}
 	return c.Error("runCheckFn", errCheck)
