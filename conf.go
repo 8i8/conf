@@ -902,6 +902,7 @@ const (
 var (
 	errNoData = errors.New("no data")
 	errNoKey  = errors.New("key not found")
+	errStored = errors.New("stored")
 )
 
 func (t Type) String() string {
@@ -957,7 +958,7 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.Err)
+		return o.data, o.Type, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
@@ -982,7 +983,7 @@ func (c Config) ValueInt(key string) (int, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1007,7 +1008,7 @@ func (c Config) ValueInt64(key string) (int64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1032,7 +1033,7 @@ func (c Config) ValueUint(key string) (uint, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1057,7 +1058,7 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1082,7 +1083,7 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1107,7 +1108,7 @@ func (c Config) ValueString(key string) (string, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return "", fmt.Errorf("%s: %w", fname, o.Err)
+		return "", fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return "", fmt.Errorf("%s: %s: %q: %w",
@@ -1132,7 +1133,7 @@ func (c Config) ValueBool(key string) (bool, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return false, fmt.Errorf("%s: %w", fname, o.Err)
+		return false, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return false, fmt.Errorf("%s: %s: %q: %w",
@@ -1157,7 +1158,7 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.Err)
+		return 0, fmt.Errorf("%s: %s: %w", fname, o.Err.Error(), errStored)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %w",
