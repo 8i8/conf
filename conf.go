@@ -224,7 +224,7 @@ func (c *Config) saveArgs() error {
 // the Config.Err field.
 // GROUP Errors
 func (c *Config) optionsToFsErrAccum() {
-	const msg = "Option"
+	const msg = "Option: flagSet"
 	for name, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
 			if c.subcmd.flags[o.Flag] > 1 {
@@ -233,7 +233,7 @@ func (c *Config) optionsToFsErrAccum() {
 			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {
 				c.options[name].Err = fmt.Errorf(
-					"%s: %q: %w", msg, name, err)
+					"%s: %s: %w", msg, name, err)
 				c.Err = append(c.Err, c.options[name].Err)
 			}
 		}
@@ -308,28 +308,28 @@ var (
 // stored in the c.Err field.
 // GROUP Errors
 func (c *Config) checkOptionErrAccum(o Option) Option {
-	const fname = "Option"
+	const msg = "Option: check"
 	if err := c.checkName(o); err != nil {
-		o.Err = fmt.Errorf("%s: %w", fname, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
 		c.Err = append(c.Err, o.Err)
 		return o
 	}
 	o, err := c.checkFlag(o)
 	if err != nil {
-		o.Err = fmt.Errorf("%s: %w", fname, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
 		c.Err = append(c.Err, o.Err)
 		return o
 	}
 	if err := c.checkDefault(o); err != nil {
-		o.Err = fmt.Errorf("%s: %w", fname, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	if err := c.checkVar(o); err != nil {
-		o.Err = fmt.Errorf("%s: %w", fname, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	if err := c.checkCmd(o); err != nil {
-		o.Err = fmt.Errorf("%s: %w", fname, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	return o
@@ -338,12 +338,12 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 // chekcName checks that the name is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkName(o Option) error {
-	const msg = "Name"
+	const msg = "Option.Name"
 	if len(o.Name) == 0 {
-		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNoValue)
+		return fmt.Errorf("%s: %w", msg, errNoValue)
 	}
 	if c.opnames[o.Name] {
-		return fmt.Errorf("%s: %q: %s", msg, o.Name, errDuplicate)
+		return fmt.Errorf("%s: %w", msg, errDuplicate)
 	}
 	c.opnames[o.Name] = true
 	return nil
@@ -352,9 +352,9 @@ func (c *Config) checkName(o Option) error {
 // checkFlag checks that the flag field is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkFlag(o Option) (Option, error) {
-	const msg = "Flag"
+	const msg = "Option.Flag"
 	if len(o.Flag) == 0 {
-		return o, fmt.Errorf("%q: %s: %s", o.Name, msg, errNoValue)
+		return o, fmt.Errorf("%q: %w", msg, errNoValue)
 	}
 	for i := range c.cmds {
 		// If the option flag has already been registered on the
@@ -363,9 +363,8 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 		if c.cmds[i].id&o.Commands > 0 {
 			if c.cmds[i].flags[o.Flag] > 0 {
 				c.cmds[i].flags[o.Flag]++
-				err := fmt.Errorf("%q: %q: %q: %s",
-					o.Name, o.Flag, msg,
-					errDuplicate)
+				err := fmt.Errorf("%s: %s: %w",
+					msg, o.Flag, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
@@ -378,59 +377,59 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 // checkDefault checks that the options default value has the correct
 // type.
 func (c *Config) checkDefault(o Option) error {
-	const msg = "Default"
+	const msg = "Option.Default"
 	switch o.Type {
 	case Int, IntVar:
 		if _, ok := o.Default.(int); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Int64, Int64Var:
 		if _, ok := o.Default.(int64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Uint, UintVar:
 		if _, ok := o.Default.(uint); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Uint64, Uint64Var:
 		if _, ok := o.Default.(uint64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case String, StringVar:
 		if _, ok := o.Default.(string); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Bool, BoolVar:
 		if _, ok := o.Default.(bool); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Float64, Float64Var:
 		if _, ok := o.Default.(float64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Duration, DurationVar:
 		if _, ok := o.Default.(time.Duration); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Var:
 		if _, ok := o.Value.(flag.Value); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Nil:
-		return fmt.Errorf("%s: %q: %+v: %s",
-			msg, o.Name, o.Type, errTypeNil)
+		return fmt.Errorf("%s: %s: %w",
+			msg, o.Type, errTypeNil)
 	default:
-		return fmt.Errorf("%s: %s: %q: %+v: %s",
-			pkg, msg, o.Name, o.Type, errTypeUnkown)
+		return fmt.Errorf("%s: %s: %s: %w",
+			pkg, msg, o.Type, errTypeUnkown)
 	}
 	return nil
 }
@@ -443,62 +442,62 @@ func (c *Config) checkVar(o Option) error {
 	case Int:
 	case IntVar:
 		if _, ok := o.Var.(*int); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Int64:
 	case Int64Var:
 		if _, ok := o.Var.(*int64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Uint:
 	case UintVar:
 		if _, ok := o.Var.(*uint); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Uint64:
 	case Uint64Var:
 		if _, ok := o.Var.(*uint64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case String:
 	case StringVar:
 		if _, ok := o.Var.(*string); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Bool:
 	case BoolVar:
 		if _, ok := o.Var.(*bool); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Float64:
 	case Float64Var:
 		if _, ok := o.Var.(*float64); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Duration:
 	case DurationVar:
 		if _, ok := o.Var.(*time.Duration); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Var:
 		if _, ok := o.Value.(flag.Value); !ok {
-			return fmt.Errorf("%s: %q: %+v: %s",
-				msg, o.Name, o.Type, errType)
+			return fmt.Errorf("%s: %s: %w",
+				msg, o.Type, errType)
 		}
 	case Nil:
-		return fmt.Errorf("%s: %q: %+v: %s",
-			msg, o.Name, o.Type, errTypeNil)
+		return fmt.Errorf("%s: %s: %w",
+			msg, o.Type, errTypeNil)
 	default:
-		return fmt.Errorf("%s: %s: %q: %+v: %s",
-			pkg, msg, o.Name, o.Type, errTypeUnkown)
+		return fmt.Errorf("%s: %s: %s: %w",
+			pkg, msg, o.Type, errTypeUnkown)
 	}
 	return nil
 }
@@ -509,7 +508,7 @@ func (c *Config) checkVar(o Option) error {
 func (c *Config) checkCmd(o Option) error {
 	const msg = "Commands"
 	if !c.cmdTokenIs(o.Commands) {
-		return fmt.Errorf("%s: %q: %s", msg, o.Name, errSubCmd)
+		return fmt.Errorf("%s: %w", msg, errSubCmd)
 	}
 	return nil
 }
