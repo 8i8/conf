@@ -225,16 +225,16 @@ func (c *Config) saveArgs() error {
 // GROUP Errors
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option"
-	for key, o := range c.options {
+	for name, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
 			if c.subcmd.flags[o.Flag] > 1 {
 				continue
 			}
 			err := c.options[o.Name].toFlagSet(c.flagSet)
 			if err != nil {
-				c.options[key].Err = fmt.Errorf(
-					"%s: %q: %w", msg, key, err)
-				c.Err = append(c.Err, c.options[key].Err)
+				c.options[name].Err = fmt.Errorf(
+					"%s: %q: %w", msg, name, err)
+				c.Err = append(c.Err, c.options[name].Err)
 			}
 		}
 	}
