@@ -338,7 +338,7 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 // chekcName checks that the name is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkName(o Option) error {
-	const msg = "check name"
+	const msg = "Name"
 	if len(o.Name) == 0 {
 		return fmt.Errorf("%s: %q: %s", msg, o.Name, errNoValue)
 	}
@@ -352,7 +352,7 @@ func (c *Config) checkName(o Option) error {
 // checkFlag checks that the flag field is not empty and that it is not a
 // duplicate value.
 func (c *Config) checkFlag(o Option) (Option, error) {
-	const msg = "check key"
+	const msg = "Flag"
 	if len(o.Flag) == 0 {
 		return o, fmt.Errorf("%q: %s: %s", o.Name, msg, errNoValue)
 	}
@@ -507,7 +507,7 @@ func (c *Config) checkVar(o Option) error {
 // other commands are registered as valid commands within the current
 // command set.
 func (c *Config) checkCmd(o Option) error {
-	const msg = "check commands"
+	const msg = "Commands"
 	if !c.cmdTokenIs(o.Commands) {
 		return fmt.Errorf("%s: %q: %s", msg, o.Name, errSubCmd)
 	}
@@ -521,17 +521,18 @@ func (c *Config) checkCmd(o Option) error {
 // runCheckFn runs all user given ckFunc functions within the current
 // command set, called after having first parsed all valid options.
 func (c *Config) runCheckFn() error {
-	const msg = "Option: Check"
+	const msg = "Check"
 	for key, o := range c.options {
-		if o.Check != nil {
-			var err error
-			c.options[key].data, err = o.Check(o.data)
-			if err != nil {
-				c.options[key].Err = fmt.Errorf("%s, %w",
-					err, errCheck)
-				c.Err = append(c.Err, fmt.Errorf("%s, %w",
-					msg, err))
-			}
+		if o.Check == nil || o.data == nil {
+			continue
+		}
+		var err error
+		c.options[key].data, err = o.Check(o.data)
+		if err != nil {
+			c.options[key].Err = fmt.Errorf("%s, %w",
+				err, errCheck)
+			c.Err = append(c.Err, fmt.Errorf("%s, %w",
+				msg, err))
 		}
 	}
 	return c.Error("runCheckFn", errCheck)
