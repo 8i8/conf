@@ -51,7 +51,7 @@ func Command(name, help string) (bitfield cmd) {
 
 // GetCmd return the current running sub-commands name.
 func GetCmd() string {
-	return c.subcmd.name
+	return c.GetCmd()
 }
 
 // Options initialises the programs options.
@@ -68,7 +68,7 @@ func Parse() error {
 // ArgString returns the full command line argument list as a string as it
 // was input.
 func ArgString() string {
-	return c.input
+	return c.ArgString()
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,8 +86,7 @@ type Config struct {
 	// index holds the next value that is to be use as a bitfield for
 	// the next cmdlist command.
 	index cmd
-	// subcmd is the running mode of the program, this package
-	// facilitates the generation of sub states.
+	// subcmd is the current running command mode.
 	subcmd
 	// The help output header for the program.
 	help string
@@ -112,16 +111,16 @@ type Config struct {
 // 'command' and 'usage' strings. Returning a subcommand token for the
 // 'Option.Commands' field for use in the creation of Options, consequent
 // calls to c.SubCommand will create and return further more tokens.
-func (c *Config) Setup(heading string, usage string) (command cmd) {
+func (c *Config) Setup(heading string, usage string) (bitfield cmd) {
 	c.help = heading
-	command = c.Command("default", usage)
+	bitfield = c.Command("default", usage)
 	return
 }
 
 // Command creates a new sub-command, returning a bitfield token which is
 // used to assign an option and its flags to use within that mode.
 func (c *Config) Command(name, usage string) (bitfield cmd) {
-	// Make sure that we start at 1.
+	// Make sure that we start the bitfield at 1.
 	if c.index == 0 {
 		c.index++
 	}
@@ -189,8 +188,7 @@ parse:
 	return nil
 }
 
-// ArgString returns the full command line argument list as a string as it
-// was input.
+// ArgString returns a command line arguments string, as input.
 func (c Config) ArgString() string {
 	return c.input
 }
@@ -199,7 +197,7 @@ func (c Config) ArgString() string {
 func (c *Config) saveArgs() error {
 	const fname = "saveArgs"
 	if len(os.Args) == 0 {
-		return fmt.Errorf("%s: %w", fname, errNoData)
+		return fmt.Errorf("%s: %w", fname, errConfig)
 	}
 	var str strings.Builder
 	_, err := str.WriteString(os.Args[0])
@@ -220,11 +218,15 @@ func (c *Config) saveArgs() error {
 }
 
 // optionsToFsErrAccum defines the flagset for all options that have been
-// specified within the current working set. All errors are accumulated in
+// specified within the current working set; All errors are accumulated in
 // the Config.Err field.
-// GROUP Errors
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option: flagSet"
+	if len(c.options) == 0 {
+		c.Err = append(c.Err,
+			fmt.Errorf("%s: %w", msg, errNoData))
+		return
+	}
 	for name, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
 			if c.subcmd.flags[o.Flag] > 1 {
@@ -234,7 +236,8 @@ func (c *Config) optionsToFsErrAccum() {
 			if err != nil {
 				c.options[name].Err = fmt.Errorf(
 					"%s: %s: %w", msg, name, err)
-				c.Err = append(c.Err, c.options[name].Err)
+				c.Err = append(
+					c.Err, c.options[name].Err)
 			}
 		}
 	}
@@ -293,20 +296,22 @@ func (c *Config) Error(msg string, err error) error {
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 var (
-	errCheck      = errors.New("user defined error")
-	errConfig     = errors.New("configuration error")
-	errType       = errors.New("type error")
-	errTypeNil    = errors.New("the type is not defined")
-	errTypeUnkown = errors.New("unknown type, please file a bug report")
-	errNoValue    = errors.New("value required")
-	errDuplicate  = errors.New("duplicate value")
-	errSubCmd     = errors.New("sub-command error")
+	// ErrCheck is the error that is returned when a user defined
+	// check function fails.
+	ErrCheck     = errors.New("user defined error")
+	errConfig    = errors.New("configuration error")
+	errType      = errors.New("type error")
+	errTypeNil   = errors.New("the type is not defined")
+	errNoValue   = errors.New("value required")
+	errNotFound  = errors.New("not found")
+	errNotValid  = errors.New("not valid")
+	errDuplicate = errors.New("duplicate value")
+	errSubCmd    = errors.New("sub-command error")
 )
 
 // checkOptionErrAccum verifies user supplied data within an option
-// including duplicate name and key values, errors are accumulated and
+// including duplicate name and key values; All errors are accumulated and
 // stored in the c.Err field.
-// GROUP Errors
 func (c *Config) checkOptionErrAccum(o Option) Option {
 	const msg = "Option: check"
 	if err := c.checkName(o); err != nil {
@@ -426,10 +431,10 @@ func (c *Config) checkDefault(o Option) error {
 		}
 	case Nil:
 		return fmt.Errorf("%s: %s: %w",
-			msg, o.Type, errTypeNil)
+			msg, o.Type, errType)
 	default:
 		return fmt.Errorf("%s: %s: %s: %w",
-			pkg, msg, o.Type, errTypeUnkown)
+			pkg, msg, o.Type, errType)
 	}
 	return nil
 }
@@ -497,7 +502,7 @@ func (c *Config) checkVar(o Option) error {
 			msg, o.Type, errTypeNil)
 	default:
 		return fmt.Errorf("%s: %s: %s: %w",
-			pkg, msg, o.Type, errTypeUnkown)
+			pkg, msg, o.Type, errType)
 	}
 	return nil
 }
@@ -529,12 +534,12 @@ func (c *Config) runCheckFn() error {
 		c.options[key].data, err = o.Check(o.data)
 		if err != nil {
 			c.options[key].Err = fmt.Errorf("%s, %w",
-				err, errCheck)
+				err, ErrCheck)
 			c.Err = append(c.Err, fmt.Errorf("%s, %w",
 				msg, err))
 		}
 	}
-	return c.Error("runCheckFn", errCheck)
+	return c.Error("runCheckFn", ErrCheck)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -588,7 +593,7 @@ func (c *Config) setCmd(name string) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("%s: mode not found", fname)
+	return fmt.Errorf("%s: %w", fname, errNotFound)
 }
 
 // loadCmd sets the programs operating mode and loads all required options
@@ -822,12 +827,15 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 	case Var:
 		if o.Value == nil {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
-				errNoValue)
+				errTypeNil)
 		}
 		fls.Var(o.Value, o.Flag, o.Usage)
+	case Nil:
+		return fmt.Errorf("%s: %q: %w", o.Type, def,
+			errTypeNil)
 	default:
-		return fmt.Errorf("%s: %s: internal error: (%q, %s) %s",
-			pkg, fname, o.Name, o.Type, errTypeUnkown)
+		return fmt.Errorf("%s: %s: internal error: (%q, %s) %w",
+			pkg, fname, o.Name, o.Type, errType)
 	}
 	return nil
 }
@@ -958,8 +966,7 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return o.data, o.Type, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
@@ -984,8 +991,7 @@ func (c Config) ValueInt(key string) (int, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1010,8 +1016,7 @@ func (c Config) ValueInt64(key string) (int64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1036,8 +1041,7 @@ func (c Config) ValueUint(key string) (uint, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1062,8 +1066,7 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1088,8 +1091,7 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
@@ -1114,8 +1116,7 @@ func (c Config) ValueString(key string) (string, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return "", fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return "", fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return "", fmt.Errorf("%s: %s: %q: %w",
@@ -1140,8 +1141,7 @@ func (c Config) ValueBool(key string) (bool, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return false, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return false, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return false, fmt.Errorf("%s: %s: %q: %w",
@@ -1166,8 +1166,7 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 			pkg, fname, key, errNoKey)
 	}
 	if o.Err != nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			fname, o.Err.Error(), errStored)
+		return 0, fmt.Errorf("%s: %w", fname, o.Err)
 	}
 	if o.data == nil {
 		return 0, fmt.Errorf("%s: %s: %w",
