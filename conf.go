@@ -177,8 +177,9 @@ func (c *Config) Parse() error {
 	}
 parse:
 	if !test {
-		if err := c.parse(offset); err != nil {
-			return fmt.Errorf("%s: %s: %w", pkg, fname, err)
+		err := c.flagSet.Parse(os.Args[offset:])
+		if err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
 		}
 	}
 	// Run all user specified conditions against the parsed data.
@@ -607,17 +608,6 @@ func (c *Config) loadCmd(cmd string) error {
 	c.optionsToFsErrAccum()
 	c.flagSet.Usage = c.setUsageFn(os.Stdout)
 	return c.Error("optionsToFsErrAccum", errConfig)
-}
-
-// parse parses the flagset using the given offset so as to avoid any
-// arguments that have already been read.
-func (c *Config) parse(offset int) error {
-	const fname = "parse"
-	err := c.flagSet.Parse(os.Args[offset:])
-	if err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
-	return nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

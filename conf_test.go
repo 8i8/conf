@@ -1,6 +1,8 @@
 package conf
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"flag"
 	"fmt"
@@ -818,7 +820,7 @@ func TestParse(t *testing.T) {
 	c = Config{}
 	cmd := Setup("", "")
 	cmd2 := Command("cmd2", "")
-	temp := os.Args
+	temp := os.Args[1]
 	os.Args[1] = "cmd2"
 	var opts = []Option{
 		{Name: "int",
@@ -835,6 +837,7 @@ func TestParse(t *testing.T) {
 			fname, err)
 	}
 	err = Parse()
+	os.Args[1] = temp
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
@@ -847,7 +850,6 @@ func TestParse(t *testing.T) {
 	if !c.cmdTokenIs(cmd) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
-	os.Args = temp
 }
 
 func TestParseInvalidCmd(t *testing.T) {
@@ -855,7 +857,7 @@ func TestParseInvalidCmd(t *testing.T) {
 	c = Config{}
 	cmd := Setup("", "")
 	cmd2 := Command("cmd2", "")
-	temp := os.Args
+	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
 	var opts = []Option{
 		{Name: "int",
@@ -871,6 +873,7 @@ func TestParseInvalidCmd(t *testing.T) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
 	err = Parse()
+	os.Args[1] = temp
 	if !errors.Is(err, errNotFound) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -882,5 +885,38 @@ func TestParseInvalidCmd(t *testing.T) {
 	if !c.cmdTokenIs(cmd) {
 		t.Errorf("%s: %s", fname, errNotValid)
 	}
-	os.Args = temp
+}
+
+func TestFlagSetUsageFn(t *testing.T) {
+	const fname = "TestFlagSetUsageFn"
+	config := Config{}
+	cmd := config.Setup("Usage Heading", "Mode Heading")
+	opts := []Option{
+		{Name: "one",
+			Type:     Int,
+			Flag:     "i",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: cmd,
+		},
+		{Name: "two",
+			Type:     Int,
+			Flag:     "flagWithAVeryLongName",
+			Usage:    "do it like this",
+			Default:  1,
+			Commands: cmd,
+		},
+	}
+	err := config.Options(opts...)
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	err = config.Parse()
+	if err != nil {
+		t.Errorf("%s: error: %s", fname, err)
+	}
+	b := bytes.Buffer{}
+	buf := bufio.NewWriter(&b)
+	fn := config.setUsageFn(buf)
+	fn()
 }
