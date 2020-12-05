@@ -1,11 +1,10 @@
 package conf
 
 import (
-	"bufio"
-	"bytes"
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -915,8 +914,7 @@ func TestFlagSetUsageFn(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	b := bytes.Buffer{}
-	buf := bufio.NewWriter(&b)
-	fn := config.setUsageFn(buf)
+	fn := config.setUsageFn(nil)
+	fn = config.setUsageFn(ioutil.Discard)
 	fn()
 }

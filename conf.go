@@ -31,8 +31,6 @@ var (
  *  Main package functions
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// TODO compaire cmdNameIs and setCmd something is not requited here
-
 // Setup sets the basis for the programs usage output, by way of the
 // 'command' and 'usage' strings. Returning a subcommand token for the
 // 'Option.Commands' field for use in the creation of Options, consequent
@@ -836,9 +834,13 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 
 // setUsageFn is set as flag.FlagSet.Usage, generating the usage output.
 func (c Config) setUsageFn(w io.Writer) func() {
+	c.flagSet.SetOutput(w)
+	if w == nil {
+		w = os.Stderr
+	}
 	return func() {
-		fmt.Println(c.help)
-		fmt.Println(c.subcmd.usage)
+		io.WriteString(w, c.help)
+		io.WriteString(w, c.subcmd.usage)
 		c.flagSet.VisitAll(flagUsage)
 	}
 }
