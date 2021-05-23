@@ -875,27 +875,47 @@ func flagUsage(f *flag.Flag) {
  *  Values and Types
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+// Type are the supported types that can be used as config flags.
 type Type uint64
 
 const (
+	// Nil is not a type.
 	Nil Type = iota
+	// Int are the native int type.
 	Int
+	// IntVar are the native &int type.
 	IntVar
+	// Int64 are the native int64 type.
 	Int64
+	// Int64Var are the native &int64 type.
 	Int64Var
+	// Uint are the native uint type.
 	Uint
+	// UintVar are the native &uint type.
 	UintVar
+	// Uint64 are the native &uint64 type.
 	Uint64
+	// Uint64Var are the native &uint64 type.
 	Uint64Var
+	// Float64 are the native float64 type.
 	Float64
+	// Float64Var are the native &float64 type.
 	Float64Var
+	// String are the native string type.
 	String
+	// StringVar are the native &string type.
 	StringVar
+	// Bool are the native bool type.
 	Bool
+	// BoolVar are the native &bool type.
 	BoolVar
+	// Duration are the samaya.Duration type.
 	Duration
+	// DurationVar are the &samaya.Duration type.
 	DurationVar
+	// Var are the interface{} type.
 	Var
+	// Default are an unknown type.
 	Default
 )
 
