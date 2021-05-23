@@ -745,7 +745,7 @@ func TestCommandNotThere(t *testing.T) {
 	const fname = "TestCommandNotThere"
 	config := Config{}
 	_ = config.Setup("", "")
-	m := cmd(2)
+	m := CMD(2)
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,

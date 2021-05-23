@@ -15,7 +15,7 @@ var (
 	// Global package name function used in help output.
 	pkg = "conf"
 	// limit ensures that no more than 64 base modes are possible.
-	limit = cmd(math.MaxInt64>>1 + 1)
+	limit = CMD(math.MaxInt64>>1 + 1)
 	// Config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
@@ -35,14 +35,14 @@ var (
 // 'command' and 'usage' strings. Returning a subcommand token for the
 // 'Option.Commands' field for use in the creation of Options, consequent
 // calls to c.SubCommand will create and return further more tokens.
-func Setup(heading string, usage string) (command cmd) {
+func Setup(heading string, usage string) (command CMD) {
 	command = c.Setup(heading, usage)
 	return
 }
 
 // Command creates a new sub-command, returning a bitfield token which is
 // used to assign an option and its flags to use within that mode.
-func Command(name, help string) (bitfield cmd) {
+func Command(name, help string) (bitfield CMD) {
 	bitfield = c.Command(name, help)
 	return
 }
@@ -83,7 +83,7 @@ type Config struct {
 	cmds cmdlist
 	// index holds the next value that is to be use as a bitfield for
 	// the next cmdlist command.
-	index cmd
+	index CMD
 	// subcmd is the current running command mode.
 	subcmd
 	// The help output header for the program.
@@ -109,7 +109,7 @@ type Config struct {
 // 'command' and 'usage' strings. Returning a subcommand token for the
 // 'Option.Commands' field for use in the creation of Options, consequent
 // calls to c.SubCommand will create and return further more tokens.
-func (c *Config) Setup(heading string, usage string) (bitfield cmd) {
+func (c *Config) Setup(heading string, usage string) (bitfield CMD) {
 	c.help = heading
 	bitfield = c.Command("default", usage)
 	return
@@ -117,7 +117,7 @@ func (c *Config) Setup(heading string, usage string) (bitfield cmd) {
 
 // Command creates a new sub-command, returning a bitfield token which is
 // used to assign an option and its flags to use within that mode.
-func (c *Config) Command(name, usage string) (bitfield cmd) {
+func (c *Config) Command(name, usage string) (bitfield CMD) {
 	// Make sure that we start the bitfield at 1.
 	if c.index == 0 {
 		c.index++
@@ -549,7 +549,7 @@ func (c *Config) runCheckFn() error {
 // its flags.
 type subcmd struct {
 	// id is the bitfield of the command.
-	id cmd
+	id CMD
 	// The options name.
 	name string
 	// The usage output for the command displayed when -h is called or
@@ -563,13 +563,13 @@ type subcmd struct {
 // Config struct.
 type cmdlist []subcmd
 
-// cmd is the bitfield that defines which commands an option is to be
+// CMD is the bitfield that defines which commands an option is to be
 // applied to.
-type cmd int
+type CMD int
 
 // cmdTokenIs returns true if a sub-command token exists within the
 // configuration set of sub-commands, false if it does not.
-func (c Config) cmdTokenIs(bitfield cmd) bool {
+func (c Config) cmdTokenIs(bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
@@ -644,7 +644,7 @@ type Option struct {
 	Default interface{}
 	// Commands contains the set of program commands for which the
 	// option should be included.
-	Commands cmd
+	Commands CMD
 	// Err stores any errors that the option may have triggered whilst
 	// being set up and parsed.
 	Err error
