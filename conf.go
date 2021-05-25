@@ -19,29 +19,31 @@ var (
 	// Config contains the program data for the default settings
 	// struct used when not running on an exported struct.
 	c Config
-	// test is used by the test package to stop the flagset from being
-	// parsed when the function Parse is called, the test code itself
-	// when called calls flags.Parse, as such it is not necessary to
-	// call it again. However the function contains other
-	// functionality that we need to run.
+	// test is used by the test package to stop the flagset from
+	// being parsed when the function Parse is called, the test code
+	// itself when called calls flags.Parse, as such it is not
+	// necessary to call it again. However the function contains
+	// other functionality that we need to run.
 	test bool
 )
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Main package functions
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // Setup sets the basis for the programs usage output, by way of the
 // 'command' and 'usage' strings. Returning a subcommand token for the
-// 'Option.Commands' field for use in the creation of Options, consequent
-// calls to c.SubCommand will create and return further more tokens.
+// 'Option.Commands' field for use in the creation of Options,
+// consequent calls to c.SubCommand will create and return further more
+// tokens.
 func Setup(heading string, usage string) (command CMD) {
 	command = c.Setup(heading, usage)
 	return
 }
 
-// Command creates a new sub-command, returning a bitfield token which is
-// used to assign an option and its flags to use within that mode.
+// Command creates a new sub-command, returning a bitfield token which
+// is used to assign an option and its flags to use within that mode.
 func Command(name, help string) (bitfield CMD) {
 	bitfield = c.Command(name, help)
 	return
@@ -57,66 +59,68 @@ func Options(opts ...Option) error {
 	return c.Options(opts...)
 }
 
-// Parse sets the current running mode from the command line arguments and
-// then parses them to generate its flagset.
+// Parse sets the current running mode from the command line arguments
+// and then parses them to generate its flagset.
 func Parse() error {
 	return c.Parse()
 }
 
-// ArgString returns the full command line argument list as a string as it
-// was input.
+// ArgString returns the full command line argument list as a string as
+// it was input.
 func ArgString() string {
 	return c.ArgString()
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Config
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // Config is the main package struct, all of the API functionality is
 // centered about it.
 type Config struct {
-	// input is the litteral string of arguments that was entered on
-	// the command line.
+	// input is the litteral string of arguments that were entered
+	// on the command line.
 	input string
 	// cmds stores the list of available sub-commands.
 	cmds cmdlist
-	// index holds the next value that is to be use as a bitfield for
-	// the next cmdlist command.
+	// index holds the next value that is to be use as a bitfield
+	// for the next cmdlist command.
 	index CMD
 	// subcmd is the current running command mode.
 	subcmd
 	// The help output header for the program.
 	help string
 	// options are where the data for each option is stored, this
-	// includes the flag with its default value and usage string along
-	// with any data collect once the flag or config option has been
-	// parsed, and the program run, it also contains a function with
-	// which any value that is set may be verified.
+	// includes the flag with its default value and usage string
+	// along with any data collected once the flag or config option
+	// has been parsed, and the program run, it also contains a
+	// function with which any value that is set may be verified.
 	options map[string]*Option
 	// opnames makes certain that no option name duplicates exist.
 	opnames map[string]bool
 	// flagset is the programs constructed flagset, the result of
 	// running the Options command.
 	flagSet *flag.FlagSet
-	// Err stores any errors triggered on either generating or parsing
-	// the flagset, returned to the user when either Options or Parse
-	// are run, else when a flag is accesed from the calling program.
+	// Err stores any errors triggered on either generating or
+	// parsing the flagset, returned to the user when either Options
+	// or Parse are run, else when a flag is accesed from the
+	// calling program.
 	Err []error
 }
 
 // Setup sets the basis for the programs usage output, by way of the
 // 'command' and 'usage' strings. Returning a subcommand token for the
-// 'Option.Commands' field for use in the creation of Options, consequent
-// calls to c.SubCommand will create and return further more tokens.
+// 'Option.Commands' field for use in the creation of Options,
+// consequent calls to c.SubCommand will create and return further more
+// tokens.
 func (c *Config) Setup(heading string, usage string) (bitfield CMD) {
 	c.help = heading
 	bitfield = c.Command("default", usage)
 	return
 }
 
-// Command creates a new sub-command, returning a bitfield token which is
-// used to assign an option and its flags to use within that mode.
+// Command creates a new sub-command, returning a bitfield token which
+// is used to assign an option and its flags to use within that mode.
 func (c *Config) Command(name, usage string) (bitfield CMD) {
 	// Make sure that we start the bitfield at 1.
 	if c.index == 0 {
@@ -156,8 +160,8 @@ func (c *Config) Options(opts ...Option) error {
 	return nil
 }
 
-// Parse sets the current running mode from the command line arguments and
-// then parses them to generate its flagset.
+// Parse sets the current running mode from the command line arguments
+// and then parses them to generate its flagset.
 func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
@@ -216,9 +220,9 @@ func (c *Config) saveArgs() error {
 	return nil
 }
 
-// optionsToFsErrAccum defines the flagset for all options that have been
-// specified within the current working set; All errors are accumulated in
-// the Config.Err field.
+// optionsToFsErrAccum defines the flagset for all options that have
+// been specified within the current working set; All errors are
+// accumulated in the Config.Err field.
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option: flagSet"
 	if len(c.options) == 0 {
@@ -243,9 +247,9 @@ func (c *Config) optionsToFsErrAccum() {
 }
 
 // loadOptions loads all of the given options into the option map,
-// running tests on each as they are loaded.
-// On leaving the function the Config.Err field is checked and any errors
-// reported, it is then emptied.
+// running tests on each as they are loaded.  On leaving the function
+// the Config.Err field is checked and any errors reported, it is then
+// emptied.
 func (c *Config) loadOptions(opts ...Option) error {
 	const fname = "loadOptions"
 	if c.options == nil {
@@ -254,11 +258,11 @@ func (c *Config) loadOptions(opts ...Option) error {
 	if c.opnames == nil {
 		c.opnames = make(map[string]bool)
 	}
-	// Make a duplicate verification map of the flags for
-	// each sub-command, flags may not be duplicated in a
-	// sub-command, however the same flag name can be used again for
-	// different sub-commands for different operations, if that flag
-	// has not been reused within the context of the same command.
+	// Make a duplicate verification map of the flags for each
+	// sub-command, flags may not be duplicated in a sub-command,
+	// however the same flag name can be used again for different
+	// sub-commands for different operations, if that flag has not
+	// been reused within the context of the same command.
 	for i := range c.cmds {
 		if c.cmds[i].flags == nil {
 			c.cmds[i].flags = make(map[string]int)
@@ -290,9 +294,9 @@ func (c *Config) Error(msg string, err error) error {
 	return fmt.Errorf("%s: %s: %w", msg, str.String(), err)
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Pre Parse Option Checks
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 var (
 	// ErrCheck is the error that is returned when a user defined
@@ -309,8 +313,8 @@ var (
 )
 
 // checkOptionErrAccum verifies user supplied data within an option
-// including duplicate name and key values; All errors are accumulated and
-// stored in the c.Err field.
+// including duplicate name and key values; All errors are accumulated
+// and stored in the c.Err field.
 func (c *Config) checkOptionErrAccum(o Option) Option {
 	const msg = "Option: check"
 	if err := c.checkName(o); err != nil {
@@ -353,8 +357,8 @@ func (c *Config) checkName(o Option) error {
 	return nil
 }
 
-// checkFlag checks that the flag field is not empty and that it is not a
-// duplicate value.
+// checkFlag checks that the flag field is not empty and that it is not
+// a duplicate value.
 func (c *Config) checkFlag(o Option) (Option, error) {
 	const msg = "Option.Flag"
 	if len(o.Flag) == 0 {
@@ -517,9 +521,9 @@ func (c *Config) checkCmd(o Option) error {
 	return nil
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Post Parse Option Checks
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // runCheckFn runs all user given ckFunc functions within the current
 // command set, called after having first parsed all valid options.
@@ -541,9 +545,9 @@ func (c *Config) runCheckFn() error {
 	return c.Error("runCheckFn", ErrCheck)
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Sub-Commands
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // subcmd contains the required data to create a program sub-command and
 // its flags.
@@ -608,9 +612,9 @@ func (c *Config) loadCmd(cmd string) error {
 	return c.Error("optionsToFsErrAccum", errConfig)
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Option
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // ckFunc defines a function to check an options input data, the function
 // is passed into the option when it is created by the user. They are run
@@ -828,9 +832,9 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 	return nil
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Usage display output
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // setUsageFn is set as flag.FlagSet.Usage, generating the usage output.
 func (c Config) setUsageFn(w io.Writer) func() {
@@ -871,9 +875,9 @@ func flagUsage(f *flag.Flag) {
 	fmt.Fprint(os.Stdout, s, "\n\n")
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Values and Types
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // Type are the supported types that can be used as config flags.
 type Type uint64
