@@ -1,38 +1,34 @@
 ### conf
 
-package conf helps you to organise and maintain package sub-commands,
+Package conf helps you to organise and maintain package sub-commands,
 their options and their flags.
 
 COMMANDS sub-commands can be created by using the conf.Command function
 which returns a token set to designate the command as a target when
 creating an option.
 
-```go
 	cmd = conf.Command("doit", doitUsage)
-```
 
 The cmd token is then used when defining an option, instructing the
 package that the option is to be assigned to the command. The option will
-appear in all of the commands for which tokens are proveded, the tokes are
-seperated by the | character, indicating that all tokens are to be used.
+appear in all of the commands for which tokens are provided, the tokes are
+separated by the | character, indicating that all the delineated tokens
+are to be used.
 
-```go
-conf.Option{
-	Commands: cmd | cmd1 | cmd2
-}
-```
+	conf.Option{
+		Commands: cmd | cmd1 | cmd2
+	}
 
 OPTIONS contain the data required to create a flag, which is done when the
-option is present within the active commands flagset, however optoins may also be
-modified by other methods, such as the sers programming code.
+option is present within the active commands flagset, however options may
+also be modified by other methods, such as the user programme.
 
 The `Check:` field takes a function value that may be defined whilst
 creating an option. This function has the signature `func(interface{})
-(interface{}, error)` which can be uesd to either specify tests and
+(interface{}, error)` which can be used to either specify tests and
 conditions for the options value or to change the value as it is passed.
 
 The following is an example of the conf package in use:
-
 
 #### Example use
 
@@ -130,7 +126,7 @@ MODES
 	two     two, despite appearances is second to none, doing things in an
 	        agreeable two like fashion.
 
-	Further detatils of the use of each mode can be found by running the
+	Further details of the use of each mode can be found by running the
 	following command.
 
 	conf [mode] -help  or conf [mode] -h
