@@ -27,7 +27,6 @@ var (
 	test bool
 )
 
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Main package functions
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -161,7 +160,7 @@ func (c *Config) Options(opts ...Option) error {
 }
 
 // Parse sets the current running mode from the command line arguments
-// and then parses them to generate its required flagset.
+// and then calls parse on them, so as to generate its required flagset.
 func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
