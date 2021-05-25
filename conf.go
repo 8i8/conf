@@ -171,13 +171,17 @@ func (c *Config) Parse() error {
 				fname, err)
 		}
 		offset++ // We have used another argument.
-		goto parse
+		return parse(c, offset, fname)
 	}
 	// If no sub-command has been specified, load the default cmd.
 	if err := c.loadCmd("default"); err != nil {
 		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
-parse:
+	return parse(c, 1, fname)
+}
+
+// parse runs the parse command on the configs flagset.
+func parse(c *Config, offset int, fname string) error {
 	if !test {
 		err := c.flagSet.Parse(os.Args[offset:])
 		if err != nil {
