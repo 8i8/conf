@@ -161,7 +161,7 @@ func (c *Config) Options(opts ...Option) error {
 }
 
 // Parse sets the current running mode from the command line arguments
-// and then parses them to generate its flagset.
+// and then parses them to generate its required flagset.
 func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
