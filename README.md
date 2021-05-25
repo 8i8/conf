@@ -7,7 +7,7 @@ COMMANDS sub-commands can be created by using the conf.Command function
 which returns a token set to designate the command as a target when
 creating an option.
 
-	cmd = conf.Command("doit", doitUsage)
+	cmd = conf.Command("doit", doitUsageString)
 
 The cmd token is then used when defining an option, instructing the
 package that the option is to be assigned to the command. The option will
