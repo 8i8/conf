@@ -74,8 +74,8 @@ func ArgString() string {
 // Config is the main package struct, all of the API functionality is
 // centered about it.
 type Config struct {
-	// input is the litteral string of arguments that were entered
-	// on the command line.
+	// input is the raw string of arguments that were entered on the
+	// command line.
 	input string
 	// cmds stores the list of available sub-commands.
 	cmds cmdlist
@@ -99,7 +99,7 @@ type Config struct {
 	flagSet *flag.FlagSet
 	// Err stores any errors triggered on either generating or
 	// parsing the flagset, returned to the user when either Options
-	// or Parse are run, else when a flag is accesed from the
+	// or Parse are run, else when a flag is accessed from the
 	// calling program.
 	Err []error
 }
