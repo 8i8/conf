@@ -12,18 +12,15 @@ import (
 )
 
 var (
-	// Global package name function used in help output.
+	// The package name, used in help output.
 	pkg = "conf"
-	// limit ensures that no more than 64 base modes are possible.
+	// limit ensures that no more than 64 command sets are possible.
 	limit = CMD(math.MaxInt64>>1 + 1)
-	// Config contains the program data for the default settings
-	// struct used when not running on an exported struct.
+	// c is the default settings struct, used as a default when no
+	// Config struct has been exported.
 	c Config
 	// test is used by the test package to stop the flagset from
-	// being parsed when the function Parse is called, the test code
-	// itself when called calls flags.Parse, as such it is not
-	// necessary to call it again. However the function contains
-	// other functionality that we need to run.
+	// being parsed when the function Parse is called.
 	test bool
 )
 
