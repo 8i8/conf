@@ -16,56 +16,10 @@ var (
 	pkg = "conf"
 	// limit ensures that no more than 64 command sets are possible.
 	limit = CMD(math.MaxInt64>>1 + 1)
-	// c is the default settings struct, used as a default when no
-	// Config struct has been exported.
-	c Config
 	// test is used by the test package to stop the flagset from
 	// being parsed when the function Parse is called.
 	test bool
 )
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Main package functions
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-// Setup sets the basis for the programs usage output, by way of the
-// 'command' and 'usage' strings. Returning a subcommand token for the
-// 'Option.Commands' field for use in the creation of Options,
-// consequent calls to c.SubCommand will create and return further more
-// tokens.
-func Setup(heading string, usage string) (command CMD) {
-	command = c.Setup(heading, usage)
-	return
-}
-
-// Command creates a new sub-command, returning a bitfield token which
-// is used to assign an option and its flags to use within that mode.
-func Command(name, help string) (bitfield CMD) {
-	bitfield = c.Command(name, help)
-	return
-}
-
-// GetCmd return the current running sub-commands name.
-func GetCmd() string {
-	return c.GetCmd()
-}
-
-// Options initialises the programs options.
-func Options(opts ...Option) error {
-	return c.Options(opts...)
-}
-
-// Parse sets the current running mode from the command line arguments
-// and then parses them to generate its flagset.
-func Parse() error {
-	return c.Parse()
-}
-
-// ArgString returns the full command line argument list as a string as
-// it was input.
-func ArgString() string {
-	return c.ArgString()
-}
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Config
@@ -991,12 +945,6 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 	return o.data, o.Type, nil
 }
 
-// Value returns the content of an option along with its type, else an
-// error, if one has been raised during the options creation.
-func Value(key string) (interface{}, Type, error) {
-	return c.Value(key)
-}
-
 // ValueInt returns the value of an int option, else an error if one has
 // been raised during the options creation.
 func (c Config) ValueInt(key string) (int, error) {
@@ -1014,12 +962,6 @@ func (c Config) ValueInt(key string) (int, error) {
 			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*int), nil
-}
-
-// ValueInt returns the value of an int option, else an error if one has
-// been raised during the options creation.
-func ValueInt(key string) (int, error) {
-	return c.ValueInt(key)
 }
 
 // ValueInt64 returns the value of an int64 option, else an error if one
@@ -1041,12 +983,6 @@ func (c Config) ValueInt64(key string) (int64, error) {
 	return *o.data.(*int64), nil
 }
 
-// ValueInt64 returns the value of an int64 option, else an error if one
-// has been raised during the options creation.
-func ValueInt64(key string) (int64, error) {
-	return c.ValueInt64(key)
-}
-
 // ValueUint returns the value of an uint option, else an error if one has
 // been raised during the options creation.
 func (c Config) ValueUint(key string) (uint, error) {
@@ -1064,12 +1000,6 @@ func (c Config) ValueUint(key string) (uint, error) {
 			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*uint), nil
-}
-
-// ValueUint returns the value of an int option, else an error if one has
-// been raised during the options creation.
-func ValueUint(key string) (uint, error) {
-	return c.ValueUint(key)
 }
 
 // ValueUint64 returns the value of an uint64 option, else an error if one
@@ -1091,12 +1021,6 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 	return *o.data.(*uint64), nil
 }
 
-// ValueUint64 returns the value of an uint64 option, else an error if one
-// has been raised during the options creation.
-func ValueUint64(key string) (uint64, error) {
-	return c.ValueUint64(key)
-}
-
 // ValueFloat64 returns the value of an float64 option, else an error if
 // one has been raised during the options creation.
 func (c Config) ValueFloat64(key string) (float64, error) {
@@ -1114,12 +1038,6 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 			pkg, fname, key, errNoData)
 	}
 	return *o.data.(*float64), nil
-}
-
-// ValueFloat64 returns the value of an float64 option, else an error if
-// one has been raised during the options creation.
-func ValueFloat64(key string) (float64, error) {
-	return c.ValueFloat64(key)
 }
 
 // ValueString returns the value of an string option, else an error if one
@@ -1141,12 +1059,6 @@ func (c Config) ValueString(key string) (string, error) {
 	return *o.data.(*string), nil
 }
 
-// ValueString returns the value of an string option, else an error if one
-// has been raised during the options creation.
-func ValueString(key string) (string, error) {
-	return c.ValueString(key)
-}
-
 // ValueBool returns the value of an string option, else an error if one
 // has been raised during the options creation.
 func (c Config) ValueBool(key string) (bool, error) {
@@ -1166,12 +1078,6 @@ func (c Config) ValueBool(key string) (bool, error) {
 	return *o.data.(*bool), nil
 }
 
-// ValueBool returns the value of an string option, else an error if one
-// has been raised during the options creation.
-func ValueBool(key string) (bool, error) {
-	return c.ValueBool(key)
-}
-
 // ValueDuration returns the value of an time.Duration option, else an
 // error if one has been raised during the options creation.
 func (c Config) ValueDuration(key string) (time.Duration, error) {
@@ -1189,10 +1095,4 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 			pkg, fname, errNoData)
 	}
 	return *o.data.(*time.Duration), nil
-}
-
-// ValueDuration returns the value of an time.Duration option, else an
-// error if one has been raised during the options creation.
-func ValueDuration(key string) (time.Duration, error) {
-	return c.ValueDuration(key)
 }

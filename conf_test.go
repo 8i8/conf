@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var c Config
+
 func init() {
 	test = true
 }
@@ -136,9 +138,12 @@ func TestConfigValues(t *testing.T) {
 		"DefaultFail": {typ: Default, def: nil, value: nil, exp: "fail"},
 	}
 
+	// TODO check whether this test is required as it may be a
+	// duplicate test now that the global Config value has been
+	// removed.
 	for name, opt := range options {
 		c = Config{}
-		cmd := Setup("Usage heading", "cmd's heading")
+		cmd := c.Setup("Usage heading", "cmd's heading")
 		opts := []Option{
 			{Name: "one",
 				Type:     opt.typ,
@@ -152,17 +157,17 @@ func TestConfigValues(t *testing.T) {
 		}
 		switch opt.exp {
 		case "pass":
-			err := Options(opts...)
+			err := c.Options(opts...)
 			if err != nil {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
-			err = Parse()
+			err = c.Parse()
 			if err != nil {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
 			switch opt.typ {
 			case Int:
-				i, err := ValueInt("one")
+				i, err := c.ValueInt("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -171,7 +176,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, i)
 				}
 				// Value
-				in, typ, err := Value("one")
+				in, typ, err := c.Value("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -190,7 +195,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Int64:
-				i, err := ValueInt64("one")
+				i, err := c.ValueInt64("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -205,7 +210,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Uint:
-				i, err := ValueUint("one")
+				i, err := c.ValueUint("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -220,7 +225,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Uint64:
-				i, err := ValueUint64("one")
+				i, err := c.ValueUint64("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -235,7 +240,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Float64:
-				i, err := ValueFloat64("one")
+				i, err := c.ValueFloat64("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -250,7 +255,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case String:
-				i, err := ValueString("one")
+				i, err := c.ValueString("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -265,7 +270,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Bool:
-				i, err := ValueBool("one")
+				i, err := c.ValueBool("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -280,7 +285,7 @@ func TestConfigValues(t *testing.T) {
 						fname, name, v)
 				}
 			case Duration:
-				i, err := ValueDuration("one")
+				i, err := c.ValueDuration("one")
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -305,11 +310,11 @@ func TestConfigValues(t *testing.T) {
 			}
 		case "fail":
 			// Both Options and Parse return an errConfig.
-			err := Options(opts...)
+			err := c.Options(opts...)
 			if !errors.Is(err, errConfig) {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
-			err = Parse()
+			err = c.Parse()
 			if !errors.Is(err, errConfig) {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
@@ -318,52 +323,52 @@ func TestConfigValues(t *testing.T) {
 			// which is returned here.
 			switch opt.typ {
 			case Int:
-				_, err = ValueInt("one")
+				_, err = c.ValueInt("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 				// Value
-				_, _, err = Value("one")
+				_, _, err = c.Value("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Int64:
-				_, err = ValueInt64("one")
+				_, err = c.ValueInt64("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Uint:
-				_, err = ValueUint("one")
+				_, err = c.ValueUint("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Uint64:
-				_, err = ValueUint64("one")
+				_, err = c.ValueUint64("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Float64:
-				_, err = ValueFloat64("one")
+				_, err = c.ValueFloat64("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case String:
-				_, err = ValueString("one")
+				_, err = c.ValueString("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Bool:
-				_, err = ValueBool("one")
+				_, err = c.ValueBool("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Duration:
-				_, err = ValueDuration("one")
+				_, err = c.ValueDuration("one")
 				if !errors.Is(err, errType) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Nil:
-				_, typ, err := Value("one")
+				_, typ, err := c.Value("one")
 				switch typ {
 				case Nil:
 					if !errors.Is(err, errTypeNil) {
@@ -373,7 +378,7 @@ func TestConfigValues(t *testing.T) {
 					t.Errorf("%s: %s: end of case stament reached", fname, name)
 				}
 			case Default:
-				_, typ, err := Value("one")
+				_, typ, err := c.Value("one")
 				switch typ {
 				case Default:
 					if !errors.Is(err, errType) {
@@ -393,11 +398,11 @@ func TestConfigValues(t *testing.T) {
 			// are called and then the option data removed.
 			var err error
 			if opt.exp == "errNoData" {
-				err = Options(opts...)
+				err = c.Options(opts...)
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
-				err = Parse()
+				err = c.Parse()
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -405,47 +410,47 @@ func TestConfigValues(t *testing.T) {
 			}
 			switch opt.typ {
 			case Int:
-				_, err = ValueInt("one")
+				_, err = c.ValueInt("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 				// Value
-				_, _, err = Value("one")
+				_, _, err = c.Value("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Int64:
-				_, err = ValueInt64("one")
+				_, err = c.ValueInt64("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Uint:
-				_, err := ValueUint("one")
+				_, err := c.ValueUint("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Uint64:
-				_, err = ValueUint64("one")
+				_, err = c.ValueUint64("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Float64:
-				_, err = ValueFloat64("one")
+				_, err = c.ValueFloat64("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case String:
-				_, err = ValueString("one")
+				_, err = c.ValueString("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Bool:
-				_, err = ValueBool("one")
+				_, err = c.ValueBool("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
 			case Duration:
-				_, err = ValueDuration("one")
+				_, err = c.ValueDuration("one")
 				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -468,7 +473,7 @@ func TestConfigArgString(t *testing.T) {
 	if errors.Is(err, errConfig) {
 		t.Errorf("%s: %w", fname, err)
 	}
-	str := ArgString()
+	str := c.ArgString()
 	if str != "one two three" {
 		t.Errorf("%s: recieved %q expected \"one two three\"",
 			fname, str)
@@ -660,8 +665,8 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 func TestCommandGetCmd(t *testing.T) {
 	const fname = "TestCommandGetCmd"
 	c = Config{}
-	cmd := Setup("", "")
-	cmd2 := Command("", "")
+	cmd := c.Setup("", "")
+	cmd2 := c.Command("", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -671,17 +676,17 @@ func TestCommandGetCmd(t *testing.T) {
 			Commands: cmd,
 		},
 	}
-	err := Options(opts...)
+	err := c.Options(opts...)
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	err = Parse()
+	err = c.Parse()
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	mode := GetCmd()
+	mode := c.GetCmd()
 	if mode != "default" {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
@@ -817,8 +822,8 @@ func TestCommandTokens(t *testing.T) {
 func TestParse(t *testing.T) {
 	const fname = "TestParse"
 	c = Config{}
-	cmd := Setup("", "")
-	cmd2 := Command("cmd2", "")
+	cmd := c.Setup("", "")
+	cmd2 := c.Command("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
 	var opts = []Option{
@@ -830,18 +835,18 @@ func TestParse(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := Options(opts...)
+	err := c.Options(opts...)
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	err = Parse()
+	err = c.Parse()
 	os.Args[1] = temp
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	mode := GetCmd()
+	mode := c.GetCmd()
 	if mode != "cmd2" {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
@@ -854,8 +859,8 @@ func TestParse(t *testing.T) {
 func TestParseInvalidCmd(t *testing.T) {
 	const fname = "TestParseInvalidCmd"
 	c = Config{}
-	cmd := Setup("", "")
-	cmd2 := Command("cmd2", "")
+	cmd := c.Setup("", "")
+	cmd2 := c.Command("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
 	var opts = []Option{
@@ -867,16 +872,16 @@ func TestParseInvalidCmd(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := Options(opts...)
+	err := c.Options(opts...)
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = Parse()
+	err = c.Parse()
 	os.Args[1] = temp
 	if !errors.Is(err, errNotFound) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	mode := GetCmd()
+	mode := c.GetCmd()
 	if mode != "" {
 		t.Errorf("%s: expected \"cmd2\" received %q",
 			fname, mode)
