@@ -31,12 +31,12 @@ type Config struct {
 	// rawInput is the raw input from the command line.
 	rawInput string
 	// cmdlist stores all available sub-commands.
-	cmdlist []cmd
+	cmdlist []flagset
 	// nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
 	// cmd is the current running command mode.
-	cmd
+	flagset
 	// header is the programs command line help flag output header.
 	header string
 	// options are where the data for each option is stored, this
@@ -87,7 +87,7 @@ func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
-	m := cmd{id: c.nextIndex, name: helpHeader, usage: usage}
+	m := flagset{id: c.nextIndex, name: helpHeader, usage: usage}
 	c.cmdlist = append(c.cmdlist, m)
 	token = c.nextIndex
 	c.nextIndex = c.nextIndex << 1
@@ -96,7 +96,7 @@ func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 
 // WhichSet returns the current running sub-commands name and state.
 func (c Config) WhichSet() (string, CMD) {
-	return c.cmd.name, c.cmd.id
+	return c.flagset.name, c.flagset.id
 }
 
 // Compose initialises the programs options.
@@ -192,8 +192,8 @@ func (c *Config) optionsToFsErrAccum() {
 		return
 	}
 	for name, o := range c.options {
-		if c.cmd.id&o.Commands > 0 {
-			if c.cmd.seen[o.Flag] > 1 {
+		if c.flagset.id&o.Commands > 0 {
+			if c.flagset.seen[o.Flag] > 1 {
 				continue
 			}
 			err := c.options[o.ID].toFlagSet(c.flagSet)
@@ -510,9 +510,9 @@ func (c *Config) runCheckFn() error {
  *  Sub-Commands
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// cmd contains the required data to create a program sub-command and
+// flagset contains the required data to create a program sub-command and
 // its flags.
-type cmd struct {
+type flagset struct {
 	// id is the bitfield of the command.
 	id CMD
 	// The options name.
@@ -544,12 +544,12 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
-		c.cmd = c.cmdlist[0]
+		c.flagset = c.cmdlist[0]
 		return nil
 	}
 	for _, m := range c.cmdlist {
 		if strings.Compare(name, m.name) == 0 {
-			c.cmd = m
+			c.flagset = m
 			return nil
 		}
 	}
@@ -563,7 +563,7 @@ func (c *Config) loadCmd(cmd string) error {
 	if err := c.setCmd(cmd); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
-	c.flagSet = flag.NewFlagSet(c.cmd.name, flag.ExitOnError)
+	c.flagSet = flag.NewFlagSet(c.flagset.name, flag.ExitOnError)
 	c.optionsToFsErrAccum()
 	c.flagSet.Usage = c.setUsageFn(os.Stdout)
 	return c.Error("optionsToFsErrAccum", errConfig)
@@ -799,7 +799,7 @@ func (c Config) setUsageFn(w io.Writer) func() {
 	}
 	return func() {
 		io.WriteString(w, c.header)
-		io.WriteString(w, c.cmd.usage)
+		io.WriteString(w, c.flagset.usage)
 		c.flagSet.VisitAll(flagUsage)
 	}
 }
