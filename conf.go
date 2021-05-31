@@ -85,9 +85,9 @@ func (c *Config) FlagSet(header, usage string) (bitfield CMD) {
 	return
 }
 
-// WhichSet return the current running sub-commands name.
-func (c Config) WhichSet() string {
-	return c.subcmd.name
+// WhichSet returns the current running sub-commands name and state.
+func (c Config) WhichSet() (string, CMD) {
+	return c.subcmd.name, c.subcmd.id
 }
 
 // Options initialises the programs options.
