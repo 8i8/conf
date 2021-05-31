@@ -58,23 +58,21 @@ type Config struct {
 	Err []error
 }
 
-// Setup sets the basis for the programs usage output, by way of the
-// 'command' and 'usage' strings. Returning a subcommand token for the
-// 'Option.Commands' field for use in the creation of Options,
-// consequent calls to c.SubCommand will create and return further more
-// tokens.
-func (c *Config) Setup(heading string, usage string) (bitfield CMD) {
+// defaultSet defines the foundation for the programs flags and help,
+// setting the heading and an initial default flagset.
+func (c *Config) defaultSet(heading string, usage string) (bitfield CMD) {
+	c.index++
 	c.help = heading
-	bitfield = c.Command("default", usage)
+	bitfield = c.FlagSet("default", usage)
 	return
 }
 
-// Command creates a new sub-command, returning a bitfield token which
+// FlagSet creates a new sub-command, returning a bitfield token which
 // is used to assign an option and its flags to use within that mode.
-func (c *Config) Command(name, usage string) (bitfield CMD) {
-	// Make sure that we start the bitfield at 1.
+func (c *Config) FlagSet(name, usage string) (bitfield CMD) {
 	if c.index == 0 {
-		c.index++
+		bitfield = c.defaultSet(name, usage)
+		return
 	}
 	if c.index >= limit {
 		err := errors.New("index overflow, too many program modes")

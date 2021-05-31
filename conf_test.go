@@ -143,7 +143,7 @@ func TestConfigValues(t *testing.T) {
 	// removed.
 	for name, opt := range options {
 		c = Config{}
-		cmd := c.Setup("Usage heading", "cmd's heading")
+		cmd := c.defaultSet("Usage heading", "cmd's heading")
 		opts := []Option{
 			{Name: "one",
 				Type:     opt.typ,
@@ -468,7 +468,7 @@ func TestConfigArgString(t *testing.T) {
 	temp := os.Args
 	os.Args = []string{"one", "two", "three"}
 	c = Config{}
-	c.Setup("", "")
+	c.defaultSet("", "")
 	err := c.Options()
 	if errors.Is(err, errConfig) {
 		t.Errorf("%s: %w", fname, err)
@@ -484,7 +484,7 @@ func TestConfigArgString(t *testing.T) {
 func TestOptionsCheckUserFn(t *testing.T) {
 	const fname = "TestOptionsCheckUserFn"
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	var opts = []Option{
 		{Name: "one",
 			Type:     Int,
@@ -519,7 +519,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 func TestOptionsCheckUserFnError(t *testing.T) {
 	const fname = "TestOptionsCheckUserFnError"
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	var opts = []Option{
 		{Name: "one",
 			Type:     Int,
@@ -553,7 +553,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 func TestOptionsCheckName(t *testing.T) {
 	const fname = "TestOptionsCheckName"
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	var opts = []Option{
 		{Name: "errors",
 			Type:     Int,
@@ -586,7 +586,7 @@ func TestOptionsCheckName(t *testing.T) {
 func TestOptionsCheckFlagPresent(t *testing.T) {
 	const fname = "TestOptionsCheckFlagPresent"
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -608,7 +608,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	const fname = "TestOptionsCheckFlagDuplicate"
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	//m2 := config.Command("modetwo", "")
 	var opts = []Option{
 		{Name: "int",
@@ -641,7 +641,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	temp := os.Args
 	os.Args = os.Args[:0]
 	config := Config{}
-	m := config.Setup("", "")
+	m := config.defaultSet("", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -665,8 +665,8 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 func TestCommandGetCmd(t *testing.T) {
 	const fname = "TestCommandGetCmd"
 	c = Config{}
-	cmd := c.Setup("", "")
-	cmd2 := c.Command("", "")
+	cmd := c.defaultSet("", "")
+	cmd2 := c.FlagSet("", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -699,8 +699,8 @@ func TestCommandGetCmd(t *testing.T) {
 func TestCommandDuplicateKeys(t *testing.T) {
 	const fname = "TestCommandDuplicateKeys"
 	config := Config{}
-	m1 := config.Setup("", "")
-	m2 := config.Command("modetwo", "")
+	m1 := config.defaultSet("", "")
+	m2 := config.FlagSet("modetwo", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -732,13 +732,13 @@ func TestCommandDuplicateKeys(t *testing.T) {
 func TestCommandTooMany(t *testing.T) {
 	const fname = "TestCommandTooMany"
 	config := Config{}
-	_ = config.Setup("", "")
+	_ = config.defaultSet("", "")
 	names := make([]string, 65)
 	for i := 0; i <= 64; i++ {
 		names[i] = fmt.Sprint(i + '0')
 	}
 	for i := 0; i <= 64; i++ {
-		_ = config.Command(names[i], "")
+		_ = config.FlagSet(names[i], "")
 	}
 	err := config.Options()
 	if !errors.Is(err, errConfig) {
@@ -749,7 +749,7 @@ func TestCommandTooMany(t *testing.T) {
 func TestCommandNotThere(t *testing.T) {
 	const fname = "TestCommandNotThere"
 	config := Config{}
-	_ = config.Setup("", "")
+	_ = config.defaultSet("", "")
 	m := CMD(2)
 	var opts = []Option{
 		{Name: "int",
@@ -769,9 +769,9 @@ func TestCommandNotThere(t *testing.T) {
 func TestCommandTokens(t *testing.T) {
 	const fname = "TestCommandTokenIs"
 	config := Config{}
-	cmd1 := config.Setup("", "")
-	cmd2 := config.Command("", "")
-	cmd3 := config.Command("", "")
+	cmd1 := config.defaultSet("", "")
+	cmd2 := config.FlagSet("", "")
+	cmd3 := config.FlagSet("", "")
 	var opts = []Option{
 		{Name: "int",
 			Type:     Int,
@@ -822,8 +822,8 @@ func TestCommandTokens(t *testing.T) {
 func TestParse(t *testing.T) {
 	const fname = "TestParse"
 	c = Config{}
-	cmd := c.Setup("", "")
-	cmd2 := c.Command("cmd2", "")
+	cmd := c.defaultSet("", "")
+	cmd2 := c.FlagSet("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
 	var opts = []Option{
@@ -859,8 +859,8 @@ func TestParse(t *testing.T) {
 func TestParseInvalidCmd(t *testing.T) {
 	const fname = "TestParseInvalidCmd"
 	c = Config{}
-	cmd := c.Setup("", "")
-	cmd2 := c.Command("cmd2", "")
+	cmd := c.defaultSet("", "")
+	cmd2 := c.FlagSet("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
 	var opts = []Option{
@@ -894,7 +894,7 @@ func TestParseInvalidCmd(t *testing.T) {
 func TestFlagSetUsageFn(t *testing.T) {
 	const fname = "TestFlagSetUsageFn"
 	config := Config{}
-	cmd := config.Setup("Usage Heading", "Mode Heading")
+	cmd := config.defaultSet("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{Name: "one",
 			Type:     Int,
