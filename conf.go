@@ -67,20 +67,20 @@ func (c *Config) defaultSet(heading string, usage string) (bitfield CMD) {
 	return
 }
 
-// FlagSet creates a new command set, returning a token which is then
-// used to assign flags to the set when defining a flag.
-func (c *Config) FlagSet(header, usage string) (bitfield CMD) {
+// FlagSet creates a set and returns a token to be used to assign
+// flags to that set.
+func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 	if c.index == 0 {
-		bitfield = c.defaultSet(header, usage)
+		token = c.defaultSet(helpHeader, usage)
 		return
 	}
 	if c.index >= limit {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
-	m := subcmd{id: c.index, name: header, usage: usage}
+	m := subcmd{id: c.index, name: helpHeader, usage: usage}
 	c.cmds = append(c.cmds, m)
-	bitfield = c.index
+	token = c.index
 	c.index = c.index << 1
 	return
 }
