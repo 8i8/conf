@@ -1,0 +1,25 @@
+@startuml
+
+!theme amiga
+
+class FlagSet {
+	heading  string
+	useage   string
+	commands []commandSeq
+	NewFlagSet() bitmask
+}
+
+note "The first FlagSet defined is the basic set, used to describe flags\n for the programs cli command. Each subsequent FlagSet represent a sub\n command; When the programs cli command is followed by a sub-command\n the user may then access any combination of the sub-set of flags that\n have been defined along with their accompanying documentation." as N1
+
+class Flag {
+	flag     string
+	value    type
+	useage   string
+	checkFn  func
+	verify() checkFn
+}
+
+FlagSet *-- FlagSet
+FlagSet *-- Flag
+
+@enduml
