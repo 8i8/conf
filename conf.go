@@ -184,7 +184,7 @@ func (c *Config) optionsToFsErrAccum() {
 	}
 	for name, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
-			if c.subcmd.seen[o.Flag] > 1 {
+			if c.subcmd.seen[o.Name] > 1 {
 				continue
 			}
 			err := c.options[o.ID].toFlagSet(c.flagSet)
@@ -313,7 +313,7 @@ func (c *Config) checkName(o Option) error {
 // a duplicate value.
 func (c *Config) checkFlag(o Option) (Option, error) {
 	const msg = "Option.Flag"
-	if len(o.Flag) == 0 {
+	if len(o.Name) == 0 {
 		return o, fmt.Errorf("%q: %w", msg, errNoValue)
 	}
 	for i := range c.cmds {
@@ -321,14 +321,14 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
 		if c.cmds[i].id&o.Commands > 0 {
-			if c.cmds[i].seen[o.Flag] > 0 {
-				c.cmds[i].seen[o.Flag]++
+			if c.cmds[i].seen[o.Name] > 0 {
+				c.cmds[i].seen[o.Name]++
 				err := fmt.Errorf("%s: %s: %w",
-					msg, o.Flag, errDuplicate)
+					msg, o.Name, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
-			c.cmds[i].seen[o.Flag]++
+			c.cmds[i].seen[o.Name]++
 		}
 	}
 	return o, nil
@@ -587,9 +587,8 @@ type Option struct {
 	// Var is used to pass values by reference into the 'Var' group of
 	// flag types.
 	Var interface{}
-	// Flag defines the string or character required to either set or
-	// modify the option.
-	Flag string
+	// Name of the flag as it appers on the command line.
+	Name string
 	// Usage string defines the usage text that is displayed in help
 	// output.
 	Usage string
@@ -622,7 +621,7 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Int(o.Flag, i, o.Usage)
+		o.data = fls.Int(o.Name, i, o.Usage)
 	case IntVar:
 		i, ok := o.Default.(int)
 		if !ok {
@@ -634,14 +633,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.IntVar(v, o.Flag, i, o.Usage)
+		fls.IntVar(v, o.Name, i, o.Usage)
 	case Int64:
 		i, ok := o.Default.(int64)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Int64(o.Flag, i, o.Usage)
+		o.data = fls.Int64(o.Name, i, o.Usage)
 	case Int64Var:
 		i, ok := o.Default.(int64)
 		if !ok {
@@ -653,14 +652,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.Int64Var(v, o.Flag, i, o.Usage)
+		fls.Int64Var(v, o.Name, i, o.Usage)
 	case Uint:
 		i, ok := o.Default.(uint)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Uint(o.Flag, i, o.Usage)
+		o.data = fls.Uint(o.Name, i, o.Usage)
 	case UintVar:
 		i, ok := o.Default.(uint)
 		if !ok {
@@ -672,14 +671,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.UintVar(v, o.Flag, i, o.Usage)
+		fls.UintVar(v, o.Name, i, o.Usage)
 	case Uint64:
 		i, ok := o.Default.(uint64)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Uint64(o.Flag, i, o.Usage)
+		o.data = fls.Uint64(o.Name, i, o.Usage)
 	case Uint64Var:
 		i, ok := o.Default.(uint64)
 		if !ok {
@@ -691,14 +690,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.Uint64Var(v, o.Flag, i, o.Usage)
+		fls.Uint64Var(v, o.Name, i, o.Usage)
 	case Float64:
 		f, ok := o.Default.(float64)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Float64(o.Flag, f, o.Usage)
+		o.data = fls.Float64(o.Name, f, o.Usage)
 	case Float64Var:
 		f, ok := o.Default.(float64)
 		if !ok {
@@ -710,14 +709,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.Float64Var(v, o.Flag, f, o.Usage)
+		fls.Float64Var(v, o.Name, f, o.Usage)
 	case String:
 		s, ok := o.Default.(string)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.String(o.Flag, s, o.Usage)
+		o.data = fls.String(o.Name, s, o.Usage)
 	case StringVar:
 		s, ok := o.Default.(string)
 		if !ok {
@@ -729,14 +728,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.StringVar(v, o.Flag, s, o.Usage)
+		fls.StringVar(v, o.Name, s, o.Usage)
 	case Bool:
 		b, ok := o.Default.(bool)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Bool(o.Flag, b, o.Usage)
+		o.data = fls.Bool(o.Name, b, o.Usage)
 	case BoolVar:
 		b, ok := o.Default.(bool)
 		if !ok {
@@ -748,14 +747,14 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.BoolVar(v, o.Flag, b, o.Usage)
+		fls.BoolVar(v, o.Name, b, o.Usage)
 	case Duration:
 		d, ok := o.Default.(time.Duration)
 		if !ok {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errType)
 		}
-		o.data = fls.Duration(o.Flag, d, o.Usage)
+		o.data = fls.Duration(o.Name, d, o.Usage)
 	case DurationVar:
 		d, ok := o.Default.(time.Duration)
 		if !ok {
@@ -767,13 +766,13 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			return fmt.Errorf("%s: %q: %w", o.Type, va,
 				errType)
 		}
-		fls.DurationVar(v, o.Flag, d, o.Usage)
+		fls.DurationVar(v, o.Name, d, o.Usage)
 	case Var:
 		if o.Value == nil {
 			return fmt.Errorf("%s: %q: %w", o.Type, def,
 				errTypeNil)
 		}
-		fls.Var(o.Value, o.Flag, o.Usage)
+		fls.Var(o.Value, o.Name, o.Usage)
 	case Nil:
 		return fmt.Errorf("%s: %q: %w", o.Type, def,
 			errTypeNil)
