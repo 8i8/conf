@@ -7,7 +7,7 @@ COMMANDS sub-commands can be created by using the conf.Command function
 which returns a token set to designate the command as a target when
 creating an option.
 
-	cmd = conf.Command("doit", doitUsageString)
+	cmd = conf.FlagSet("MyHeader", MyUsageString)
 
 The cmd token is then used when defining an option, instructing the
 package that the option is to be assigned to the command. The option will
@@ -42,9 +42,9 @@ import (
 )
 
 var (
-	def = conf.Setup(helpBase, helpDef)
-	one = conf.Command("one", helpOne)
-	two = conf.Command("two", helpTwo)
+	def = conf.FlagSet(helpBase, helpDef)
+	one = conf.FlagSet("one", helpOne)
+	two = conf.FlagSet("two", helpTwo)
 )
 
 var opts = []conf.Option{
