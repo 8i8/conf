@@ -38,8 +38,8 @@ type Config struct {
 	index CMD
 	// subcmd is the current running command mode.
 	subcmd
-	// The help output header for the program.
-	help string
+	// The helpHeader output header for the program.
+	helpHeader string
 	// options are where the data for each option is stored, this
 	// includes the flag with its default value and usage string
 	// along with any data collected once the flag or config option
@@ -60,10 +60,10 @@ type Config struct {
 
 // defaultSet defines the foundation for the programs flags and help,
 // setting the heading and an initial default flagset.
-func (c *Config) defaultSet(heading string, usage string) (bitfield CMD) {
+func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.index++
-	c.help = heading
-	bitfield = c.FlagSet("default", usage)
+	c.helpHeader = header
+	token = c.FlagSet("default", usage)
 	return
 }
 
@@ -793,7 +793,7 @@ func (c Config) setUsageFn(w io.Writer) func() {
 		w = os.Stderr
 	}
 	return func() {
-		io.WriteString(w, c.help)
+		io.WriteString(w, c.helpHeader)
 		io.WriteString(w, c.subcmd.usage)
 		c.flagSet.VisitAll(flagUsage)
 	}
