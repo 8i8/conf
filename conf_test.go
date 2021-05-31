@@ -157,7 +157,7 @@ func TestConfigValues(t *testing.T) {
 		}
 		switch opt.exp {
 		case "pass":
-			err := c.Options(opts...)
+			err := c.Compose(opts...)
 			if err != nil {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
@@ -310,7 +310,7 @@ func TestConfigValues(t *testing.T) {
 			}
 		case "fail":
 			// Both Options and Parse return an errConfig.
-			err := c.Options(opts...)
+			err := c.Compose(opts...)
 			if !errors.Is(err, errConfig) {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
@@ -398,7 +398,7 @@ func TestConfigValues(t *testing.T) {
 			// are called and then the option data removed.
 			var err error
 			if opt.exp == "errNoData" {
-				err = c.Options(opts...)
+				err = c.Compose(opts...)
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
@@ -469,7 +469,7 @@ func TestConfigArgString(t *testing.T) {
 	os.Args = []string{"one", "two", "three"}
 	c = Config{}
 	c.defaultSet("", "")
-	err := c.Options()
+	err := c.Compose()
 	if errors.Is(err, errConfig) {
 		t.Errorf("%s: %w", fname, err)
 	}
@@ -499,7 +499,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 			},
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -536,7 +536,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 			},
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -577,7 +577,7 @@ func TestOptionsCheckName(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -595,7 +595,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -626,7 +626,7 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -651,7 +651,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -676,7 +676,7 @@ func TestCommandGetCmd(t *testing.T) {
 			Commands: cmd,
 		},
 	}
-	err := c.Options(opts...)
+	err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
@@ -717,7 +717,7 @@ func TestCommandDuplicateKeys(t *testing.T) {
 			Commands: m2,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
@@ -740,7 +740,7 @@ func TestCommandTooMany(t *testing.T) {
 	for i := 0; i <= 64; i++ {
 		_ = config.FlagSet(names[i], "")
 	}
-	err := config.Options()
+	err := config.Compose()
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -760,7 +760,7 @@ func TestCommandNotThere(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -781,7 +781,7 @@ func TestCommandTokens(t *testing.T) {
 			Commands: cmd1,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -835,7 +835,7 @@ func TestParse(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := c.Options(opts...)
+	err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
@@ -872,7 +872,7 @@ func TestParseInvalidCmd(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := c.Options(opts...)
+	err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
@@ -911,7 +911,7 @@ func TestFlagSetUsageFn(t *testing.T) {
 			Commands: cmd,
 		},
 	}
-	err := config.Options(opts...)
+	err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}

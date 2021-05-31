@@ -90,8 +90,8 @@ func (c Config) WhichSet() (string, CMD) {
 	return c.subcmd.name, c.subcmd.id
 }
 
-// Options initialises the programs options.
-func (c *Config) Options(opts ...CommandSeq) error {
+// Compose initialises the programs options.
+func (c *Config) Compose(opts ...CommandSeq) error {
 	const fname = "Options"
 	// Record the original input string.
 	if err := c.saveArgs(); err != nil {
