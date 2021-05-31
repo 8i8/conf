@@ -28,9 +28,9 @@ var (
 // Config is the main package struct, all of the API functionality is
 // centered about it.
 type Config struct {
-	// input is the raw string of arguments that were entered on the
+	// rawInput is the raw string of arguments that were entered on the
 	// command line.
-	input string
+	rawInput string
 	// cmds stores the list of available sub-commands.
 	cmds []cmd
 	// nextIndex contains the next index to be use as
@@ -155,7 +155,7 @@ func parse(c *Config, offset int, fname string) error {
 
 // ArgString returns a command line arguments string, as input.
 func (c Config) ArgString() string {
-	return c.input
+	return c.rawInput
 }
 
 // saveArgs records the literal input arguments as a string.
@@ -178,7 +178,7 @@ func (c *Config) saveArgs() error {
 			return fmt.Errorf("%s: %w", fname, err)
 		}
 	}
-	c.input = str.String()
+	c.rawInput = str.String()
 	return nil
 }
 
