@@ -42,7 +42,7 @@ type Config struct {
 	// commands is a map of command sequence that loads all of the
 	// flags that have been configured, during the programs startup.
 	commands map[string]*CommandSeq
-	// flagSeen makes certain that no option name duplicates exist.
+	// flagSeen makes certain that no duplicates flag names can exist.
 	flagSeen map[string]bool
 	// flagset is the programs constructed flagset, the result of
 	// running the Options command.
