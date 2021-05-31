@@ -32,7 +32,7 @@ type Config struct {
 	// command line.
 	input string
 	// cmds stores the list of available sub-commands.
-	cmds cmdlist
+	cmds []subcmd
 	// index holds the next value that is to be use as a bitfield
 	// for the next cmdlist command.
 	index CMD
@@ -514,10 +514,6 @@ type subcmd struct {
 	// seen makes certain that no flag duplicates exist.
 	seen map[string]int
 }
-
-// The cmdlist type is used to store all of the commands inside of a
-// Config struct.
-type cmdlist []subcmd
 
 // CMD is the bitfield that defines which commands an option is to be
 // applied to.
