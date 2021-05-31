@@ -30,9 +30,9 @@ var (
 type Config struct {
 	// rawInput is the raw input from the command line.
 	rawInput string
-	// cmdlist stores all available sub-commands.
-	cmdlist []flagset
-	// nextIndex contains the next index to be use as
+	// flagsets stores all available sub-commands.
+	flagsets []flagset
+	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
 	// cmd is the current running command mode.
@@ -85,7 +85,7 @@ func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 		c.Err = append(c.Err, err)
 	}
 	m := flagset{id: c.nextIndex, name: helpHeader, usage: usage}
-	c.cmdlist = append(c.cmdlist, m)
+	c.flagsets = append(c.flagsets, m)
 	token = c.nextIndex
 	c.nextIndex = c.nextIndex << 1
 	return
@@ -221,9 +221,9 @@ func (c *Config) loadOptions(opts ...CommandSeq) error {
 	// however the same flag name can be used again for different
 	// sub-commands for different operations, if that flag has not
 	// been reused within the context of the same command.
-	for i := range c.cmdlist {
-		if c.cmdlist[i].seen == nil {
-			c.cmdlist[i].seen = make(map[string]int)
+	for i := range c.flagsets {
+		if c.flagsets[i].seen == nil {
+			c.flagsets[i].seen = make(map[string]int)
 		}
 	}
 	for i, opt := range opts {
@@ -322,19 +322,19 @@ func (c *Config) checkFlag(o CommandSeq) (CommandSeq, error) {
 	if len(o.Flag) == 0 {
 		return o, fmt.Errorf("%q: %w", msg, errNoValue)
 	}
-	for i := range c.cmdlist {
+	for i := range c.flagsets {
 		// If the option flag has already been registered on the
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
-		if c.cmdlist[i].id&o.Commands > 0 {
-			if c.cmdlist[i].seen[o.Flag] > 0 {
-				c.cmdlist[i].seen[o.Flag]++
+		if c.flagsets[i].id&o.Commands > 0 {
+			if c.flagsets[i].seen[o.Flag] > 0 {
+				c.flagsets[i].seen[o.Flag]++
 				err := fmt.Errorf("%s: %s: %w",
 					msg, o.Flag, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
-			c.cmdlist[i].seen[o.Flag]++
+			c.flagsets[i].seen[o.Flag]++
 		}
 	}
 	return o, nil
@@ -541,10 +541,10 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
-		c.flagset = c.cmdlist[0]
+		c.flagset = c.flagsets[0]
 		return nil
 	}
-	for _, m := range c.cmdlist {
+	for _, m := range c.flagsets {
 		if strings.Compare(name, m.name) == 0 {
 			c.flagset = m
 			return nil
