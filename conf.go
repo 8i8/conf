@@ -59,7 +59,7 @@ type Config struct {
 }
 
 // defaultSet defines the foundation for the programs flags and help,
-// setting the heading and an initial default flagset.
+// setting the heading and creating a basic flagset.
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.index++
 	c.helpHeader = header
@@ -67,8 +67,18 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	return
 }
 
-// FlagSet creates a set and returns a token to be used to assign
-// flags to that set.
+// FlagSet defines sets of flags for command line applications.  Upon
+// the first call, FlagSet defines a set of flags that will act upon the
+// programs basic command line call.
+//
+// app [-flag] [value] [-flag] [value] ...
+//
+// Subsequent calls to FlagSet define further sub commands for the
+// program, enabling different program running modes and their
+// corresponding options.
+//
+// app [sub-command] [-flag] [value] [-flag] [value] ...
+//
 func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 	if c.index == 0 {
 		token = c.defaultSet(helpHeader, usage)
@@ -515,7 +525,7 @@ type subcmd struct {
 	seen map[string]int
 }
 
-// CMD is the bitfield that defines which commands an option is to be
+// CMD is the bitfield that defines which commands an FlagSet is to be
 // applied to.
 type CMD int
 
