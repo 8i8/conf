@@ -28,17 +28,16 @@ var (
 // Config is the main package struct, all of the API functionality is
 // centered about it.
 type Config struct {
-	// rawInput is the raw string of arguments that were entered on the
-	// command line.
+	// rawInput is the raw input from the command line.
 	rawInput string
 	// cmdlist stores all available sub-commands.
 	cmdlist []cmd
 	// nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
-	// subcmd is the current running command mode.
+	// cmd is the current running command mode.
 	cmd
-	// header is basic applications help output.
+	// header is the programs command line help flag output header.
 	header string
 	// options are where the data for each option is stored, this
 	// includes the flag with its default value and usage string
