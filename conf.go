@@ -184,7 +184,7 @@ func (c *Config) optionsToFsErrAccum() {
 	}
 	for name, o := range c.options {
 		if c.subcmd.id&o.Commands > 0 {
-			if c.subcmd.flags[o.Flag] > 1 {
+			if c.subcmd.seen[o.Flag] > 1 {
 				continue
 			}
 			err := c.options[o.Name].toFlagSet(c.flagSet)
@@ -216,8 +216,8 @@ func (c *Config) loadOptions(opts ...Option) error {
 	// sub-commands for different operations, if that flag has not
 	// been reused within the context of the same command.
 	for i := range c.cmds {
-		if c.cmds[i].flags == nil {
-			c.cmds[i].flags = make(map[string]int)
+		if c.cmds[i].seen == nil {
+			c.cmds[i].seen = make(map[string]int)
 		}
 	}
 	for i, opt := range opts {
@@ -321,14 +321,14 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
 		if c.cmds[i].id&o.Commands > 0 {
-			if c.cmds[i].flags[o.Flag] > 0 {
-				c.cmds[i].flags[o.Flag]++
+			if c.cmds[i].seen[o.Flag] > 0 {
+				c.cmds[i].seen[o.Flag]++
 				err := fmt.Errorf("%s: %s: %w",
 					msg, o.Flag, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
-			c.cmds[i].flags[o.Flag]++
+			c.cmds[i].seen[o.Flag]++
 		}
 	}
 	return o, nil
@@ -511,8 +511,8 @@ type subcmd struct {
 	// The usage output for the command displayed when -h is called or
 	// an error raised on parsing.
 	usage string
-	// flags makes certain that no flag duplicates exist.
-	flags map[string]int
+	// seen makes certain that no flag duplicates exist.
+	seen map[string]int
 }
 
 // The cmdlist type is used to store all of the commands inside of a
