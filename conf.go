@@ -31,8 +31,8 @@ type Config struct {
 	// rawInput is the raw string of arguments that were entered on the
 	// command line.
 	rawInput string
-	// cmds stores the list of available sub-commands.
-	cmds []cmd
+	// cmdlist stores all available sub-commands.
+	cmdlist []cmd
 	// nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
@@ -89,7 +89,7 @@ func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
 		c.Err = append(c.Err, err)
 	}
 	m := cmd{id: c.nextIndex, name: helpHeader, usage: usage}
-	c.cmds = append(c.cmds, m)
+	c.cmdlist = append(c.cmdlist, m)
 	token = c.nextIndex
 	c.nextIndex = c.nextIndex << 1
 	return
@@ -225,9 +225,9 @@ func (c *Config) loadOptions(opts ...CommandSeq) error {
 	// however the same flag name can be used again for different
 	// sub-commands for different operations, if that flag has not
 	// been reused within the context of the same command.
-	for i := range c.cmds {
-		if c.cmds[i].seen == nil {
-			c.cmds[i].seen = make(map[string]int)
+	for i := range c.cmdlist {
+		if c.cmdlist[i].seen == nil {
+			c.cmdlist[i].seen = make(map[string]int)
 		}
 	}
 	for i, opt := range opts {
@@ -326,19 +326,19 @@ func (c *Config) checkFlag(o CommandSeq) (CommandSeq, error) {
 	if len(o.Flag) == 0 {
 		return o, fmt.Errorf("%q: %w", msg, errNoValue)
 	}
-	for i := range c.cmds {
+	for i := range c.cmdlist {
 		// If the option flag has already been registered on the
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
-		if c.cmds[i].id&o.Commands > 0 {
-			if c.cmds[i].seen[o.Flag] > 0 {
-				c.cmds[i].seen[o.Flag]++
+		if c.cmdlist[i].id&o.Commands > 0 {
+			if c.cmdlist[i].seen[o.Flag] > 0 {
+				c.cmdlist[i].seen[o.Flag]++
 				err := fmt.Errorf("%s: %s: %w",
 					msg, o.Flag, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
-			c.cmds[i].seen[o.Flag]++
+			c.cmdlist[i].seen[o.Flag]++
 		}
 	}
 	return o, nil
@@ -545,10 +545,10 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
-		c.cmd = c.cmds[0]
+		c.cmd = c.cmdlist[0]
 		return nil
 	}
-	for _, m := range c.cmds {
+	for _, m := range c.cmdlist {
 		if strings.Compare(name, m.name) == 0 {
 			c.cmd = m
 			return nil
