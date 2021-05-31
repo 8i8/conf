@@ -35,7 +35,7 @@ type Config struct {
 	cmds []cmd
 	// nextIndex contains the next index to be use as
 	// for the next cmdlist command.
-	index CMD
+	nextIndex CMD
 	// subcmd is the current running command mode.
 	cmd
 	// The helpHeader output header for the program.
@@ -61,7 +61,7 @@ type Config struct {
 // defaultSet defines the foundation for the programs flags and help,
 // setting the heading and creating a basic flagset.
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
-	c.index++
+	c.nextIndex++
 	c.helpHeader = header
 	token = c.FlagSet("default", usage)
 	return
@@ -80,18 +80,18 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 // app [sub-command] [-flag] [value] [-flag] [value] ...
 //
 func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
-	if c.index == 0 {
+	if c.nextIndex == 0 {
 		token = c.defaultSet(helpHeader, usage)
 		return
 	}
-	if c.index >= limit {
+	if c.nextIndex >= limit {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
 	m := cmd{id: c.nextIndex, name: helpHeader, usage: usage}
 	c.cmds = append(c.cmds, m)
-	token = c.index
-	c.index = c.index << 1
+	token = c.nextIndex
+	c.nextIndex = c.nextIndex << 1
 	return
 }
 
@@ -535,7 +535,7 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
-	if bitfield == (c.index-1)&bitfield {
+	if bitfield == (c.nextIndex-1)&bitfield {
 		return true
 	}
 	return false
