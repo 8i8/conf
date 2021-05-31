@@ -39,11 +39,8 @@ type Config struct {
 	flagset
 	// header is the programs command line help flag output header.
 	header string
-	// commands are where the data for each option is stored, this
-	// includes the flag with its default value and usage string
-	// along with any data collected once the flag or config option
-	// has been parsed, and the program run, it also contains a
-	// function with which any value that is set may be verified.
+	// commands is a map of command sequence that loads all of the
+	// flags that have been configured, during the programs startup.
 	commands map[string]*CommandSeq
 	// opnames makes certain that no option name duplicates exist.
 	opnames map[string]bool
