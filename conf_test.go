@@ -686,7 +686,7 @@ func TestCommandGetCmd(t *testing.T) {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	mode := c.GetCmd()
+	mode := c.WhichSet()
 	if mode != "default" {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
@@ -846,7 +846,7 @@ func TestParse(t *testing.T) {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	mode := c.GetCmd()
+	mode := c.WhichSet()
 	if mode != "cmd2" {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
@@ -881,7 +881,7 @@ func TestParseInvalidCmd(t *testing.T) {
 	if !errors.Is(err, errNotFound) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	mode := c.GetCmd()
+	mode := c.WhichSet()
 	if mode != "" {
 		t.Errorf("%s: expected \"cmd2\" received %q",
 			fname, mode)

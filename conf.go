@@ -85,8 +85,8 @@ func (c *Config) FlagSet(header, usage string) (bitfield CMD) {
 	return
 }
 
-// GetCmd return the current running sub-commands name.
-func (c Config) GetCmd() string {
+// WhichSet return the current running sub-commands name.
+func (c Config) WhichSet() string {
 	return c.subcmd.name
 }
 
