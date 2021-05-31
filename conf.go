@@ -45,7 +45,7 @@ type Config struct {
 	// along with any data collected once the flag or config option
 	// has been parsed, and the program run, it also contains a
 	// function with which any value that is set may be verified.
-	options map[string]*Option
+	options map[string]*CommandSeq
 	// opnames makes certain that no option name duplicates exist.
 	opnames map[string]bool
 	// flagset is the programs constructed flagset, the result of
@@ -91,7 +91,7 @@ func (c Config) WhichSet() (string, CMD) {
 }
 
 // Options initialises the programs options.
-func (c *Config) Options(opts ...Option) error {
+func (c *Config) Options(opts ...CommandSeq) error {
 	const fname = "Options"
 	// Record the original input string.
 	if err := c.saveArgs(); err != nil {
@@ -202,10 +202,10 @@ func (c *Config) optionsToFsErrAccum() {
 // running tests on each as they are loaded.  On leaving the function
 // the Config.Err field is checked and any errors reported, it is then
 // emptied.
-func (c *Config) loadOptions(opts ...Option) error {
+func (c *Config) loadOptions(opts ...CommandSeq) error {
 	const fname = "loadOptions"
 	if c.options == nil {
-		c.options = make(map[string]*Option)
+		c.options = make(map[string]*CommandSeq)
 	}
 	if c.opnames == nil {
 		c.opnames = make(map[string]bool)
@@ -267,7 +267,7 @@ var (
 // checkOptionErrAccum verifies user supplied data within an option
 // including duplicate name and key values; All errors are accumulated
 // and stored in the c.Err field.
-func (c *Config) checkOptionErrAccum(o Option) Option {
+func (c *Config) checkOptionErrAccum(o CommandSeq) CommandSeq {
 	const msg = "Option: check"
 	if err := c.checkName(o); err != nil {
 		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
@@ -297,7 +297,7 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 
 // chekcName checks that the name is not empty and that it is not a
 // duplicate value.
-func (c *Config) checkName(o Option) error {
+func (c *Config) checkName(o CommandSeq) error {
 	const msg = "Option.Name"
 	if len(o.ID) == 0 {
 		return fmt.Errorf("%s: %w", msg, errNoValue)
@@ -311,7 +311,7 @@ func (c *Config) checkName(o Option) error {
 
 // checkFlag checks that the flag field is not empty and that it is not
 // a duplicate value.
-func (c *Config) checkFlag(o Option) (Option, error) {
+func (c *Config) checkFlag(o CommandSeq) (CommandSeq, error) {
 	const msg = "Option.Flag"
 	if len(o.Name) == 0 {
 		return o, fmt.Errorf("%q: %w", msg, errNoValue)
@@ -336,7 +336,7 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 
 // checkDefault checks that the options default value has the correct
 // type.
-func (c *Config) checkDefault(o Option) error {
+func (c *Config) checkDefault(o CommandSeq) error {
 	const msg = "Option.Default"
 	switch o.Type {
 	case Int, IntVar:
@@ -396,7 +396,7 @@ func (c *Config) checkDefault(o Option) error {
 
 // checkVar checks that the options var value has the correct type if it
 // is required.
-func (c *Config) checkVar(o Option) error {
+func (c *Config) checkVar(o CommandSeq) error {
 	const msg = "Var"
 	switch o.Type {
 	case Int:
@@ -465,7 +465,7 @@ func (c *Config) checkVar(o Option) error {
 // checkCmd verifies that the default command has been set and that any
 // other commands are registered as valid commands within the current
 // command set.
-func (c *Config) checkCmd(o Option) error {
+func (c *Config) checkCmd(o CommandSeq) error {
 	const msg = "Commands"
 	if !c.cmdTokenIs(o.Commands) {
 		return fmt.Errorf("%s: %w", msg, errSubCmd)
@@ -565,7 +565,7 @@ func (c *Config) loadCmd(cmd string) error {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Option
+ *  Command sequences
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // ckFunc defines a function to check an options input data, the function
@@ -574,9 +574,9 @@ func (c *Config) loadCmd(cmd string) error {
 // been parsed.
 type ckFunc func(interface{}) (interface{}, error)
 
-// Option contains all of the data required for creating a command option
+// CommandSeq contains all of the data required for creating a command option
 // and defining its flag.
-type Option struct {
+type CommandSeq struct {
 	// The ID of the option, also used as a key in the options map.
 	ID string
 	// Type is the data type of the option.
@@ -610,7 +610,7 @@ type Option struct {
 
 // toFlagSet generates a flag within the given flagset for the current
 // option.
-func (o *Option) toFlagSet(fls *flag.FlagSet) error {
+func (o *CommandSeq) toFlagSet(fls *flag.FlagSet) error {
 	const fname = "toFlagSet"
 	const def = "Default"
 	const va = "Var"

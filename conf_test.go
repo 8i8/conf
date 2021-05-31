@@ -144,7 +144,7 @@ func TestConfigValues(t *testing.T) {
 	for name, opt := range options {
 		c = Config{}
 		cmd := c.defaultSet("Usage heading", "cmd's heading")
-		opts := []Option{
+		opts := []CommandSeq{
 			{ID: "one",
 				Type:     opt.typ,
 				Name:     "i",
@@ -485,7 +485,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 	const fname = "TestOptionsCheckUserFn"
 	config := Config{}
 	m := config.defaultSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "one",
 			Type:     Int,
 			Name:     "a",
@@ -520,7 +520,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 	const fname = "TestOptionsCheckUserFnError"
 	config := Config{}
 	m := config.defaultSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "one",
 			Type:     Int,
 			Name:     "a",
@@ -554,7 +554,7 @@ func TestOptionsCheckName(t *testing.T) {
 	const fname = "TestOptionsCheckName"
 	config := Config{}
 	m := config.defaultSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "errors",
 			Type:     Int,
 			Name:     "a",
@@ -587,7 +587,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 	const fname = "TestOptionsCheckFlagPresent"
 	config := Config{}
 	m := config.defaultSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Usage:    "like this",
@@ -610,7 +610,7 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	//m2 := config.Command("modetwo", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -642,7 +642,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	os.Args = os.Args[:0]
 	config := Config{}
 	m := config.defaultSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -667,7 +667,7 @@ func TestCommandGetCmd(t *testing.T) {
 	c = Config{}
 	cmd := c.defaultSet("", "")
 	cmd2 := c.FlagSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -701,7 +701,7 @@ func TestCommandDuplicateKeys(t *testing.T) {
 	config := Config{}
 	m1 := config.defaultSet("", "")
 	m2 := config.FlagSet("modetwo", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -751,7 +751,7 @@ func TestCommandNotThere(t *testing.T) {
 	config := Config{}
 	_ = config.defaultSet("", "")
 	m := CMD(2)
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -772,7 +772,7 @@ func TestCommandTokens(t *testing.T) {
 	cmd1 := config.defaultSet("", "")
 	cmd2 := config.FlagSet("", "")
 	cmd3 := config.FlagSet("", "")
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -826,7 +826,7 @@ func TestParse(t *testing.T) {
 	cmd2 := c.FlagSet("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -863,7 +863,7 @@ func TestParseInvalidCmd(t *testing.T) {
 	cmd2 := c.FlagSet("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
-	var opts = []Option{
+	var opts = []CommandSeq{
 		{ID: "int",
 			Type:     Int,
 			Name:     "a",
@@ -895,7 +895,7 @@ func TestFlagSetUsageFn(t *testing.T) {
 	const fname = "TestFlagSetUsageFn"
 	config := Config{}
 	cmd := config.defaultSet("Usage Heading", "Mode Heading")
-	opts := []Option{
+	opts := []CommandSeq{
 		{ID: "one",
 			Type:     Int,
 			Name:     "i",
