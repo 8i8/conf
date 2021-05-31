@@ -145,7 +145,7 @@ func TestConfigValues(t *testing.T) {
 		c = Config{}
 		cmd := c.defaultSet("Usage heading", "cmd's heading")
 		opts := []Option{
-			{Name: "one",
+			{ID: "one",
 				Type:     opt.typ,
 				Flag:     "i",
 				Usage:    "do it like this",
@@ -486,7 +486,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{Name: "one",
+		{ID: "one",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -521,7 +521,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{Name: "one",
+		{ID: "one",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -555,21 +555,21 @@ func TestOptionsCheckName(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{Name: "errors",
+		{ID: "errors",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{Name: "errors",
+		{ID: "errors",
 			Type:     Int,
 			Flag:     "b",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{Name: "",
+		{ID: "",
 			Type:     Int,
 			Flag:     "c",
 			Usage:    "like this",
@@ -588,7 +588,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Usage:    "like this",
 			Default:  1,
@@ -611,14 +611,14 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	m := config.defaultSet("", "")
 	//m2 := config.Command("modetwo", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{Name: "similarKeys",
+		{ID: "similarKeys",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -643,7 +643,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -668,7 +668,7 @@ func TestCommandGetCmd(t *testing.T) {
 	cmd := c.defaultSet("", "")
 	cmd2 := c.FlagSet("", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -702,14 +702,14 @@ func TestCommandDuplicateKeys(t *testing.T) {
 	m1 := config.defaultSet("", "")
 	m2 := config.FlagSet("modetwo", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m1,
 		},
-		{Name: "similarKeys",
+		{ID: "similarKeys",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -752,7 +752,7 @@ func TestCommandNotThere(t *testing.T) {
 	_ = config.defaultSet("", "")
 	m := CMD(2)
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -773,7 +773,7 @@ func TestCommandTokens(t *testing.T) {
 	cmd2 := config.FlagSet("", "")
 	cmd3 := config.FlagSet("", "")
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -827,7 +827,7 @@ func TestParse(t *testing.T) {
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -864,7 +864,7 @@ func TestParseInvalidCmd(t *testing.T) {
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
 	var opts = []Option{
-		{Name: "int",
+		{ID: "int",
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -896,14 +896,14 @@ func TestFlagSetUsageFn(t *testing.T) {
 	config := Config{}
 	cmd := config.defaultSet("Usage Heading", "Mode Heading")
 	opts := []Option{
-		{Name: "one",
+		{ID: "one",
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
 			Commands: cmd,
 		},
-		{Name: "two",
+		{ID: "two",
 			Type:     Int,
 			Flag:     "flagWithAVeryLongName",
 			Usage:    "do it like this",

@@ -187,7 +187,7 @@ func (c *Config) optionsToFsErrAccum() {
 			if c.subcmd.seen[o.Flag] > 1 {
 				continue
 			}
-			err := c.options[o.Name].toFlagSet(c.flagSet)
+			err := c.options[o.ID].toFlagSet(c.flagSet)
 			if err != nil {
 				c.options[name].Err = fmt.Errorf(
 					"%s: %s: %w", msg, name, err)
@@ -222,7 +222,7 @@ func (c *Config) loadOptions(opts ...Option) error {
 	}
 	for i, opt := range opts {
 		opts[i] = c.checkOptionErrAccum(opt)
-		c.options[opt.Name] = &opts[i]
+		c.options[opt.ID] = &opts[i]
 	}
 	return c.Error("checkOptionErrAccum", errConfig)
 }
@@ -270,26 +270,26 @@ var (
 func (c *Config) checkOptionErrAccum(o Option) Option {
 	const msg = "Option: check"
 	if err := c.checkName(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
 		c.Err = append(c.Err, o.Err)
 		return o
 	}
 	o, err := c.checkFlag(o)
 	if err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
 		c.Err = append(c.Err, o.Err)
 		return o
 	}
 	if err := c.checkDefault(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	if err := c.checkVar(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	if err := c.checkCmd(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.Name, err)
+		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
 		c.Err = append(c.Err, o.Err)
 	}
 	return o
@@ -299,13 +299,13 @@ func (c *Config) checkOptionErrAccum(o Option) Option {
 // duplicate value.
 func (c *Config) checkName(o Option) error {
 	const msg = "Option.Name"
-	if len(o.Name) == 0 {
+	if len(o.ID) == 0 {
 		return fmt.Errorf("%s: %w", msg, errNoValue)
 	}
-	if c.opnames[o.Name] {
+	if c.opnames[o.ID] {
 		return fmt.Errorf("%s: %w", msg, errDuplicate)
 	}
-	c.opnames[o.Name] = true
+	c.opnames[o.ID] = true
 	return nil
 }
 
@@ -577,9 +577,9 @@ type ckFunc func(interface{}) (interface{}, error)
 // Option contains all of the data required for creating a command option
 // and defining its flag.
 type Option struct {
-	// The name of the option, also used as a key in the options map.
-	Name string
-	// Type defined the data type of the option.
+	// The ID of the option, also used as a key in the options map.
+	ID string
+	// Type is the data type of the option.
 	Type
 	// Value is a flag.Value interface, used when passing user defined
 	// flag types into a flagset.
@@ -779,7 +779,7 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			errTypeNil)
 	default:
 		return fmt.Errorf("%s: %s: internal error: (%q, %s) %w",
-			pkg, fname, o.Name, o.Type, errType)
+			pkg, fname, o.ID, o.Type, errType)
 	}
 	return nil
 }
