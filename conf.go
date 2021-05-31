@@ -39,12 +39,12 @@ type Config struct {
 	flagset
 	// header is the programs command line help flag output header.
 	header string
-	// options are where the data for each option is stored, this
+	// commands are where the data for each option is stored, this
 	// includes the flag with its default value and usage string
 	// along with any data collected once the flag or config option
 	// has been parsed, and the program run, it also contains a
 	// function with which any value that is set may be verified.
-	options map[string]*CommandSeq
+	commands map[string]*CommandSeq
 	// opnames makes certain that no option name duplicates exist.
 	opnames map[string]bool
 	// flagset is the programs constructed flagset, the result of
@@ -186,22 +186,22 @@ func (c *Config) saveArgs() error {
 // accumulated in the Config.Err field.
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option: flagSet"
-	if len(c.options) == 0 {
+	if len(c.commands) == 0 {
 		c.Err = append(c.Err,
 			fmt.Errorf("%s: %w", msg, errNoData))
 		return
 	}
-	for name, o := range c.options {
+	for name, o := range c.commands {
 		if c.flagset.id&o.Commands > 0 {
 			if c.flagset.seen[o.Flag] > 1 {
 				continue
 			}
-			err := c.options[o.ID].toFlagSet(c.flagSet)
+			err := c.commands[o.ID].toFlagSet(c.flagSet)
 			if err != nil {
-				c.options[name].Err = fmt.Errorf(
+				c.commands[name].Err = fmt.Errorf(
 					"%s: %s: %w", msg, name, err)
 				c.Err = append(
-					c.Err, c.options[name].Err)
+					c.Err, c.commands[name].Err)
 			}
 		}
 	}
@@ -213,8 +213,8 @@ func (c *Config) optionsToFsErrAccum() {
 // emptied.
 func (c *Config) loadOptions(opts ...CommandSeq) error {
 	const fname = "loadOptions"
-	if c.options == nil {
-		c.options = make(map[string]*CommandSeq)
+	if c.commands == nil {
+		c.commands = make(map[string]*CommandSeq)
 	}
 	if c.opnames == nil {
 		c.opnames = make(map[string]bool)
@@ -231,7 +231,7 @@ func (c *Config) loadOptions(opts ...CommandSeq) error {
 	}
 	for i, opt := range opts {
 		opts[i] = c.checkOptionErrAccum(opt)
-		c.options[opt.ID] = &opts[i]
+		c.commands[opt.ID] = &opts[i]
 	}
 	return c.Error("checkOptionErrAccum", errConfig)
 }
@@ -490,14 +490,14 @@ func (c *Config) checkCmd(o CommandSeq) error {
 // command set, called after having first parsed all valid options.
 func (c *Config) runCheckFn() error {
 	const msg = "Check"
-	for key, o := range c.options {
+	for key, o := range c.commands {
 		if o.Check == nil || o.data == nil {
 			continue
 		}
 		var err error
-		c.options[key].data, err = o.Check(o.data)
+		c.commands[key].data, err = o.Check(o.data)
 		if err != nil {
-			c.options[key].Err = fmt.Errorf("%s, %w",
+			c.commands[key].Err = fmt.Errorf("%s, %w",
 				err, ErrCheck)
 			c.Err = append(c.Err, fmt.Errorf("%s, %w",
 				msg, err))
@@ -931,7 +931,7 @@ func (t Type) String() string {
 // error, if one has been raised during the options creation.
 func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -950,7 +950,7 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 // been raised during the options creation.
 func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -969,7 +969,7 @@ func (c Config) ValueInt(key string) (int, error) {
 // has been raised during the options creation.
 func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -988,7 +988,7 @@ func (c Config) ValueInt64(key string) (int64, error) {
 // been raised during the options creation.
 func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1007,7 +1007,7 @@ func (c Config) ValueUint(key string) (uint, error) {
 // has been raised during the options creation.
 func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1026,7 +1026,7 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 // one has been raised during the options creation.
 func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1045,7 +1045,7 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 // has been raised during the options creation.
 func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return "", fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1064,7 +1064,7 @@ func (c Config) ValueString(key string) (string, error) {
 // has been raised during the options creation.
 func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return false, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1083,7 +1083,7 @@ func (c Config) ValueBool(key string) (bool, error) {
 // error if one has been raised during the options creation.
 func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
-	o, ok := c.options[key]
+	o, ok := c.commands[key]
 	if !ok {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
