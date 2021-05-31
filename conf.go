@@ -42,8 +42,8 @@ type Config struct {
 	// commands is a map of command sequence that loads all of the
 	// flags that have been configured, during the programs startup.
 	commands map[string]*CommandSeq
-	// opnames makes certain that no option name duplicates exist.
-	opnames map[string]bool
+	// flagSeen makes certain that no option name duplicates exist.
+	flagSeen map[string]bool
 	// flagset is the programs constructed flagset, the result of
 	// running the Options command.
 	flagSet *flag.FlagSet
@@ -213,8 +213,8 @@ func (c *Config) loadOptions(opts ...CommandSeq) error {
 	if c.commands == nil {
 		c.commands = make(map[string]*CommandSeq)
 	}
-	if c.opnames == nil {
-		c.opnames = make(map[string]bool)
+	if c.flagSeen == nil {
+		c.flagSeen = make(map[string]bool)
 	}
 	// Make a duplicate verification map of the flags for each
 	// sub-command, flags may not be duplicated in a sub-command,
@@ -308,10 +308,10 @@ func (c *Config) checkName(o CommandSeq) error {
 	if len(o.ID) == 0 {
 		return fmt.Errorf("%s: %w", msg, errNoValue)
 	}
-	if c.opnames[o.ID] {
+	if c.flagSeen[o.ID] {
 		return fmt.Errorf("%s: %w", msg, errDuplicate)
 	}
-	c.opnames[o.ID] = true
+	c.flagSeen[o.ID] = true
 	return nil
 }
 
