@@ -38,8 +38,8 @@ type Config struct {
 	nextIndex CMD
 	// subcmd is the current running command mode.
 	cmd
-	// The helpHeader output header for the program.
-	helpHeader string
+	// header is basic applications help output.
+	header string
 	// options are where the data for each option is stored, this
 	// includes the flag with its default value and usage string
 	// along with any data collected once the flag or config option
@@ -62,7 +62,7 @@ type Config struct {
 // setting the heading and creating a basic flagset.
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.nextIndex++
-	c.helpHeader = header
+	c.header = header
 	token = c.FlagSet("default", usage)
 	return
 }
@@ -799,7 +799,7 @@ func (c Config) setUsageFn(w io.Writer) func() {
 		w = os.Stderr
 	}
 	return func() {
-		io.WriteString(w, c.helpHeader)
+		io.WriteString(w, c.header)
 		io.WriteString(w, c.cmd.usage)
 		c.flagSet.VisitAll(flagUsage)
 	}
