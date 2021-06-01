@@ -25,28 +25,46 @@ var (
  *  Config
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Config is the main package struct, all of the API functionality is
-// centered about it.
+// Config contains an array of commands that the user can call when
+// starting the command line application, the selected command then
+// loads the appropriate flagset for the operating mode and parses any
+// further command line arguments treating flags and input user options.
+//
+// The header string is best used as a formatted `string`, so that what
+// you see is what you get, and example of which might typically be:
+//
+// NAME
+//	MyApp
+//
+// SYNOPSIS
+//	MyApp | [command] | -[flag] | -[flag] <value> | -[flag] <'value,value,value'>
+//
+// EXAMPLE
+//	MyAPp write -n 36 -s "Hello, World!"`
+//
 type Config struct {
+
+	// Command line help flags output header.
+	header string
 	// raw input from the command line.
 	rawInput string
-	// all loaded commands, essentialy bitmasks with help strings
-	// and nomenclature.
+
+	// All user commands created at start up, essentially bit masks
+	// their header strings and nomenclature.
 	commands []command
-	// position retains the next available bit for use as a command
-	// bitmask.
+	// The next available bit for use as a command bit mask
 	position CMD
-	// set is the current running command set.
+	// The current running command set.
 	set command
-	// header is the programs command line help flag output header.
-	header string
-	// options is a map of command sequence that loads all of the
-	// options that have been configured, during the programs startup.
-	options map[string]*Option
-	// seen makes certain that no duplicates flag names can exist.
+	// Avoids duplicates flag names.
 	seen map[string]bool
-	// flagset is the programs constructed flagset, the result of
-	// running the Options command.
+
+	// A map of command sequence generated from the users code at
+	// programs startup, composed into a flagset for use at runtime.
+	options map[string]*Option
+
+	// The flagset that is composed at startup according to the
+	// predefined command line commands and their options.
 	flagSet *flag.FlagSet
 	// Err stores any errors triggered on either generating or
 	// parsing the flagset, returned to the user when either Options
@@ -82,10 +100,10 @@ func (c *Config) Command(cmd, usage string) (token CMD) {
 	}
 	if c.position >= limit {
 		err := errors.New("index overflow, too many program modes")
-		c.Err = append(c.Err, err)
+		c.errs = append(c.errs, err)
 	}
 	c.checkDuplicate(cmd)
-	m := command{id: c.position, name: cmd, usage: usage}
+	m := command{id: c.position, header: cmd, usage: usage}
 	c.commands = append(c.commands, m)
 	token = c.position
 	c.position = c.position << 1
@@ -95,7 +113,7 @@ func (c *Config) Command(cmd, usage string) (token CMD) {
 func (c *Config) checkDuplicate(cmd string) error {
 	const fname = "checkDuplicate"
 	for _, c := range c.commands {
-		if strings.Compare(c.name, cmd) != 0 {
+		if strings.Compare(c.header, cmd) != 0 {
 			return fmt.Errorf("%s: cmd already assigned", fname)
 		}
 	}
@@ -104,7 +122,7 @@ func (c *Config) checkDuplicate(cmd string) error {
 
 // WhichSet returns the current running sub-commands name and state.
 func (c Config) WhichSet() (string, CMD) {
-	return c.set.name, c.set.id
+	return c.set.header, c.set.id
 }
 
 // Compose initialises the programs options.
@@ -523,8 +541,8 @@ func (c *Config) runCheckFn() error {
 type command struct {
 	// id is the bitfield of the command.
 	id CMD
-	// The options name.
-	name string
+	// The options header.
+	header string
 	// The usage output for the command displayed when -h is called or
 	// an error raised on parsing.
 	usage string
@@ -556,7 +574,7 @@ func (c *Config) setCmd(name string) error {
 		return nil
 	}
 	for _, m := range c.commands {
-		if strings.Compare(name, m.name) == 0 {
+		if strings.Compare(name, m.header) == 0 {
 			c.set = m
 			return nil
 		}
@@ -571,7 +589,7 @@ func (c *Config) loadCmd(cmd string) error {
 	if err := c.setCmd(cmd); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
-	c.flagSet = flag.NewFlagSet(c.set.name, flag.ExitOnError)
+	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
 	c.optionsToFsErrAccum()
 	c.flagSet.Usage = c.setUsageFn(os.Stdout)
 	return c.Error("optionsToFsErrAccum", errConfig)
