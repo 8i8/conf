@@ -567,9 +567,9 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 	return false
 }
 
-// setCmd defines the programs current running state.
-func (c *Config) setCmd(name string) error {
-	const fname = "setCmd"
+// setCommand defines the programs current running state.
+func (c *Config) setCommand(name string) error {
+	const fname = "setCommand"
 	if name == "default" {
 		c.set = c.commands[0]
 		return nil
@@ -587,7 +587,7 @@ func (c *Config) setCmd(name string) error {
 // along with their usage data into the relevant flagset.
 func (c *Config) loadCommand(cmd string) error {
 	const fname = "loadCommand"
-	if err := c.setCmd(cmd); err != nil {
+	if err := c.setCommand(cmd); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
