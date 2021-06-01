@@ -503,7 +503,7 @@ func (c *Config) checkVar(o Option) error {
 // command set.
 func (c *Config) checkCmd(o Option) error {
 	const msg = "Commands"
-	if !c.cmdTokenIs(o.Commands) {
+	if !c.commandIs(o.Commands) {
 		return fmt.Errorf("%s: %w", msg, errSubCmd)
 	}
 	return nil
@@ -555,9 +555,9 @@ type command struct {
 // applied to.
 type CMD int
 
-// cmdTokenIs returns true if a sub-command token exists within the
-// configuration set of sub-commands, false if it does not.
-func (c Config) cmdTokenIs(bitfield CMD) bool {
+// commandIs returns true if a command token exists within the
+// configured set of commands, false if it does not.
+func (c Config) commandIs(bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
