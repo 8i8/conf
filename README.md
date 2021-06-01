@@ -1,7 +1,7 @@
 ### conf
 
-Package conf helps you to organise and maintain package sub-commands,
-their options and their flags.
+Package conf helps you to organise and maintain package commands, their
+options and their flags.
 
 COMMANDS sub-commands can be created by using the conf.Command function
 which returns a token set to designate the command as a target when
