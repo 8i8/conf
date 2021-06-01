@@ -59,22 +59,22 @@ type Config struct {
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.nextIndex++
 	c.header = header
-	return c.FlagSet("default", usage)
+	return c.Command("default", usage)
 }
 
-// FlagSet defines sets of flags for command line applications.  Upon
-// the first call, FlagSet defines a set of flags that will act upon the
+// Command defines sets of flags for command line applications.  Upon
+// the first call, Command defines a set of flags that will act upon the
 // programs basic command line call.
 //
 // app [-flag] [value] [-flag] [value] ...
 //
-// Subsequent calls to FlagSet define further sub commands for the
+// Subsequent calls to Command define further sub commands for the
 // program, enabling different program running modes and their
 // corresponding options.
 //
 // app [sub-command] [-flag] [value] [-flag] [value] ...
 //
-func (c *Config) FlagSet(helpHeader, usage string) (token CMD) {
+func (c *Config) Command(helpHeader, usage string) (token CMD) {
 	if c.nextIndex == 0 {
 		token = c.defaultSet(helpHeader, usage)
 		return
