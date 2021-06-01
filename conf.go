@@ -103,7 +103,7 @@ func (c *Config) Compose(opts ...CommandSeq) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Generate flags and usage data.
-	if err := c.loadOptions(opts...); err != nil {
+	if err := c.loadCommands(opts...); err != nil {
 		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
 	// TODO write a standard config file addition that records to a
@@ -203,11 +203,11 @@ func (c *Config) optionsToFsErrAccum() {
 	}
 }
 
-// loadOptions loads all of the given options into the option map,
+// loadCommands loads all of the defined commands into the option map,
 // running tests on each as they are loaded.  On leaving the function
 // the Config.Err field is checked and any errors reported, it is then
 // emptied.
-func (c *Config) loadOptions(opts ...CommandSeq) error {
+func (c *Config) loadCommands(opts ...CommandSeq) error {
 	const fname = "loadOptions"
 	if c.commands == nil {
 		c.commands = make(map[string]*CommandSeq)
