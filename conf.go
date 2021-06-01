@@ -28,9 +28,10 @@ var (
 // Config is the main package struct, all of the API functionality is
 // centered about it.
 type Config struct {
-	// rawInput is the raw input from the command line.
+	// raw input from the command line.
 	rawInput string
-	// commands stores all available commands, essentialy bitmasks.
+	// all loaded commands, essentialy bitmasks with help strings
+	// and nomenclature.
 	commands []command
 	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
