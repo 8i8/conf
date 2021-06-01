@@ -66,11 +66,12 @@ type Config struct {
 	// The flagset that is composed at startup according to the
 	// predefined command line commands and their options.
 	flagSet *flag.FlagSet
-	// Err stores any errors triggered on either generating or
+
+	// errs stores any errors triggered on either generating or
 	// parsing the flagset, returned to the user when either Options
-	// or Parse are run, else when a flag is accessed from the
-	// calling program.
-	Err []error
+	// or Parse are run, else when a flag is accessed by the program
+	// runtime.
+	errs []error
 }
 
 // defaultSet defines the foundation for the programs flags and help,
@@ -213,7 +214,7 @@ func (c *Config) saveArgs() error {
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option: flagSet"
 	if len(c.options) == 0 {
-		c.Err = append(c.Err,
+		c.errs = append(c.errs,
 			fmt.Errorf("%s: %w", msg, errNoData))
 		return
 	}
@@ -226,8 +227,8 @@ func (c *Config) optionsToFsErrAccum() {
 			if err != nil {
 				c.options[name].Err = fmt.Errorf(
 					"%s: %s: %w", msg, name, err)
-				c.Err = append(
-					c.Err, c.options[name].Err)
+				c.errs = append(
+					c.errs, c.options[name].Err)
 			}
 		}
 	}
@@ -266,18 +267,18 @@ func (c *Config) loadCommands(opts ...Option) error {
 // within the slice of errors in Config.Err. Any errors are concatenated
 // into one string and wrap the given error.
 func (c *Config) Error(msg string, err error) error {
-	if len(c.Err) == 0 {
+	if len(c.errs) == 0 {
 		return nil
 	}
 	str := strings.Builder{}
-	str.WriteString(c.Err[0].Error())
-	if len(c.Err) > 1 {
-		for _, err := range c.Err[1:] {
+	str.WriteString(c.errs[0].Error())
+	if len(c.errs) > 1 {
+		for _, err := range c.errs[1:] {
 			str.WriteString(" | ")
 			str.WriteString(err.Error())
 		}
 	}
-	c.Err = c.Err[:0]
+	c.errs = c.errs[:0]
 	return fmt.Errorf("%s: %s: %w", msg, str.String(), err)
 }
 
@@ -306,26 +307,26 @@ func (c *Config) errCheckCommandSeq(cmd Option) Option {
 	const msg = "Option: check"
 	if err := c.checkName(cmd); err != nil {
 		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
-		c.Err = append(c.Err, cmd.Err)
+		c.errs = append(c.errs, cmd.Err)
 		return cmd
 	}
 	cmd, err := c.checkFlag(cmd)
 	if err != nil {
 		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
-		c.Err = append(c.Err, cmd.Err)
+		c.errs = append(c.errs, cmd.Err)
 		return cmd
 	}
 	if err := c.checkDefault(cmd); err != nil {
 		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
-		c.Err = append(c.Err, cmd.Err)
+		c.errs = append(c.errs, cmd.Err)
 	}
 	if err := c.checkVar(cmd); err != nil {
 		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
-		c.Err = append(c.Err, cmd.Err)
+		c.errs = append(c.errs, cmd.Err)
 	}
 	if err := c.checkCmd(cmd); err != nil {
 		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
-		c.Err = append(c.Err, cmd.Err)
+		c.errs = append(c.errs, cmd.Err)
 	}
 	return cmd
 }
@@ -360,7 +361,7 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 				c.commands[i].seen[o.Flag]++
 				err := fmt.Errorf("%s: %s: %w",
 					msg, o.Flag, errDuplicate)
-				c.Err = append(c.Err, err)
+				c.errs = append(c.errs, err)
 				o.Err = err
 			}
 			c.commands[i].seen[o.Flag]++
@@ -525,7 +526,7 @@ func (c *Config) runCheckFn() error {
 		if err != nil {
 			c.options[key].Err = fmt.Errorf("%s, %w",
 				err, ErrCheck)
-			c.Err = append(c.Err, fmt.Errorf("%s, %w",
+			c.errs = append(c.errs, fmt.Errorf("%s, %w",
 				msg, err))
 		}
 	}
