@@ -36,8 +36,8 @@ type Config struct {
 	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
-	// cfs is the current selected flagset.
-	cfs command
+	// set is the current running command set.
+	set command
 	// header is the programs command line help flag output header.
 	header string
 	// options is a map of command sequence that loads all of the
@@ -104,7 +104,7 @@ func (c *Config) checkDuplicate(cmd string) error {
 
 // WhichSet returns the current running sub-commands name and state.
 func (c Config) WhichSet() (string, CMD) {
-	return c.cfs.name, c.cfs.id
+	return c.set.name, c.set.id
 }
 
 // Compose initialises the programs options.
@@ -200,8 +200,8 @@ func (c *Config) optionsToFsErrAccum() {
 		return
 	}
 	for name, o := range c.options {
-		if c.cfs.id&o.Commands > 0 {
-			if c.cfs.seen[o.Flag] > 1 {
+		if c.set.id&o.Commands > 0 {
+			if c.set.seen[o.Flag] > 1 {
 				continue
 			}
 			err := c.options[o.ID].toFlagSet(c.flagSet)
@@ -552,12 +552,12 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
-		c.cfs = c.commands[0]
+		c.set = c.commands[0]
 		return nil
 	}
 	for _, m := range c.commands {
 		if strings.Compare(name, m.name) == 0 {
-			c.cfs = m
+			c.set = m
 			return nil
 		}
 	}
@@ -571,7 +571,7 @@ func (c *Config) loadCmd(cmd string) error {
 	if err := c.setCmd(cmd); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
-	c.flagSet = flag.NewFlagSet(c.cfs.name, flag.ExitOnError)
+	c.flagSet = flag.NewFlagSet(c.set.name, flag.ExitOnError)
 	c.optionsToFsErrAccum()
 	c.flagSet.Usage = c.setUsageFn(os.Stdout)
 	return c.Error("optionsToFsErrAccum", errConfig)
@@ -807,7 +807,7 @@ func (c Config) setUsageFn(w io.Writer) func() {
 	}
 	return func() {
 		io.WriteString(w, c.header)
-		io.WriteString(w, c.cfs.usage)
+		io.WriteString(w, c.set.usage)
 		c.flagSet.VisitAll(flagUsage)
 	}
 }
