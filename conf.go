@@ -25,22 +25,23 @@ var (
  *  Config
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// Config contains an array of commands that the user can call when
-// starting the command line application, the selected command then
-// loads the appropriate flagset for the operating mode and parses any
-// further command line arguments treating flags and input user options.
+// Config contains an array of commands the user can call when starting
+// the command line application, the selected command then loads its
+// corresponding flagset and operating mode, parsing any following
+// arguments as flags and their parameters.
 //
-// The header string is best used as a formatted `string`, so that what
-// you see is what you get, and example of which might typically be:
+// The 'header' is best used as a formatted `string`, so that what you
+// see is what you get, and example of which might typically be:
 //
-// NAME
-//	MyApp
+// `NAME
+//	app
 //
 // SYNOPSIS
-//	MyApp | [command] | -[flag] | -[flag] <value> | -[flag] <'value,value,value'>
+//	app | [cmd] | -[flag] | -[flag] [opt] | -[flag] ['opt,opt,opt']
 //
 // EXAMPLE
-//	MyAPp write -n 36 -s "Hello, World!"`
+//	app write -n 36 -s "Hello, World!"`
+//
 //
 type Config struct {
 
@@ -60,7 +61,7 @@ type Config struct {
 	seen map[string]bool
 
 	// A map of command sequence generated from the users code at
-	// programs startup, composed into a flagset for use at runtime.
+	// programs startup, compiled into a flagset for use at runtime.
 	options map[string]*Option
 
 	// The flagset that is composed at startup according to the
@@ -82,17 +83,17 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	return c.Command("default", usage)
 }
 
-// Command defines sets of flags for command line applications.  Upon
-// the first call, Command defines a set of flags that will act upon the
-// programs basic command line call.
+// Command is a sets of flags for the command line applications.  Upon
+// the first call Command defines default flagset that will act upon
+// the program as basic flags and options specified by the flags type.
 //
-// app [-flag] [value] [-flag] [value] ...
+// app [-flag] [opt] [-flag] [opt] ...
 //
-// Subsequent calls to Command define further sub commands for the
-// program, enabling different program running modes and their
-// corresponding options.
+// Subsequent calls to Command define sub commands, executing different
+// sub routines within the program providing a specific flagset for each
+// routine..
 //
-// app [command] [-flag] [value] [-flag] [value] ...
+// app [cmd] [-flag] [opt] [-flag] [opt] ...
 //
 func (c *Config) Command(cmd, usage string) (token CMD) {
 	if c.position == 0 {
@@ -513,8 +514,7 @@ func (c *Config) checkCmd(o Option) error {
  *  Post Parse Option Checks
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// runCheckFn runs all user given ckFunc functions within the current
-// command set, called after having first parsed all valid options.
+// runCheckFn runs all user given ckFunc functions in the command set.
 func (c *Config) runCheckFn() error {
 	const msg = "Check"
 	for key, o := range c.options {
