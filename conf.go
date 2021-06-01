@@ -74,8 +74,8 @@ type Config struct {
 	errs []error
 }
 
-// defaultSet defines the foundation for the programs flags and help,
-// setting the heading and creating a basic flagset.
+// defaultSet creates the foundation for the programs flags and their
+// documentation, defining the heading and usage for the flagset.
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.position++
 	c.header = header
