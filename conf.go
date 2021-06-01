@@ -150,7 +150,7 @@ func (c *Config) Parse() error {
 	const fname = "Parse"
 	offset := 1
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if err := c.loadCmd(os.Args[1]); err != nil {
+		if err := c.loadCommand(os.Args[1]); err != nil {
 			return fmt.Errorf("%s: %s: %w", pkg,
 				fname, err)
 		}
@@ -158,7 +158,7 @@ func (c *Config) Parse() error {
 		return parse(c, offset, fname)
 	}
 	// If no sub-command has been specified, load the default cmd.
-	if err := c.loadCmd("default"); err != nil {
+	if err := c.loadCommand("default"); err != nil {
 		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
 	return parse(c, 1, fname)
@@ -583,10 +583,10 @@ func (c *Config) setCmd(name string) error {
 	return fmt.Errorf("%s: %w", fname, errNotFound)
 }
 
-// loadCmd sets the programs operating mode and loads all required options
+// loadCommand sets the programs operating mode and loads all required options
 // along with their usage data into the relevant flagset.
-func (c *Config) loadCmd(cmd string) error {
-	const fname = "loadCmd"
+func (c *Config) loadCommand(cmd string) error {
+	const fname = "loadCommand"
 	if err := c.setCmd(cmd); err != nil {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
