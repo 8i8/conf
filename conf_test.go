@@ -813,7 +813,7 @@ func TestCommandTokens(t *testing.T) {
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.cmdTokenIs(config.nextIndex)
+	v = config.cmdTokenIs(config.position)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}

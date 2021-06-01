@@ -33,9 +33,9 @@ type Config struct {
 	// all loaded commands, essentialy bitmasks with help strings
 	// and nomenclature.
 	commands []command
-	//nextIndex contains the next index to be use as
-	// for the next cmdlist command.
-	nextIndex CMD
+	// position retains the next available bit for use as a command
+	// bitmask.
+	position CMD
 	// set is the current running command set.
 	set command
 	// header is the programs command line help flag output header.
@@ -58,7 +58,7 @@ type Config struct {
 // defaultSet defines the foundation for the programs flags and help,
 // setting the heading and creating a basic flagset.
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
-	c.nextIndex++
+	c.position++
 	c.header = header
 	return c.Command("default", usage)
 }
@@ -76,19 +76,19 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 // app [command] [-flag] [value] [-flag] [value] ...
 //
 func (c *Config) Command(cmd, usage string) (token CMD) {
-	if c.nextIndex == 0 {
+	if c.position == 0 {
 		token = c.defaultSet(cmd, usage)
 		return
 	}
-	if c.nextIndex >= limit {
+	if c.position >= limit {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
 	c.checkDuplicate(cmd)
-	m := command{id: c.nextIndex, name: cmd, usage: usage}
+	m := command{id: c.position, name: cmd, usage: usage}
 	c.commands = append(c.commands, m)
-	token = c.nextIndex
-	c.nextIndex = c.nextIndex << 1
+	token = c.position
+	c.position = c.position << 1
 	return
 }
 
@@ -542,7 +542,7 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
-	if bitfield == (c.nextIndex-1)&bitfield {
+	if bitfield == (c.position-1)&bitfield {
 		return true
 	}
 	return false
