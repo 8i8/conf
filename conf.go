@@ -272,32 +272,32 @@ var (
 // checkOptionErrAccum verifies user supplied data within an option
 // including duplicate name and key values; All errors are accumulated
 // and stored in the c.Err field.
-func (c *Config) checkOptionErrAccum(o CommandSeq) CommandSeq {
+func (c *Config) checkOptionErrAccum(cmd CommandSeq) CommandSeq {
 	const msg = "Option: check"
-	if err := c.checkName(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
-		c.Err = append(c.Err, o.Err)
-		return o
+	if err := c.checkName(cmd); err != nil {
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		c.Err = append(c.Err, cmd.Err)
+		return cmd
 	}
-	o, err := c.checkFlag(o)
+	cmd, err := c.checkFlag(cmd)
 	if err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
-		c.Err = append(c.Err, o.Err)
-		return o
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		c.Err = append(c.Err, cmd.Err)
+		return cmd
 	}
-	if err := c.checkDefault(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
-		c.Err = append(c.Err, o.Err)
+	if err := c.checkDefault(cmd); err != nil {
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		c.Err = append(c.Err, cmd.Err)
 	}
-	if err := c.checkVar(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
-		c.Err = append(c.Err, o.Err)
+	if err := c.checkVar(cmd); err != nil {
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		c.Err = append(c.Err, cmd.Err)
 	}
-	if err := c.checkCmd(o); err != nil {
-		o.Err = fmt.Errorf("%s: %s: %w", msg, o.ID, err)
-		c.Err = append(c.Err, o.Err)
+	if err := c.checkCmd(cmd); err != nil {
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		c.Err = append(c.Err, cmd.Err)
 	}
-	return o
+	return cmd
 }
 
 // chekcName checks that the name is not empty and that it is not a
