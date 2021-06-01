@@ -406,7 +406,7 @@ func TestConfigValues(t *testing.T) {
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
-				c.commands["one"].data = nil
+				c.options["one"].data = nil
 			}
 			switch opt.typ {
 			case Int:

@@ -30,8 +30,8 @@ var (
 type Config struct {
 	// rawInput is the raw input from the command line.
 	rawInput string
-	// flagsets stores all available commands, essentialy bitmasks.
-	flagsets []command
+	// commands stores all available commands, essentialy bitmasks.
+	commands []command
 	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
@@ -39,11 +39,11 @@ type Config struct {
 	cfs command
 	// header is the programs command line help flag output header.
 	header string
-	// commands is a map of command sequence that loads all of the
-	// flags that have been configured, during the programs startup.
-	commands map[string]*Option
-	// flagSeen makes certain that no duplicates flag names can exist.
-	flagSeen map[string]bool
+	// options is a map of command sequence that loads all of the
+	// options that have been configured, during the programs startup.
+	options map[string]*Option
+	// seen makes certain that no duplicates flag names can exist.
+	seen map[string]bool
 	// flagset is the programs constructed flagset, the result of
 	// running the Options command.
 	flagSet *flag.FlagSet
@@ -72,22 +72,33 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 // program, enabling different program running modes and their
 // corresponding options.
 //
-// app [sub-command] [-flag] [value] [-flag] [value] ...
+// app [command] [-flag] [value] [-flag] [value] ...
 //
-func (c *Config) Command(helpHeader, usage string) (token CMD) {
+func (c *Config) Command(cmd, usage string) (token CMD) {
 	if c.nextIndex == 0 {
-		token = c.defaultSet(helpHeader, usage)
+		token = c.defaultSet(cmd, usage)
 		return
 	}
 	if c.nextIndex >= limit {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
-	m := command{id: c.nextIndex, name: helpHeader, usage: usage}
-	c.flagsets = append(c.flagsets, m)
+	c.checkDuplicate(cmd)
+	m := command{id: c.nextIndex, name: cmd, usage: usage}
+	c.commands = append(c.commands, m)
 	token = c.nextIndex
 	c.nextIndex = c.nextIndex << 1
 	return
+}
+
+func (c *Config) checkDuplicate(cmd string) error {
+	const fname = "checkDuplicate"
+	for _, c := range c.commands {
+		if strings.Compare(c.name, cmd) != 0 {
+			return fmt.Errorf("%s: cmd already assigned", fname)
+		}
+	}
+	return nil
 }
 
 // WhichSet returns the current running sub-commands name and state.
@@ -182,22 +193,22 @@ func (c *Config) saveArgs() error {
 // accumulated in the Config.Err field.
 func (c *Config) optionsToFsErrAccum() {
 	const msg = "Option: flagSet"
-	if len(c.commands) == 0 {
+	if len(c.options) == 0 {
 		c.Err = append(c.Err,
 			fmt.Errorf("%s: %w", msg, errNoData))
 		return
 	}
-	for name, o := range c.commands {
+	for name, o := range c.options {
 		if c.cfs.id&o.Commands > 0 {
 			if c.cfs.seen[o.Flag] > 1 {
 				continue
 			}
-			err := c.commands[o.ID].toFlagSet(c.flagSet)
+			err := c.options[o.ID].toFlagSet(c.flagSet)
 			if err != nil {
-				c.commands[name].Err = fmt.Errorf(
+				c.options[name].Err = fmt.Errorf(
 					"%s: %s: %w", msg, name, err)
 				c.Err = append(
-					c.Err, c.commands[name].Err)
+					c.Err, c.options[name].Err)
 			}
 		}
 	}
@@ -209,25 +220,25 @@ func (c *Config) optionsToFsErrAccum() {
 // emptied.
 func (c *Config) loadCommands(opts ...Option) error {
 	const fname = "loadOptions"
-	if c.commands == nil {
-		c.commands = make(map[string]*Option)
+	if c.options == nil {
+		c.options = make(map[string]*Option)
 	}
-	if c.flagSeen == nil {
-		c.flagSeen = make(map[string]bool)
+	if c.seen == nil {
+		c.seen = make(map[string]bool)
 	}
 	// Make a duplicate verification map of the flags for each
 	// sub-command, flags may not be duplicated in a sub-command,
 	// however the same flag name can be used again for different
 	// sets for different operations, if that flag has not been
 	// reused within the context of the same set.
-	for i := range c.flagsets {
-		if c.flagsets[i].seen == nil {
-			c.flagsets[i].seen = make(map[string]int)
+	for i := range c.commands {
+		if c.commands[i].seen == nil {
+			c.commands[i].seen = make(map[string]int)
 		}
 	}
 	for i, opt := range opts {
 		opts[i] = c.errCheckCommandSeq(opt)
-		c.commands[opt.ID] = &opts[i]
+		c.options[opt.ID] = &opts[i]
 	}
 	return c.Error("checkOptionErrAccum", errConfig)
 }
@@ -307,10 +318,10 @@ func (c *Config) checkName(o Option) error {
 	if len(o.ID) == 0 {
 		return fmt.Errorf("%s: %w", msg, errNoValue)
 	}
-	if c.flagSeen[o.ID] {
+	if c.seen[o.ID] {
 		return fmt.Errorf("%s: %w", msg, errDuplicate)
 	}
-	c.flagSeen[o.ID] = true
+	c.seen[o.ID] = true
 	return nil
 }
 
@@ -321,19 +332,19 @@ func (c *Config) checkFlag(o Option) (Option, error) {
 	if len(o.Flag) == 0 {
 		return o, fmt.Errorf("%q: %w", msg, errNoValue)
 	}
-	for i := range c.flagsets {
+	for i := range c.commands {
 		// If the option flag has already been registered on the
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
-		if c.flagsets[i].id&o.Commands > 0 {
-			if c.flagsets[i].seen[o.Flag] > 0 {
-				c.flagsets[i].seen[o.Flag]++
+		if c.commands[i].id&o.Commands > 0 {
+			if c.commands[i].seen[o.Flag] > 0 {
+				c.commands[i].seen[o.Flag]++
 				err := fmt.Errorf("%s: %s: %w",
 					msg, o.Flag, errDuplicate)
 				c.Err = append(c.Err, err)
 				o.Err = err
 			}
-			c.flagsets[i].seen[o.Flag]++
+			c.commands[i].seen[o.Flag]++
 		}
 	}
 	return o, nil
@@ -486,14 +497,14 @@ func (c *Config) checkCmd(o Option) error {
 // command set, called after having first parsed all valid options.
 func (c *Config) runCheckFn() error {
 	const msg = "Check"
-	for key, o := range c.commands {
+	for key, o := range c.options {
 		if o.Check == nil || o.data == nil {
 			continue
 		}
 		var err error
-		c.commands[key].data, err = o.Check(o.data)
+		c.options[key].data, err = o.Check(o.data)
 		if err != nil {
-			c.commands[key].Err = fmt.Errorf("%s, %w",
+			c.options[key].Err = fmt.Errorf("%s, %w",
 				err, ErrCheck)
 			c.Err = append(c.Err, fmt.Errorf("%s, %w",
 				msg, err))
@@ -540,10 +551,10 @@ func (c Config) cmdTokenIs(bitfield CMD) bool {
 func (c *Config) setCmd(name string) error {
 	const fname = "setCmd"
 	if name == "default" {
-		c.cfs = c.flagsets[0]
+		c.cfs = c.commands[0]
 		return nil
 	}
-	for _, m := range c.flagsets {
+	for _, m := range c.commands {
 		if strings.Compare(name, m.name) == 0 {
 			c.cfs = m
 			return nil
@@ -927,7 +938,7 @@ func (t Type) String() string {
 // error, if one has been raised during the options creation.
 func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -946,7 +957,7 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 // been raised during the options creation.
 func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -965,7 +976,7 @@ func (c Config) ValueInt(key string) (int, error) {
 // has been raised during the options creation.
 func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -984,7 +995,7 @@ func (c Config) ValueInt64(key string) (int64, error) {
 // been raised during the options creation.
 func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1003,7 +1014,7 @@ func (c Config) ValueUint(key string) (uint, error) {
 // has been raised during the options creation.
 func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1022,7 +1033,7 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 // one has been raised during the options creation.
 func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return 0, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1041,7 +1052,7 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 // has been raised during the options creation.
 func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return "", fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1060,7 +1071,7 @@ func (c Config) ValueString(key string) (string, error) {
 // has been raised during the options creation.
 func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return false, fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
@@ -1079,7 +1090,7 @@ func (c Config) ValueBool(key string) (bool, error) {
 // error if one has been raised during the options creation.
 func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
-	o, ok := c.commands[key]
+	o, ok := c.options[key]
 	if !ok {
 		return time.Duration(0), fmt.Errorf("%s: %s: %q: %w",
 			pkg, fname, key, errNoKey)
