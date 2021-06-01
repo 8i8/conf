@@ -208,10 +208,10 @@ func (c *Config) saveArgs() error {
 	return nil
 }
 
-// optionsToFsErrAccum defines the flagset for all options that have
+// generateFlagSet defines the flagset for all options that have
 // been specified within the current working set; All errors are
 // accumulated in the Config.Err field.
-func (c *Config) optionsToFsErrAccum() {
+func (c *Config) generateFlagSet() {
 	const msg = "Option: flagSet"
 	if len(c.options) == 0 {
 		c.errs = append(c.errs,
@@ -591,9 +591,18 @@ func (c *Config) loadCmd(cmd string) error {
 		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
 	}
 	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
-	c.optionsToFsErrAccum()
+	// Compose the final flagset, all errors are accumulated to make
+	// error handling more effective in the users code.
+	c.generateFlagSet()
+	// Now that we have a flagset, define the help or usage output
+	// function, overriding the default flag package help function.
 	c.flagSet.Usage = c.setUsageFn(os.Stdout)
-	return c.Error("optionsToFsErrAccum", errConfig)
+	// If there are any errors, return all of them in one string.
+	// This permits users to not require dealing with errors whilst
+	// setting commands, any error in the command setup stage are
+	// caught here and will be displayed when the flags are
+	// complied.
+	return c.Error("generateFlagSet", errConfig)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
