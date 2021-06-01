@@ -31,12 +31,12 @@ type Config struct {
 	// rawInput is the raw input from the command line.
 	rawInput string
 	// flagsets stores all available commands, essentialy bitmasks.
-	flagsets []flagset
+	flagsets []command
 	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
 	nextIndex CMD
 	// cfs is the current selected flagset.
-	cfs flagset
+	cfs command
 	// header is the programs command line help flag output header.
 	header string
 	// commands is a map of command sequence that loads all of the
@@ -83,7 +83,7 @@ func (c *Config) Command(helpHeader, usage string) (token CMD) {
 		err := errors.New("index overflow, too many program modes")
 		c.Err = append(c.Err, err)
 	}
-	m := flagset{id: c.nextIndex, name: helpHeader, usage: usage}
+	m := command{id: c.nextIndex, name: helpHeader, usage: usage}
 	c.flagsets = append(c.flagsets, m)
 	token = c.nextIndex
 	c.nextIndex = c.nextIndex << 1
@@ -506,9 +506,9 @@ func (c *Config) runCheckFn() error {
  *  Sub-Commands
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// flagset contains the required data to create a program sub-command and
+// command contains the required data to create a program sub-command and
 // its flags.
-type flagset struct {
+type command struct {
 	// id is the bitfield of the command.
 	id CMD
 	// The options name.
