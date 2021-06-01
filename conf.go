@@ -30,7 +30,7 @@ var (
 type Config struct {
 	// rawInput is the raw input from the command line.
 	rawInput string
-	// flagsets stores all available sub-commands.
+	// flagsets stores all available commands, essentialy bitmasks.
 	flagsets []flagset
 	//nextIndex contains the next index to be use as
 	// for the next cmdlist command.
@@ -218,8 +218,8 @@ func (c *Config) loadOptions(opts ...CommandSeq) error {
 	// Make a duplicate verification map of the flags for each
 	// sub-command, flags may not be duplicated in a sub-command,
 	// however the same flag name can be used again for different
-	// sub-commands for different operations, if that flag has not
-	// been reused within the context of the same command.
+	// sets for different operations, if that flag has not been
+	// reused within the context of the same set.
 	for i := range c.flagsets {
 		if c.flagsets[i].seen == nil {
 			c.flagsets[i].seen = make(map[string]int)
