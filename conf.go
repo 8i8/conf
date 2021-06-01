@@ -59,8 +59,7 @@ type Config struct {
 func (c *Config) defaultSet(header string, usage string) (token CMD) {
 	c.nextIndex++
 	c.header = header
-	token = c.FlagSet("default", usage)
-	return
+	return c.FlagSet("default", usage)
 }
 
 // FlagSet defines sets of flags for command line applications.  Upon
