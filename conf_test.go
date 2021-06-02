@@ -145,9 +145,9 @@ func TestConfigValues(t *testing.T) {
 		c = Config{}
 		cmd := c.defaultSet("Usage heading", "cmd's heading")
 		opts := []Option{
-			{ID: "one",
+			{
 				Type:     opt.typ,
-				Flag:     "i",
+				Flag:     "one",
 				Usage:    "do it like this",
 				Default:  opt.def,
 				Var:      opt.v,
@@ -486,9 +486,9 @@ func TestOptionsCheckUserFn(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{ID: "one",
+		{
 			Type:     Int,
-			Flag:     "a",
+			Flag:     "one",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
@@ -521,9 +521,9 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{ID: "one",
+		{
 			Type:     Int,
-			Flag:     "a",
+			Flag:     "one",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
@@ -555,21 +555,21 @@ func TestOptionsCheckName(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{ID: "errors",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{ID: "errors",
+		{
 			Type:     Int,
 			Flag:     "b",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{ID: "",
+		{
 			Type:     Int,
 			Flag:     "c",
 			Usage:    "like this",
@@ -588,7 +588,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Usage:    "like this",
 			Default:  1,
@@ -611,14 +611,14 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	m := config.defaultSet("", "")
 	//m2 := config.Command("modetwo", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m,
 		},
-		{ID: "similarKeys",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -643,7 +643,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	config := Config{}
 	m := config.defaultSet("", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -668,7 +668,7 @@ func TestCommandGetCmd(t *testing.T) {
 	cmd := c.defaultSet("", "")
 	cmd2 := c.Command("", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -702,14 +702,14 @@ func TestCommandDuplicateKeys(t *testing.T) {
 	m1 := config.defaultSet("", "")
 	m2 := config.Command("modetwo", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
 			Default:  1,
 			Commands: m1,
 		},
-		{ID: "similarKeys",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -752,7 +752,7 @@ func TestCommandNotThere(t *testing.T) {
 	_ = config.defaultSet("", "")
 	m := CMD(2)
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -773,7 +773,7 @@ func TestCommandTokens(t *testing.T) {
 	cmd2 := config.Command("", "")
 	cmd3 := config.Command("", "")
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -827,7 +827,7 @@ func TestParse(t *testing.T) {
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -864,7 +864,7 @@ func TestParseInvalidCmd(t *testing.T) {
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
 	var opts = []Option{
-		{ID: "int",
+		{
 			Type:     Int,
 			Flag:     "a",
 			Usage:    "like this",
@@ -896,14 +896,14 @@ func TestFlagSetUsageFn(t *testing.T) {
 	config := Config{}
 	cmd := config.defaultSet("Usage Heading", "Mode Heading")
 	opts := []Option{
-		{ID: "one",
+		{
 			Type:     Int,
 			Flag:     "i",
 			Usage:    "do it like this",
 			Default:  1,
 			Commands: cmd,
 		},
-		{ID: "two",
+		{
 			Type:     Int,
 			Flag:     "flagWithAVeryLongName",
 			Usage:    "do it like this",

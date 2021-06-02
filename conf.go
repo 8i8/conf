@@ -219,17 +219,17 @@ func (c *Config) generateFlagSet() {
 			fmt.Errorf("%s: %w", msg, errNoData))
 		return
 	}
-	for name, o := range c.options {
+	for _, o := range c.options {
 		if c.set.id&o.Commands > 0 {
 			if c.set.seen[o.Flag] > 1 {
 				continue
 			}
-			err := c.options[o.ID].toFlagSet(c.flagSet)
+			err := c.options[o.Flag].toFlagSet(c.flagSet)
 			if err != nil {
-				c.options[name].Err = fmt.Errorf(
-					"%s: %s: %w", msg, name, err)
+				c.options[o.Flag].Err = fmt.Errorf(
+					"%s: %s: %w", msg, o.Flag, err)
 				c.errs = append(
-					c.errs, c.options[name].Err)
+					c.errs, c.options[o.Flag].Err)
 			}
 		}
 	}
@@ -259,7 +259,7 @@ func (c *Config) loadCommands(opts ...Option) error {
 	}
 	for i, opt := range opts {
 		opts[i] = c.errCheckCommandSeq(opt)
-		c.options[opt.ID] = &opts[i]
+		c.options[opt.Flag] = &opts[i]
 	}
 	return c.Error("checkOptionErrAccum", errConfig)
 }
@@ -307,26 +307,26 @@ var (
 func (c *Config) errCheckCommandSeq(cmd Option) Option {
 	const msg = "Option: check"
 	if err := c.checkName(cmd); err != nil {
-		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.Flag, err)
 		c.errs = append(c.errs, cmd.Err)
 		return cmd
 	}
 	cmd, err := c.checkFlag(cmd)
 	if err != nil {
-		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.Flag, err)
 		c.errs = append(c.errs, cmd.Err)
 		return cmd
 	}
 	if err := c.checkDefault(cmd); err != nil {
-		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.Flag, err)
 		c.errs = append(c.errs, cmd.Err)
 	}
 	if err := c.checkVar(cmd); err != nil {
-		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.Flag, err)
 		c.errs = append(c.errs, cmd.Err)
 	}
 	if err := c.checkCmd(cmd); err != nil {
-		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.ID, err)
+		cmd.Err = fmt.Errorf("%s: %s: %w", msg, cmd.Flag, err)
 		c.errs = append(c.errs, cmd.Err)
 	}
 	return cmd
@@ -336,13 +336,13 @@ func (c *Config) errCheckCommandSeq(cmd Option) Option {
 // duplicate value.
 func (c *Config) checkName(o Option) error {
 	const msg = "Option.Name"
-	if len(o.ID) == 0 {
+	if len(o.Flag) == 0 {
 		return fmt.Errorf("%s: %w", msg, errNoValue)
 	}
-	if c.seen[o.ID] {
+	if c.seen[o.Flag] {
 		return fmt.Errorf("%s: %w", msg, errDuplicate)
 	}
-	c.seen[o.ID] = true
+	c.seen[o.Flag] = true
 	return nil
 }
 
@@ -517,14 +517,14 @@ func (c *Config) checkCmd(o Option) error {
 // runCheckFn runs all user given ckFunc functions in the command set.
 func (c *Config) runCheckFn() error {
 	const msg = "Check"
-	for key, o := range c.options {
+	for _, o := range c.options {
 		if o.Check == nil || o.data == nil {
 			continue
 		}
 		var err error
-		c.options[key].data, err = o.Check(o.data)
+		c.options[o.Flag].data, err = o.Check(o.data)
 		if err != nil {
-			c.options[key].Err = fmt.Errorf("%s, %w",
+			c.options[o.Flag].Err = fmt.Errorf("%s, %w",
 				err, ErrCheck)
 			c.errs = append(c.errs, fmt.Errorf("%s, %w",
 				msg, err))
@@ -617,8 +617,8 @@ type ckFunc func(interface{}) (interface{}, error)
 
 // Option contains the data required to create a flag.
 type Option struct {
-	// The ID of the option, also used as a key in the options map.
-	ID string
+	// Flag contains the flag as it appers on the command line.
+	Flag string
 	// Type is the data type of the option.
 	Type
 	// Value is a flag.Value interface, used when passing user defined
@@ -627,8 +627,6 @@ type Option struct {
 	// Var is used to pass values by reference into the 'Var' group of
 	// flag types.
 	Var interface{}
-	// Flag contains the flag as it appers on the command line.
-	Flag string
 	// Usage string defines the usage text that is displayed in help
 	// output.
 	Usage string
@@ -818,7 +816,7 @@ func (o *Option) toFlagSet(fls *flag.FlagSet) error {
 			errTypeNil)
 	default:
 		return fmt.Errorf("%s: %s: internal error: (%q, %s) %w",
-			pkg, fname, o.ID, o.Type, errType)
+			pkg, fname, o.Flag, o.Type, errType)
 	}
 	return nil
 }
