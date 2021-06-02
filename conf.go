@@ -96,15 +96,22 @@ func (c *Config) defaultSet(header string, usage string) (token CMD) {
 // app [cmd] [-flag] [opt] [-flag] [opt] ...
 //
 func (c *Config) Command(cmd, usage string) (token CMD) {
+	const fname = "Config.Command"
 	if c.position == 0 {
 		token = c.defaultSet(cmd, usage)
 		return
 	}
 	if c.position >= limit {
-		err := errors.New("index overflow, too many program modes")
+		err := fmt.Errorf("%s: too many program modes", fname)
 		c.errs = append(c.errs, err)
+		return
 	}
-	c.checkDuplicate(cmd)
+	err := c.checkDuplicate(cmd)
+	if err != nil {
+		err := fmt.Errorf("%s: %q: cmd already in use", fname, cmd)
+		c.errs = append(c.errs, err)
+		return
+	}
 	m := command{id: c.position, header: cmd, usage: usage}
 	c.commands = append(c.commands, m)
 	token = c.position
