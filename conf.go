@@ -189,10 +189,9 @@ func loadOptions(c *Config, opts ...Option) error {
 		c.seen = make(map[string]bool)
 	}
 	// Make a duplicate verification map of the flags for each
-	// sub-command, flags may not be duplicated in a sub-command,
-	// however the same flag name can be used again for different
-	// sets for different operations, if that flag has not been
-	// reused within the context of the same set.
+	// command, flags cannot be duplicated within a sub-command,
+	// however the same flag name can be repeated in different sets
+	// for differing operations.
 	for i := range c.commands {
 		if c.commands[i].seen == nil {
 			c.commands[i].seen = make(map[string]int)
