@@ -129,8 +129,8 @@ func (c *Config) checkDuplicate(cmd string) error {
 	return nil
 }
 
-// WhichSet returns the current running sub-commands name and state.
-func (c Config) WhichSet() (string, CMD) {
+// Is returns the current running sub-commands name and state.
+func (c Config) Is() (string, CMD) {
 	return c.set.header, c.set.id
 }
 
