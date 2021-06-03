@@ -187,8 +187,8 @@ func parse(c *Config, offset int, fname string) error {
 	return nil
 }
 
-// ArgString returns a command line arguments string, as input.
-func (c Config) ArgString() string {
+// Args returns a command line arguments string, as input.
+func (c Config) Args() string {
 	return c.rawInput
 }
 

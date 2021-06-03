@@ -473,7 +473,7 @@ func TestConfigArgString(t *testing.T) {
 	if errors.Is(err, errConfig) {
 		t.Errorf("%s: %w", fname, err)
 	}
-	str := c.ArgString()
+	str := c.Args()
 	if str != "one two three" {
 		t.Errorf("%s: recieved %q expected \"one two three\"",
 			fname, str)
