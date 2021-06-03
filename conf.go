@@ -138,7 +138,7 @@ func (c Config) WhichSet() (string, CMD) {
 func (c *Config) Compose(opts ...Option) error {
 	const fname = "Options"
 	// Record the original input string.
-	if err := c.saveArgs(); err != nil {
+	if err := c.argsToString(); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Generate flags and usage data.
@@ -192,9 +192,9 @@ func (c Config) ArgString() string {
 	return c.rawInput
 }
 
-// saveArgs records the literal input arguments as a string.
-func (c *Config) saveArgs() error {
-	const fname = "saveArgs"
+// argsToString records the literal input arguments as a string.
+func (c *Config) argsToString() error {
+	const fname = "argsToString"
 	if len(os.Args) == 0 {
 		return fmt.Errorf("%s: %w", fname, errConfig)
 	}
