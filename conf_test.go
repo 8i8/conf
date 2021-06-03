@@ -691,7 +691,7 @@ func TestCommandGetCmd(t *testing.T) {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
 	}
-	if !c.commandIs(cmd2) {
+	if !c.isInSet(cmd2) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
 }
@@ -789,31 +789,31 @@ func TestCommandTokens(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
-	v := config.commandIs(0)
+	v := config.isInSet(0)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
-	v = config.commandIs(cmd1)
+	v = config.isInSet(cmd1)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.commandIs(cmd2)
+	v = config.isInSet(cmd2)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.commandIs(cmd3)
+	v = config.isInSet(cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.commandIs(cmd1 | cmd3)
+	v = config.isInSet(cmd1 | cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.commandIs(cmd1 | cmd2 | cmd3)
+	v = config.isInSet(cmd1 | cmd2 | cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.commandIs(config.position)
+	v = config.isInSet(config.position)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
@@ -851,7 +851,7 @@ func TestParse(t *testing.T) {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
 	}
-	if !c.commandIs(cmd) {
+	if !c.isInSet(cmd) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
 }
@@ -886,7 +886,7 @@ func TestParseInvalidCmd(t *testing.T) {
 		t.Errorf("%s: expected \"cmd2\" received %q",
 			fname, mode)
 	}
-	if !c.commandIs(cmd) {
+	if !c.isInSet(cmd) {
 		t.Errorf("%s: %s", fname, errNotValid)
 	}
 }

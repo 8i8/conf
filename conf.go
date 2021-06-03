@@ -106,7 +106,7 @@ func (c *Config) Command(cmd, usage string) (token CMD) {
 		c.errs = append(c.errs, err)
 		return
 	}
-	err := c.checkDuplicate(cmd)
+	err := checkDuplicate(c, cmd)
 	if err != nil {
 		err := fmt.Errorf("%s: %q: cmd already in use", fname, cmd)
 		c.errs = append(c.errs, err)
@@ -119,7 +119,7 @@ func (c *Config) Command(cmd, usage string) (token CMD) {
 	return
 }
 
-func (c *Config) checkDuplicate(cmd string) error {
+func checkDuplicate(c *Config, cmd string) error {
 	const fname = "checkDuplicate"
 	for _, c := range c.commands {
 		if strings.Compare(c.header, cmd) != 0 {
@@ -138,11 +138,11 @@ func (c Config) Is() (string, CMD) {
 func (c *Config) Compose(opts ...Option) error {
 	const fname = "Options"
 	// Record the original input string.
-	if err := c.argsToString(); err != nil {
+	if err := argsToString(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	// Generate flags and usage data.
-	if err := c.loadCommands(opts...); err != nil {
+	if err := loadCommands(c, opts...); err != nil {
 		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
 	}
 	// TODO write a standard config file addition that records to a
@@ -150,6 +150,96 @@ func (c *Config) Compose(opts ...Option) error {
 	// settings that have been previously recorded.
 	//c.loadConfig()
 	return nil
+}
+
+// argsToString records the literal input arguments as a string.
+func argsToString(c *Config) error {
+	const fname = "argsToString"
+	if len(os.Args) == 0 {
+		return fmt.Errorf("%s: %w", fname, errConfig)
+	}
+	var str strings.Builder
+	_, err := str.WriteString(os.Args[0])
+	if err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
+	}
+	for _, arg := range os.Args[1:] {
+		if err := str.WriteByte(' '); err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
+		}
+		_, err = str.WriteString(arg)
+		if err != nil {
+			return fmt.Errorf("%s: %w", fname, err)
+		}
+	}
+	c.rawInput = str.String()
+	return nil
+}
+
+// loadCommands loads all of the defined commands into the option map,
+// running tests on each as they are loaded.  On leaving the function
+// the Config.Err field is checked and any errors reported, it is then
+// emptied.
+func loadCommands(c *Config, opts ...Option) error {
+	const fname = "loadOptions"
+	if c.options == nil {
+		c.options = make(map[string]*Option)
+	}
+	if c.seen == nil {
+		c.seen = make(map[string]bool)
+	}
+	// Make a duplicate verification map of the flags for each
+	// sub-command, flags may not be duplicated in a sub-command,
+	// however the same flag name can be used again for different
+	// sets for different operations, if that flag has not been
+	// reused within the context of the same set.
+	for i := range c.commands {
+		if c.commands[i].seen == nil {
+			c.commands[i].seen = make(map[string]int)
+		}
+	}
+	for i, opt := range opts {
+		opts[i] = c.errCheckCommandSeq(opt)
+		c.options[opt.Flag] = &opts[i]
+	}
+	return c.Error("checkOptionErrAccum", errConfig)
+}
+
+func setRunningMode(c *Config) (arg int, err error) {
+	const fname = "setRunningMode"
+	arg = 1
+	if len(os.Args) > 1 && os.Args[1][0] != '-' {
+		if err = c.loadCommand(os.Args[1]); err != nil {
+			err = fmt.Errorf("%s: %s: %w", pkg,
+				fname, err)
+			return
+		}
+		arg++ // We have consumed an argument
+		return
+	}
+	return
+}
+
+// loadCommand sets the programs operating mode and loads all required options
+// along with their usage data into the relevant flagset.
+func (c *Config) loadCommand(cmd string) error {
+	const fname = "loadCommand"
+	if err := c.setCommand(cmd); err != nil {
+		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
+	}
+	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
+	// Compose the final flagset, all errors are accumulated to make
+	// error handling more effective in the users code.
+	c.generateFlagSet()
+	// Now that we have a flagset, define the help or usage output
+	// function, overriding the default flag package help function.
+	c.flagSet.Usage = c.setUsageFn(os.Stdout)
+	// If there are any errors, return all of them in one string.
+	// This permits users to not require dealing with errors whilst
+	// setting commands, any error in the command setup stage are
+	// caught here and will be displayed when the flags are
+	// complied.
+	return c.Error("generateFlagSet", errConfig)
 }
 
 // Parse sets the current running mode from the command line arguments
@@ -192,30 +282,6 @@ func (c Config) Args() string {
 	return c.rawInput
 }
 
-// argsToString records the literal input arguments as a string.
-func (c *Config) argsToString() error {
-	const fname = "argsToString"
-	if len(os.Args) == 0 {
-		return fmt.Errorf("%s: %w", fname, errConfig)
-	}
-	var str strings.Builder
-	_, err := str.WriteString(os.Args[0])
-	if err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
-	for _, arg := range os.Args[1:] {
-		if err := str.WriteByte(' '); err != nil {
-			return fmt.Errorf("%s: %w", fname, err)
-		}
-		_, err = str.WriteString(arg)
-		if err != nil {
-			return fmt.Errorf("%s: %w", fname, err)
-		}
-	}
-	c.rawInput = str.String()
-	return nil
-}
-
 // generateFlagSet defines the flagset for all options that have
 // been specified within the current working set; All errors are
 // accumulated in the Config.Err field.
@@ -240,35 +306,6 @@ func (c *Config) generateFlagSet() {
 			}
 		}
 	}
-}
-
-// loadCommands loads all of the defined commands into the option map,
-// running tests on each as they are loaded.  On leaving the function
-// the Config.Err field is checked and any errors reported, it is then
-// emptied.
-func (c *Config) loadCommands(opts ...Option) error {
-	const fname = "loadOptions"
-	if c.options == nil {
-		c.options = make(map[string]*Option)
-	}
-	if c.seen == nil {
-		c.seen = make(map[string]bool)
-	}
-	// Make a duplicate verification map of the flags for each
-	// sub-command, flags may not be duplicated in a sub-command,
-	// however the same flag name can be used again for different
-	// sets for different operations, if that flag has not been
-	// reused within the context of the same set.
-	for i := range c.commands {
-		if c.commands[i].seen == nil {
-			c.commands[i].seen = make(map[string]int)
-		}
-	}
-	for i, opt := range opts {
-		opts[i] = c.errCheckCommandSeq(opt)
-		c.options[opt.Flag] = &opts[i]
-	}
-	return c.Error("checkOptionErrAccum", errConfig)
 }
 
 // Error returns an error if any errors have occurred and been recorded
@@ -511,7 +548,7 @@ func (c *Config) checkVar(o Option) error {
 // command set.
 func (c *Config) checkCmd(o Option) error {
 	const msg = "Commands"
-	if !c.commandIs(o.Commands) {
+	if !isInSet(c, o.Commands) {
 		return fmt.Errorf("%s: %w", msg, errSubCmd)
 	}
 	return nil
@@ -562,9 +599,9 @@ type command struct {
 // applied to.
 type CMD int
 
-// commandIs returns true if a command token exists within the
+// isInSet returns true if a command token exists within the
 // configured set of commands, false if it does not.
-func (c Config) commandIs(bitfield CMD) bool {
+func isInSet(c *Config, bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
@@ -588,28 +625,6 @@ func (c *Config) setCommand(name string) error {
 		}
 	}
 	return fmt.Errorf("%s: %w", fname, errNotFound)
-}
-
-// loadCommand sets the programs operating mode and loads all required options
-// along with their usage data into the relevant flagset.
-func (c *Config) loadCommand(cmd string) error {
-	const fname = "loadCommand"
-	if err := c.setCommand(cmd); err != nil {
-		return fmt.Errorf("%s: %q: %w", fname, cmd, err)
-	}
-	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
-	// Compose the final flagset, all errors are accumulated to make
-	// error handling more effective in the users code.
-	c.generateFlagSet()
-	// Now that we have a flagset, define the help or usage output
-	// function, overriding the default flag package help function.
-	c.flagSet.Usage = c.setUsageFn(os.Stdout)
-	// If there are any errors, return all of them in one string.
-	// This permits users to not require dealing with errors whilst
-	// setting commands, any error in the command setup stage are
-	// caught here and will be displayed when the flags are
-	// complied.
-	return c.Error("generateFlagSet", errConfig)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
