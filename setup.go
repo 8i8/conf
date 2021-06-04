@@ -10,15 +10,9 @@ func setupConfig(c *Config) error {
 	const fname = "setupConfig"
 
 	if err := setupMaps(c); err != nil {
-		if verbose {
-			fmt.Printf("%s: failed\n", fname)
-		}
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if err := ascertainCmdSet(c); err != nil {
-		if verbose {
-			fmt.Printf("%s: failed\n", fname)
-		}
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
@@ -50,9 +44,6 @@ func ascertainCmdSet(c *Config) error {
 	const fname = "ascertainCmdSet"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if err := setCommand(c, os.Args[1]); err != nil {
-			if verbose {
-				fmt.Printf("%s: failed\n", fname)
-			}
 			return fmt.Errorf("%s: %w", fname, err)
 		}
 		if verbose {
@@ -61,9 +52,6 @@ func ascertainCmdSet(c *Config) error {
 		return nil
 	}
 	if len(c.commands) == 0 {
-		if verbose {
-			fmt.Printf("%s: failed\n", fname)
-		}
 		const event = "empty command set"
 		return fmt.Errorf("%s: %s", fname, event)
 	}

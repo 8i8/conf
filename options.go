@@ -57,6 +57,11 @@ func errCheckOption(c *Config, cmd Option) Option {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
 		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
 	}
+
+	if verbose && c.errs == nil {
+		fmt.Printf("%s: %s: no errors\n", fname, cmd.Flag)
+	}
+
 	return cmd
 }
 
