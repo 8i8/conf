@@ -2,24 +2,54 @@
 
 !theme amiga
 
-class FlagSet {
+class Config {
+	Header string
+	rawInput string
+
+	commands []command
+	position CMD
+	set command
+	seen map[string]bool
+
+	options map[string]*Option
+
+	flagset *flag.FlagSet
+
+	errs []error
+
+	Command(cmd, usage string) (CMD)
+	Compose(opts ...Option) error
+	Parse() error
+	Is() (string, CMD)
+	Args() string
+}
+
+class command {
+	id CMD
+	name string
+	usage string
+	seen map[string]int
+}
+
+Config <-- command 
+
+class Command {
 	heading  string
 	useage   string
-	commands []commandSeq
+	flags [Option]
 	NewFlagSet() bitmask
+}
+
+class Option {
+	ID string
+	Type
+	Flag string
+	Check
 }
 
 note "The first FlagSet defined is the basic set, used to describe flags\n for the programs cli command. Each subsequent FlagSet represent a sub\n command; When the programs cli command is followed by a sub-command\n the user may then access any combination of the sub-set of flags that\n have been defined along with their accompanying documentation." as N1
 
-class Flag {
-	flag     string
-	value    type
-	useage   string
-	checkFn  func
-	verify() checkFn
-}
-
 FlagSet *-- FlagSet
-FlagSet *-- Flag
+FlagSet *-- CommandSeq
 
 @enduml

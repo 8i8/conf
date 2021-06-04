@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var c Config
+var c = new(Config)
 
 func init() {
 	test = true
@@ -142,8 +142,8 @@ func TestConfigValues(t *testing.T) {
 	// duplicate test now that the global Config value has been
 	// removed.
 	for name, opt := range options {
-		c = Config{}
-		cmd := c.defaultSet("Usage heading", "cmd's heading")
+		c = &Config{}
+		cmd := c.Command("Usage heading", "cmd's heading")
 		opts := []Option{
 			{
 				Type:     opt.typ,
@@ -161,10 +161,10 @@ func TestConfigValues(t *testing.T) {
 			if err != nil {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
-			err = c.Parse()
-			if err != nil {
-				t.Errorf("%s: %s: error: %s", fname, name, err)
-			}
+			// err = c.Parse()
+			// if err != nil {
+			// 	t.Errorf("%s: %s: error: %s", fname, name, err)
+			// }
 			switch opt.typ {
 			case Int:
 				i, err := c.ValueInt("one")
@@ -314,10 +314,10 @@ func TestConfigValues(t *testing.T) {
 			if !errors.Is(err, errConfig) {
 				t.Errorf("%s: %s: error: %s", fname, name, err)
 			}
-			err = c.Parse()
-			if !errors.Is(err, errConfig) {
-				t.Errorf("%s: %s: error: %s", fname, name, err)
-			}
+			// err = c.Parse()
+			// if !errors.Is(err, errConfig) {
+			// 	t.Errorf("%s: %s: error: %s", fname, name, err)
+			// }
 			// The errors raised in Options and Parse are put
 			// into option.Err and wrapped with errStored
 			// which is returned here.
@@ -402,10 +402,10 @@ func TestConfigValues(t *testing.T) {
 				if err != nil {
 					t.Errorf("%s: %s: error: %s", fname, name, err)
 				}
-				err = c.Parse()
-				if err != nil {
-					t.Errorf("%s: %s: error: %s", fname, name, err)
-				}
+				// err = c.Parse()
+				// if err != nil {
+				// 	t.Errorf("%s: %s: error: %s", fname, name, err)
+				// }
 				c.options["one"].data = nil
 			}
 			switch opt.typ {
@@ -463,28 +463,10 @@ func TestConfigValues(t *testing.T) {
 	}
 }
 
-func TestConfigArgString(t *testing.T) {
-	const fname = "TestConfigArgString"
-	temp := os.Args
-	os.Args = []string{"one", "two", "three"}
-	c = Config{}
-	c.defaultSet("", "")
-	err := c.Compose()
-	if errors.Is(err, errConfig) {
-		t.Errorf("%s: %w", fname, err)
-	}
-	str := c.Args()
-	if str != "one two three" {
-		t.Errorf("%s: recieved %q expected \"one two three\"",
-			fname, str)
-	}
-	os.Args = temp
-}
-
 func TestOptionsCheckUserFn(t *testing.T) {
 	const fname = "TestOptionsCheckUserFn"
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("one", "like this")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -503,10 +485,10 @@ func TestOptionsCheckUserFn(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: error: %s", fname, err)
-	}
+	// err = config.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 	i, err := config.ValueInt("one")
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
@@ -519,7 +501,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 func TestOptionsCheckUserFnError(t *testing.T) {
 	const fname = "TestOptionsCheckUserFnError"
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("", "")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -540,10 +522,10 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if !errors.Is(err, ErrCheck) {
-		t.Errorf("%s: error: %s", fname, err)
-	}
+	// err = config.Parse()
+	// if !errors.Is(err, ErrCheck) {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 	_, err = config.ValueInt("one")
 	if !errors.Is(err, ErrCheck) {
 		t.Errorf("%s: error: %s", fname, err)
@@ -553,7 +535,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 func TestOptionsCheckName(t *testing.T) {
 	const fname = "TestOptionsCheckName"
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("", "")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -586,7 +568,7 @@ func TestOptionsCheckName(t *testing.T) {
 func TestOptionsCheckFlagPresent(t *testing.T) {
 	const fname = "TestOptionsCheckFlagPresent"
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("", "")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -599,16 +581,16 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: error: %s", fname, err)
-	}
+	// err = config.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 }
 
 func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	const fname = "TestOptionsCheckFlagDuplicate"
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("", "")
 	//m2 := config.Command("modetwo", "")
 	var opts = []Option{
 		{
@@ -630,10 +612,10 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: error: %s", fname, err)
-	}
+	// err = config.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 }
 
 func TestOptionsEdgeCaseNoArgs(t *testing.T) {
@@ -641,7 +623,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	temp := os.Args
 	os.Args = os.Args[:0]
 	config := Config{}
-	m := config.defaultSet("", "")
+	m := config.Command("", "")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -655,17 +637,17 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if !errors.Is(err, errConfig) {
-		t.Errorf("%s: error: %s", fname, err)
-	}
+	// err = config.Parse()
+	// if !errors.Is(err, errConfig) {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 	os.Args = temp
 }
 
 func TestCommandGetCmd(t *testing.T) {
 	const fname = "TestCommandGetCmd"
-	c = Config{}
-	cmd := c.defaultSet("", "")
+	c = &Config{}
+	cmd := c.Command("", "")
 	cmd2 := c.Command("", "")
 	var opts = []Option{
 		{
@@ -681,17 +663,17 @@ func TestCommandGetCmd(t *testing.T) {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	err = c.Parse()
-	if err != nil {
-		t.Errorf("%s: this case should not raise an error: %s",
-			fname, err)
-	}
+	// err = c.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: this case should not raise an error: %s",
+	// 		fname, err)
+	// }
 	mode, _ := c.Is()
-	if mode != "default" {
-		t.Errorf("%s: expected \"default\" received %q",
+	if mode != "" {
+		t.Errorf("%s: expected \"*\" received %q",
 			fname, mode)
 	}
-	if !c.isInSet(cmd2) {
+	if !isInSet(c, cmd2) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
 }
@@ -699,7 +681,7 @@ func TestCommandGetCmd(t *testing.T) {
 func TestCommandDuplicateKeys(t *testing.T) {
 	const fname = "TestCommandDuplicateKeys"
 	config := Config{}
-	m1 := config.defaultSet("", "")
+	m1 := config.Command("", "")
 	m2 := config.Command("modetwo", "")
 	var opts = []Option{
 		{
@@ -722,17 +704,17 @@ func TestCommandDuplicateKeys(t *testing.T) {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: this case should not raise an error: %s",
-			fname, err)
-	}
+	// err = config.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: this case should not raise an error: %s",
+	// 		fname, err)
+	// }
 }
 
 func TestCommandTooMany(t *testing.T) {
 	const fname = "TestCommandTooMany"
 	config := Config{}
-	_ = config.defaultSet("", "")
+	_ = config.Command("", "")
 	names := make([]string, 65)
 	for i := 0; i <= 64; i++ {
 		names[i] = fmt.Sprint(i + '0')
@@ -749,7 +731,7 @@ func TestCommandTooMany(t *testing.T) {
 func TestCommandNotThere(t *testing.T) {
 	const fname = "TestCommandNotThere"
 	config := Config{}
-	_ = config.defaultSet("", "")
+	_ = config.Command("", "")
 	m := CMD(2)
 	var opts = []Option{
 		{
@@ -768,10 +750,10 @@ func TestCommandNotThere(t *testing.T) {
 
 func TestCommandTokens(t *testing.T) {
 	const fname = "TestCommandTokenIs"
-	config := Config{}
-	cmd1 := config.defaultSet("", "")
-	cmd2 := config.Command("", "")
-	cmd3 := config.Command("", "")
+	c := &Config{}
+	cmd1 := c.Command("", "")
+	cmd2 := c.Command("", "")
+	cmd3 := c.Command("", "")
 	var opts = []Option{
 		{
 			Type:     Int,
@@ -781,39 +763,39 @@ func TestCommandTokens(t *testing.T) {
 			Commands: cmd1,
 		},
 	}
-	err := config.Compose(opts...)
+	err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: %s", fname, err)
-	}
-	v := config.isInSet(0)
+	// err = c.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: %s", fname, err)
+	// }
+	v := isInSet(c, 0)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
-	v = config.isInSet(cmd1)
+	v = isInSet(c, cmd1)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.isInSet(cmd2)
+	v = isInSet(c, cmd2)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.isInSet(cmd3)
+	v = isInSet(c, cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.isInSet(cmd1 | cmd3)
+	v = isInSet(c, cmd1|cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.isInSet(cmd1 | cmd2 | cmd3)
+	v = isInSet(c, cmd1|cmd2|cmd3)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
-	v = config.isInSet(config.position)
+	v = isInSet(c, c.position)
 	if v {
 		t.Errorf("%s: received true expected false", fname)
 	}
@@ -821,8 +803,8 @@ func TestCommandTokens(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	const fname = "TestParse"
-	c = Config{}
-	cmd := c.defaultSet("", "")
+	c = &Config{}
+	cmd := c.Command("", "")
 	cmd2 := c.Command("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "cmd2"
@@ -840,26 +822,26 @@ func TestParse(t *testing.T) {
 		t.Errorf("%s: this case should not raise an error: %s",
 			fname, err)
 	}
-	err = c.Parse()
+	// err = c.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: this case should not raise an error: %s",
+	// 		fname, err)
+	// }
 	os.Args[1] = temp
-	if err != nil {
-		t.Errorf("%s: this case should not raise an error: %s",
-			fname, err)
-	}
 	mode, _ := c.Is()
 	if mode != "cmd2" {
 		t.Errorf("%s: expected \"default\" received %q",
 			fname, mode)
 	}
-	if !c.isInSet(cmd) {
+	if !isInSet(c, cmd) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
 }
 
 func TestParseInvalidCmd(t *testing.T) {
 	const fname = "TestParseInvalidCmd"
-	c = Config{}
-	cmd := c.defaultSet("", "")
+	c = &Config{}
+	cmd := c.Command("", "")
 	cmd2 := c.Command("cmd2", "")
 	temp := os.Args[1]
 	os.Args[1] = "unknownCmd"
@@ -876,17 +858,17 @@ func TestParseInvalidCmd(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = c.Parse()
+	//err = c.Parse()
+	// if !errors.Is(err, errNotFound) {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
 	os.Args[1] = temp
-	if !errors.Is(err, errNotFound) {
-		t.Errorf("%s: error: %s", fname, err)
-	}
 	mode, _ := c.Is()
 	if mode != "" {
 		t.Errorf("%s: expected \"cmd2\" received %q",
 			fname, mode)
 	}
-	if !c.isInSet(cmd) {
+	if !isInSet(c, cmd) {
 		t.Errorf("%s: %s", fname, errNotValid)
 	}
 }
@@ -894,7 +876,7 @@ func TestParseInvalidCmd(t *testing.T) {
 func TestFlagSetUsageFn(t *testing.T) {
 	const fname = "TestFlagSetUsageFn"
 	config := Config{}
-	cmd := config.defaultSet("Usage Heading", "Mode Heading")
+	cmd := config.Command("Usage Heading", "Mode Heading")
 	opts := []Option{
 		{
 			Type:     Int,
@@ -915,11 +897,11 @@ func TestFlagSetUsageFn(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: error: %s", fname, err)
 	}
-	err = config.Parse()
-	if err != nil {
-		t.Errorf("%s: error: %s", fname, err)
-	}
-	fn := config.setUsageFn(nil)
-	fn = config.setUsageFn(ioutil.Discard)
-	fn()
+	// err = config.Parse()
+	// if err != nil {
+	// 	t.Errorf("%s: error: %s", fname, err)
+	// }
+	setUsageFn(nil, &config)
+	setUsageFn(ioutil.Discard, &config)
+	c.flagSet.Usage()
 }
