@@ -61,6 +61,7 @@ func createFlagSet(c *Config, w io.Writer) {
 	}
 }
 
+// TODO now the flag is not being set into the data in toFlagSet
 func optionsToFlagSet(c *Config) error {
 	const fname = "optionsToFlagSet"
 	for _, o := range c.options {
