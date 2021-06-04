@@ -39,7 +39,7 @@ func setupMaps(c *Config) error {
 }
 
 // ascertainCmdSet sets the program operating mode, either the default or that
-// specified by the first agument if it is not a flag.
+// specified by the first argument if it is not a flag.
 func ascertainCmdSet(c *Config) error {
 	const fname = "ascertainCmdSet"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
