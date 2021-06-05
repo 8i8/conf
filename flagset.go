@@ -12,7 +12,6 @@ import (
 // been specified within the current working set; All errors are
 // accumulated in the Config.errs field and checked at the end of the
 // function.
-// TODO now clarify the use of sets in this function.
 func setupFlagSet(c *Config) error {
 	const fname = "createFlagSet"
 
