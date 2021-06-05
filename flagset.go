@@ -72,6 +72,10 @@ func optionsToFlagSet(c *Config) error {
 				c.errs = fmt.Errorf("%s|%w", c.errs.Error(),
 					c.options[o.Flag].err)
 			}
+			if verbose {
+				fmt.Printf("%s: %s: option added\n",
+					fname, c.options[o.Flag].Flag)
+			}
 		}
 	}
 
