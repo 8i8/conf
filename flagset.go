@@ -65,9 +65,6 @@ func optionsToFlagSet(c *Config) error {
 	const fname = "optionsToFlagSet"
 	for _, o := range c.options {
 		if c.set.flag&o.Commands > 0 {
-			if c.set.seen {
-				continue
-			}
 			err := toFlagSet(c.options[o.Flag], c.flagSet)
 			if err != nil {
 				c.options[o.Flag].err = fmt.Errorf(
