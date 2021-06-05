@@ -30,6 +30,9 @@ func setupMaps(c *Config) error {
 
 	c.options = make(map[string]*Option)
 	c.seen = make(map[string]bool)
+	for i := range c.commands {
+		c.commands[i].seen = make(map[string]int)
+	}
 
 	if verbose {
 		fmt.Printf("%s: completed\n", fname)

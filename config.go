@@ -12,8 +12,6 @@ import (
 )
 
 var (
-	// The package name, used in help output.
-	pkg = "conf"
 	// limit ensures that no more than 64 command sets are possible.
 	limit = CMD(math.MaxInt64>>1 + 1)
 	// test is used by the test package to stop the flagset from
@@ -77,23 +75,26 @@ func (c *Config) Compose(opts ...Option) error {
 	const fname = "Config.Compose"
 
 	if c.errs != nil {
-		return fmt.Errorf("%s: %w", fname, c.errs)
+		return fmt.Errorf("%s: previous error: %w", fname, c.errs)
 	}
 	if len(opts) == 0 {
-		return fmt.Errorf("%s: no options, empty set", fname)
+		return fmt.Errorf("%s: no options set", fname)
+	}
+	if len(c.commands) == 0 {
+		return fmt.Errorf("%s: no commands set", fname)
 	}
 
 	if err := setupConfig(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if err := loadOptions(c, opts...); err != nil {
-		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
+		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if err := setupFlagSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if err := runUserCheckFuncs(c); err != nil {
-		return fmt.Errorf("%s: %s: %w", pkg, fname, err)
+		return fmt.Errorf("%s: %w", fname, err)
 	}
 
 	if verbose {
@@ -125,11 +126,15 @@ func runUserCheckFuncs(c *Config) error {
 			err := fmt.Errorf("%s, %w",
 				err, ErrCheck)
 			c.options[o.Flag].err = err
-			c.errs = fmt.Errorf("%s|%w", c.errs, err)
+			if c.errs != nil {
+				c.errs = fmt.Errorf("%s|%w", c.errs, err)
+			} else {
+				c.errs = err
+			}
 		}
 	}
 
-	if err := checkError(c, ErrCheck); err != nil {
+	if err := checkError(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
@@ -154,6 +159,9 @@ func checkError(c *Config, err ...error) error {
 
 // Is returns the current running sub-commands name and state.
 func (c Config) Is() (string, CMD) {
+	if c.set == nil {
+		panic("Config.set is nil")
+	}
 	return c.set.header, c.set.flag
 }
 
@@ -190,7 +198,7 @@ type command struct {
 	// an error raised on parsing.
 	usage string
 	// seen makes certain that no flag duplicates exist.
-	seen bool
+	seen map[string]int
 }
 
 // CMD is a bitmask that defines which commands a FlagSet is to be
@@ -199,12 +207,16 @@ type CMD int
 
 // isInSet returns true if a command token exists within the
 // configured set of commands, false if it does not.
+// TODO now this should evaluate whether a cmd set exists in the list of
+// sets, not in the compiled flagset.
 func isInSet(c *Config, bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
-	if c.set.flag&bitfield > 0 {
-		return true
+	for _, set := range c.commands {
+		if set.flag&bitfield > 0 {
+			return true
+		}
 	}
 	return false
 }
@@ -408,15 +420,15 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
 	o, ok := c.options[key]
 	if !ok {
-		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return nil, Nil, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return nil, Nil, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return nil, Nil, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return o.data, o.Type, nil
 }
@@ -427,15 +439,15 @@ func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*int), nil
 }
@@ -446,15 +458,15 @@ func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*int64), nil
 }
@@ -465,15 +477,15 @@ func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*uint), nil
 }
@@ -484,15 +496,15 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*uint64), nil
 }
@@ -503,15 +515,15 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
 	o, ok := c.options[key]
 	if !ok {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*float64), nil
 }
@@ -522,15 +534,15 @@ func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
 	o, ok := c.options[key]
 	if !ok {
-		return "", fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return "", fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return "", fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return "", fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return "", fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*string), nil
 }
@@ -541,15 +553,15 @@ func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
 	o, ok := c.options[key]
 	if !ok {
-		return false, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return false, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return false, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return false, fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoData)
+		return false, fmt.Errorf("%s: %q: %w",
+			fname, key, errNoData)
 	}
 	return *o.data.(*bool), nil
 }
@@ -560,15 +572,14 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
 	o, ok := c.options[key]
 	if !ok {
-		return time.Duration(0), fmt.Errorf("%s: %s: %q: %w",
-			pkg, fname, key, errNoKey)
+		return time.Duration(0), fmt.Errorf("%s: %q: %w",
+			fname, key, errNoKey)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
 	}
 	if o.data == nil {
-		return 0, fmt.Errorf("%s: %s: %w",
-			pkg, fname, errNoData)
+		return 0, fmt.Errorf("%s: %w", fname, errNoData)
 	}
 	return *o.data.(*time.Duration), nil
 }

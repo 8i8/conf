@@ -67,11 +67,12 @@ func cmdPreconditions(c *Config, cmd, usage string) error {
 
 	if cmd == "" {
 		const event = "empty cmd string not permitted"
-		return fmt.Errorf("%s: %s", fname, event)
+		return fmt.Errorf("%s: %s: %w", fname, event, errConfig)
 	}
 	if c.position >= limit {
 		const event = "64 sub command limit reached"
-		return fmt.Errorf("%s|%s: %s", c.errs, fname, event)
+		return fmt.Errorf("%s|%s: %s: %w",
+			c.errs, fname, event, errConfig)
 	}
 
 	if verbose {
@@ -104,7 +105,7 @@ func setDefaultCommand(c *Config, cmd, usage string) CMD {
 func checkDuplicate(c *Config, cmd string) error {
 	const fname = "checkDuplicate"
 	for _, c := range c.commands {
-		if strings.Compare(c.header, cmd) != 0 {
+		if strings.Compare(c.header, cmd) == 0 {
 			const event = "duplicate command"
 			return fmt.Errorf("%s: %s: %s",
 				fname, cmd, event)

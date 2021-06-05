@@ -259,8 +259,8 @@ func toFlagSet(c *Config, o *Option) error {
 		return fmt.Errorf("%s: %q: %w", o.Type, def,
 			errTypeNil)
 	default:
-		return fmt.Errorf("%s: %s: internal error: (%q, %s) %w",
-			pkg, fname, o.Flag, o.Type, errType)
+		return fmt.Errorf("%s: internal error: (%q, %s) %w",
+			fname, o.Flag, o.Type, errType)
 	}
 	return nil
 }

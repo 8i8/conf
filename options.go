@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"time"
@@ -20,42 +21,45 @@ func loadOptions(c *Config, opts ...Option) error {
 		opts[i] = errCheckOption(c, opt)
 		c.options[opt.Flag] = &opts[i]
 	}
-
 	if err := checkError(c, errConfig); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
-
 	if verbose {
 		fmt.Printf("%s: completed\n", fname)
 	}
-
 	return nil
 }
 
-// errCheckOption verifies user supplied data within an option
-// including duplicate name and key values; All errors are accumulated
-// and stored in the c.Err field.
+// errCheckOption verifies user supplied data within an option including
+// duplicate name and key values; All errors are accumulated and stored
+// in the c.Err field.
 func errCheckOption(c *Config, cmd Option) Option {
 	const fname = "errCheckOption"
+	var temperr error
+	if c.errs == nil {
+		temperr = errors.New("")
+	} else {
+		temperr = fmt.Errorf("%s: ", c.errs)
+	}
 	if err := checkName(c, cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
+		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 	if err := checkFlag(c, &cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
+		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 	if err := checkDefault(c, cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
+		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 	if err := checkVar(c, cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
+		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 	if err := checkCmd(c, cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s|%w", c.errs, cmd.err)
+		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 
 	if verbose && c.errs == nil {
@@ -65,7 +69,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 	return cmd
 }
 
-// chekcName checks that the name is not empty and that it is not a
+// checkName checks that the name is not empty and that it is not a
 // duplicate value.
 // TODO now this function is filling the seen[o.Flag] map
 func checkName(c *Config, o Option) error {
@@ -73,8 +77,11 @@ func checkName(c *Config, o Option) error {
 	if len(o.Flag) == 0 {
 		return fmt.Errorf("%s: %w", fname, errNoValue)
 	}
-	if c.seen[o.Flag] {
-		return fmt.Errorf("%s: %w", fname, errDuplicate)
+	for i, set := range c.commands {
+		if set.seen[o.Flag] > 2 {
+			return fmt.Errorf("%s: %w", fname, errDuplicate)
+		}
+		c.commands[i].seen[o.Flag]++
 	}
 	c.seen[o.Flag] = true
 	return nil
@@ -93,12 +100,12 @@ func checkFlag(c *Config, o *Option) error {
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands is OK.
 		if c.commands[i].flag&o.Commands > 0 {
-			if c.commands[i].seen {
+			if c.commands[i].seen[o.Flag] > 2 {
 				o.err = fmt.Errorf("%s: %s: %w",
 					fname, o.Flag, errDuplicate)
-				c.errs = fmt.Errorf("%s|%w", c.errs, o.err)
+				c.errs = fmt.Errorf("%s: %w", o.err, errDuplicate)
 			}
-			c.commands[i].seen = true
+			c.commands[i].seen[o.Flag]++
 		}
 	}
 	return nil
@@ -158,8 +165,8 @@ func checkDefault(c *Config, o Option) error {
 		return fmt.Errorf("%s: %s: %w",
 			fname, o.Type, errType)
 	default:
-		return fmt.Errorf("%s: %s: %s: %w",
-			pkg, fname, o.Type, errType)
+		return fmt.Errorf("%s: %s: %w",
+			fname, o.Type, errType)
 	}
 	return nil
 }
@@ -226,8 +233,8 @@ func checkVar(c *Config, o Option) error {
 		return fmt.Errorf("%s: %s: %w",
 			fname, o.Type, errTypeNil)
 	default:
-		return fmt.Errorf("%s: %s: %s: %w",
-			pkg, fname, o.Type, errType)
+		return fmt.Errorf("%s: %s: %w",
+			fname, o.Type, errType)
 	}
 	return nil
 }
