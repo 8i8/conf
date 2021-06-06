@@ -1,7 +1,5 @@
-open:
-	- rm notes/conf.svg
-	plantuml -tsvg notes/conf.puml
-	firefox-esr notes/conf.svg
+all:
+	go test ./...
 
 svg:
 	- rm notes/conf.svg
