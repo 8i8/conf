@@ -165,6 +165,14 @@ func (c Config) Running() CMD {
 	return c.set.flag
 }
 
+// Is returns true if the flag is set withing the current running mode.
+func (c Config) Is(flag CMD) bool {
+	if c.set == nil {
+		panic("Config.set is nil")
+	}
+	return c.set.flag&flag > 0
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Pre Parse Option Checks
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
