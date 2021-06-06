@@ -75,16 +75,9 @@ type Config struct {
 func (c *Config) Compose(opts ...Option) error {
 	const fname = "Config.Compose"
 
-	if c.errs != nil {
-		return fmt.Errorf("%s: previous error: %w", fname, c.errs)
+	if err := configPreconditions(c, opts...); err != nil {
+		return fmt.Errorf("%s: %w", fname, err)
 	}
-	if len(opts) == 0 {
-		return fmt.Errorf("%s: no options set", fname)
-	}
-	if len(c.commands) == 0 {
-		return fmt.Errorf("%s: no commands set", fname)
-	}
-
 	if err := setupConfig(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}

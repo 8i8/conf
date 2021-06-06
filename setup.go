@@ -9,6 +9,16 @@ import (
 func configPreconditions(c *Config, opts ...Option) error {
 	const fname = "configPreconditions"
 
+	if c.errs != nil {
+		return fmt.Errorf("%s: previous error: %w", fname, c.errs)
+	}
+	if len(opts) == 0 {
+		return fmt.Errorf("%s: no options set", fname)
+	}
+	if len(c.commands) == 0 {
+		return fmt.Errorf("%s: no commands set", fname)
+	}
+
 	if verbose {
 		log.Printf("%s: completed\n", fname)
 	}
