@@ -20,11 +20,13 @@ func setupFlagSet(c *Config) error {
 		return fmt.Errorf("%s: %s", fname, event)
 	}
 
-	createFlagSet(c, os.Stdout)
+	createFlagSet(c)
 
 	if err := optionsToFlagSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
+
+	flagSetUsage(c, os.Stdout)
 
 	if err := parseFlagSet(c, fname); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
@@ -37,12 +39,27 @@ func setupFlagSet(c *Config) error {
 	return nil
 }
 
-func createFlagSet(c *Config, w io.Writer) {
+func createFlagSet(c *Config) {
 	const fname = "createFlagSet"
+
+	if c.set == nil {
+		panic("")
+	}
 
 	// Create our custom flagset.
 	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
 
+<<<<<<< HEAD
+=======
+	if verbose {
+		log.Printf("%s: completed\n", fname)
+	}
+}
+
+func flagSetUsage(c *Config, w io.Writer) {
+	const fname = "flagSetUsage"
+
+>>>>>>> 456dbe0... creatFlagSet split out into two functions flagSetUsage added
 	// Define help or usage output function, overriding the default
 	// flag package help function.
 	if w == nil {
