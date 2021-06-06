@@ -29,7 +29,7 @@ func setupFlagSet(c *Config) error {
 
 	flagSetUsage(c, os.Stdout)
 
-	if err := parseFlagSet(c, fname); err != nil {
+	if err := parseFlagSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
@@ -281,7 +281,9 @@ func flagsToFlagSet(c *Config, o *Option) error {
 }
 
 // parseFlagSet runs the parse command on the configs flagset.
-func parseFlagSet(c *Config, fname string) error {
+func parseFlagSet(c *Config) error {
+	const fname = "parseFlagSet"
+
 	// When tests are being run, we do not parse the flagset here.
 	if test {
 		return nil
@@ -298,7 +300,7 @@ func parseFlagSet(c *Config, fname string) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil
