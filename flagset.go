@@ -280,7 +280,7 @@ func parseFlagSet(c *Config) error {
 	}
 	// If not "*" then a command has been used and we need to offset
 	// the args by one.
-	var offset int
+	offset := 1
 	if c.set.header != "*" {
 		offset++
 	}
