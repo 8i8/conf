@@ -158,11 +158,11 @@ func checkError(c *Config, err ...error) error {
 }
 
 // Is returns the current running sub-commands name and state.
-func (c Config) Is() (string, CMD) {
+func (c Config) Running() CMD {
 	if c.set == nil {
 		panic("Config.set is nil")
 	}
-	return c.set.header, c.set.flag
+	return c.set.flag
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
