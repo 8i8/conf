@@ -21,7 +21,7 @@ func setupFlagSet(c *Config) error {
 		return fmt.Errorf("%s: %s", fname, event)
 	}
 
-	createFlagSet(c)
+	createFlagSet(c, os.Stdout)
 
 	if err := optionsToFlagSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
@@ -38,7 +38,7 @@ func setupFlagSet(c *Config) error {
 	return nil
 }
 
-func createFlagSet(c *Config) {
+func createFlagSet(c *Config, w io.Writer) {
 	const fname = "createFlagSet"
 
 	if c.set == nil {
