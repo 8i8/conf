@@ -209,7 +209,7 @@ type command struct {
 	seen map[string]int
 }
 
-// CMD is a bitmask that defines which commands a FlagSet is to be
+// CMD is a bitmask that defines which command a FlagSet is to be
 // applied to.
 type CMD int
 
