@@ -2,6 +2,7 @@ package conf
 
 import (
 	"fmt"
+	"log"
 	"strings"
 )
 
@@ -28,7 +29,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 	if err := cmdPreconditions(c, cmd, usage); err != nil {
 		c.errs = fmt.Errorf("%s: %w", fname, err)
 		if verbose {
-			fmt.Printf("%s: failed\n", fname)
+			log.Printf("%s: failed\n", fname)
 		}
 		return 0 // no bits set
 	}
@@ -37,7 +38,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 	if c.position == 0 {
 		cmd := setDefaultCommand(c, cmd, usage)
 		if verbose {
-			fmt.Printf("%s: completed\n", fname)
+			log.Printf("%s: completed\n", fname)
 		}
 		return cmd
 	}
@@ -45,7 +46,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 	if err := checkDuplicate(c, cmd); err != nil {
 		c.errs = fmt.Errorf("%s: %w", fname, err)
 		if verbose {
-			fmt.Printf("%s: failed\n", fname)
+			log.Printf("%s: failed\n", fname)
 		}
 		return 0
 	}
@@ -56,7 +57,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 	c.commands = append(c.commands, m)
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return c.position
@@ -76,7 +77,7 @@ func cmdPreconditions(c *Config, cmd, usage string) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil
@@ -94,7 +95,7 @@ func setDefaultCommand(c *Config, cmd, usage string) CMD {
 	c.commands = append(c.commands, m)
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return c.position
@@ -113,7 +114,7 @@ func checkDuplicate(c *Config, cmd string) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil

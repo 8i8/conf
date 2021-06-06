@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"math"
 	"os"
 	"strings"
@@ -98,7 +99,7 @@ func (c *Config) Compose(opts ...Option) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	// TODO write a standard config file addition that records to a
@@ -139,7 +140,7 @@ func runUserCheckFuncs(c *Config) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil

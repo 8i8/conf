@@ -2,8 +2,19 @@ package conf
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
+
+func configPreconditions(c *Config, opts ...Option) error {
+	const fname = "configPreconditions"
+
+	if verbose {
+		log.Printf("%s: completed\n", fname)
+	}
+
+	return nil
+}
 
 // setupConfig completes all the Config struct setup requirements.
 func setupConfig(c *Config) error {
@@ -17,7 +28,7 @@ func setupConfig(c *Config) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil
@@ -35,7 +46,7 @@ func setupMaps(c *Config) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil
@@ -50,7 +61,7 @@ func ascertainCmdSet(c *Config) error {
 			return fmt.Errorf("%s: %w", fname, err)
 		}
 		if verbose {
-			fmt.Printf("%s: %s: set defined\n", fname, os.Args[1])
+			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
 		}
 		return nil
 	}
@@ -60,7 +71,7 @@ func ascertainCmdSet(c *Config) error {
 	}
 	c.set = &c.commands[0]
 	if verbose {
-		fmt.Printf("%s: default: set defined\n", fname)
+		log.Printf("%s: default: set defined\n", fname)
 	}
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"time"
 )
@@ -33,7 +34,7 @@ func setupFlagSet(c *Config) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil
@@ -49,8 +50,6 @@ func createFlagSet(c *Config) {
 	// Create our custom flagset.
 	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
 
-<<<<<<< HEAD
-=======
 	if verbose {
 		log.Printf("%s: completed\n", fname)
 	}
@@ -59,7 +58,6 @@ func createFlagSet(c *Config) {
 func flagSetUsage(c *Config, w io.Writer) {
 	const fname = "flagSetUsage"
 
->>>>>>> 456dbe0... creatFlagSet split out into two functions flagSetUsage added
 	// Define help or usage output function, overriding the default
 	// flag package help function.
 	if w == nil {
@@ -73,7 +71,7 @@ func flagSetUsage(c *Config, w io.Writer) {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 }
 
@@ -90,7 +88,7 @@ func optionsToFlagSet(c *Config) error {
 					c.options[o.Flag].err)
 			}
 			if verbose {
-				fmt.Printf("%s: %s: option added\n",
+				log.Printf("%s: %s: option added\n",
 					fname, c.options[o.Flag].Flag)
 			}
 		}
@@ -101,7 +99,7 @@ func optionsToFlagSet(c *Config) error {
 	}
 
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 
 	return nil

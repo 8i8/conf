@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func loadOptions(c *Config, opts ...Option) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if verbose {
-		fmt.Printf("%s: completed\n", fname)
+		log.Printf("%s: completed\n", fname)
 	}
 	return nil
 }
@@ -63,7 +64,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 	}
 
 	if verbose && c.errs == nil {
-		fmt.Printf("%s: %s: no errors\n", fname, cmd.Flag)
+		log.Printf("%s: %s: no errors\n", fname, cmd.Flag)
 	}
 
 	return cmd
