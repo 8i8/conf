@@ -82,7 +82,7 @@ func optionsToFlagSet(c *Config) error {
 	const fname = "optionsToFlagSet"
 	for _, o := range c.options {
 		if c.set.flag&o.Commands > 0 {
-			err := toFlagSet(c, c.options[o.Flag])
+			err := flagsToFlagSet(c, c.options[o.Flag])
 			if err != nil {
 				c.options[o.Flag].err = fmt.Errorf(
 					"%s: %s: %w", fname, o.Flag, err)
@@ -107,9 +107,9 @@ func optionsToFlagSet(c *Config) error {
 	return nil
 }
 
-// toFlagSet generates a flag within the given set for the current
+// flagsToFlagSet generates a flag within the given set for the current
 // option.
-func toFlagSet(c *Config, o *Option) error {
+func flagsToFlagSet(c *Config, o *Option) error {
 	const fname = "toFlagSet"
 	const def = "Default"
 	const va = "Var"
