@@ -221,10 +221,9 @@ func isInSet(c *Config, bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
 	}
-	for _, set := range c.commands {
-		if set.flag&bitfield > 0 {
-			return true
-		}
+	fullset := (c.position << 1) - 1
+	if bitfield == (fullset)&bitfield {
+		return true
 	}
 	return false
 }
