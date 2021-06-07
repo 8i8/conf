@@ -279,10 +279,10 @@ func parseFlagSet(c *Config) error {
 	if test {
 		return nil
 	}
-	// If not "*" then a command has been used and we need to offset
-	// the args by one.
-	offset := 1
-	if c.set.header != "*" {
+	offset := 1 // the program call needs to be skipped.
+	// If not the default then a command has been used and we need
+	// to offset the args by one more place.
+	if c.set.header != defCmdSet {
 		offset++
 	}
 	err := c.flagSet.Parse(os.Args[offset:])
