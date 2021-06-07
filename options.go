@@ -48,10 +48,6 @@ func errCheckOption(c *Config, cmd Option) Option {
 	} else {
 		temperr = fmt.Errorf("%s: ", c.errs)
 	}
-	if err := checkName(c, cmd); err != nil {
-		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
-		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
-	}
 	if err := checkFlag(c, &cmd); err != nil {
 		cmd.err = fmt.Errorf("%s: %s: %w", fname, cmd.Flag, err)
 		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
@@ -74,27 +70,6 @@ func errCheckOption(c *Config, cmd Option) Option {
 	}
 
 	return cmd
-}
-
-// checkName checks that the name is not empty and that it is not a
-// duplicate value.
-// TODO now using both seen maps
-func checkName(c *Config, o Option) error {
-	const fname = "checkName"
-	if len(o.Flag) == 0 {
-		return fmt.Errorf("%s: %w", fname, errNoValue)
-	}
-	for i, set := range c.commands {
-		if set.seen[o.Flag] > 2 {
-			return fmt.Errorf("%s: %w", fname, errDuplicate)
-		}
-		c.commands[i].seen[o.Flag]++
-	}
-	c.seen[o.Flag] = true
-	if v(3) {
-		log.Printf("%s: completed\n", fname)
-	}
-	return nil
 }
 
 // checkFlag checks that the flag field is not empty and that it is not
