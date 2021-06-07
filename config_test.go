@@ -137,9 +137,6 @@ func TestConfigValues(t *testing.T) {
 		"DefaultFail": {typ: Default, def: nil, value: nil, exp: "fail"},
 	}
 
-	// TODO check whether this test is required as it may be a
-	// duplicate test now that the global Config value has been
-	// removed.
 	for name, opt := range options {
 		c = &Config{}
 		cmd := c.Command("Usage heading", "cmd's heading")

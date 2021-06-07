@@ -78,7 +78,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 
 // checkName checks that the name is not empty and that it is not a
 // duplicate value.
-// TODO now this function is filling the seen[o.Flag] map
+// TODO now using both seen maps
 func checkName(c *Config, o Option) error {
 	const fname = "checkName"
 	if len(o.Flag) == 0 {
@@ -98,8 +98,7 @@ func checkName(c *Config, o Option) error {
 }
 
 // checkFlag checks that the flag field is not empty and that it is not
-// a duplicate value.
-// TODO now this function is filling the c.commands[n].seen map
+// a duplicate value within that set.
 func checkFlag(c *Config, o *Option) error {
 	const fname = "checkFlag"
 	if len(o.Flag) == 0 {
@@ -261,7 +260,6 @@ func checkVar(c *Config, o Option) error {
 // checkCmd verifies that the default command has been set and that any
 // other commands are registered as valid commands within the current
 // command set.
-// TODO now this set verification looks very dubious.
 func checkCmd(c *Config, o Option) error {
 	const fname = "checkCmd"
 	if !isInSet(c, o.Commands) {

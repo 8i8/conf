@@ -220,8 +220,6 @@ type CMD int
 
 // isInSet returns true if a command token exists within the
 // configured set of commands, false if it does not.
-// TODO now this should evaluate whether a cmd set exists in the list of
-// sets, not in the compiled flagset.
 func isInSet(c *Config, bitfield CMD) bool {
 	if bitfield == 0 {
 		return false
