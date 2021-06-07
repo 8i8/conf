@@ -30,30 +30,11 @@ func configPreconditions(c *Config, opts ...Option) error {
 func setupConfig(c *Config) error {
 	const fname = "setupConfig"
 
-	if err := setupMaps(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
 	if err := ascertainCmdSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
 	if v(2) {
-		log.Printf("%s: completed\n", fname)
-	}
-
-	return nil
-}
-
-// setupMaps creates all the map types that the Config struct
-// requires to function.
-func setupMaps(c *Config) error {
-	const fname = "setupMaps"
-
-	c.seen = make(map[string]bool)
-	for i := range c.commands {
-		c.commands[i].seen = make(map[string]int)
-	}
-	if v(3) {
 		log.Printf("%s: completed\n", fname)
 	}
 

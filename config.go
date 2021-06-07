@@ -53,8 +53,6 @@ type Config struct {
 	position CMD
 	// The current running command set.
 	set *command
-	// Avoids duplicates flag names.
-	seen map[string]bool
 
 	// The flagset that is composed at startup according to the
 	// predefined command line commands and their options.
@@ -199,6 +197,17 @@ func (o options) find(flag string) *Option {
 	return nil
 }
 
+type flags []string
+
+func (f flags) find(flag string) bool {
+	for _, f := range f {
+		if strings.Compare(f, flag) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // command contains the required data to create a program sub-command and
 // its flags.
 type command struct {
@@ -210,7 +219,7 @@ type command struct {
 	// an error raised on parsing.
 	usage string
 	// seen makes certain that no flag duplicates exist.
-	seen map[string]int
+	seen flags
 	// options is a slice that contains pointers to all of the
 	// options that have been assigned to this command set.
 	options options

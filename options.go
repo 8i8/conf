@@ -104,17 +104,15 @@ func checkFlag(c *Config, o *Option) error {
 	if len(o.Flag) == 0 {
 		return fmt.Errorf("%q: %w", fname, errNoValue)
 	}
-	for i := range c.commands {
+	for i, set := range c.commands {
 		// If the option flag has already been registered on the
 		// current subcommand, we return an error. Duplicate flags
-		// on a differing sub-commands is OK.
-		if c.commands[i].flag&o.Commands > 0 {
-			if c.commands[i].seen[o.Flag] > 2 {
-				o.err = fmt.Errorf("%s: %s: %w",
-					fname, o.Flag, errDuplicate)
-				c.errs = fmt.Errorf("%s: %w", o.err, errDuplicate)
+		// on a differing sub-commands are OK.
+		if set.flag&o.Commands > 0 {
+			if set.seen.find(o.Flag) {
+				return fmt.Errorf("%s: %w", fname, errDuplicate)
 			}
-			c.commands[i].seen[o.Flag]++
+			c.commands[i].seen = append(c.commands[i].seen, o.Flag)
 		}
 	}
 	if v(3) {
