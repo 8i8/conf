@@ -8,6 +8,7 @@ import (
 	"log"
 	"math"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -228,6 +229,10 @@ type command struct {
 // CMD is a bitmask that defines which command a FlagSet is to be
 // applied to.
 type CMD int
+
+func (c CMD) String() string {
+	return strconv.Itoa(int(c))
+}
 
 // isInSet returns true if a command token exists within the
 // configured set of commands, false if it does not.
