@@ -26,21 +26,6 @@ func configPreconditions(c *Config, opts ...Option) error {
 	return nil
 }
 
-// setupConfig completes all the Config struct setup requirements.
-func setupConfig(c *Config) error {
-	const fname = "setupConfig"
-
-	if err := ascertainCmdSet(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
-	}
-
-	if v(2) {
-		log.Printf("%s: completed\n", fname)
-	}
-
-	return nil
-}
-
 // ascertainCmdSet sets the program operating mode, either the default or that
 // specified by the first argument if it is not a flag.
 func ascertainCmdSet(c *Config) error {
@@ -49,7 +34,7 @@ func ascertainCmdSet(c *Config) error {
 		if err := setCommand(c, os.Args[1]); err != nil {
 			return fmt.Errorf("%s: %w", fname, err)
 		}
-		if v(3) {
+		if v(2) {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
 		}
 		return nil
@@ -59,7 +44,7 @@ func ascertainCmdSet(c *Config) error {
 		return fmt.Errorf("%s: %s", fname, event)
 	}
 	c.set = &c.commands[0]
-	if v(3) {
+	if v(2) {
 		log.Printf("%s: default: set defined\n", fname)
 	}
 	return nil

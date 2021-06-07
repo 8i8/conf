@@ -72,7 +72,7 @@ func (c *Config) Compose(opts ...Option) error {
 	if err := configPreconditions(c, opts...); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
-	if err := setupConfig(c); err != nil {
+	if err := ascertainCmdSet(c); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 	if err := loadOptions(c, opts...); err != nil {
