@@ -186,9 +186,11 @@ var (
  *  Commands
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-type Options []*Option
+// options is an array of option pointers that are used to maintain
+// which commands contain which options.
+type options []*Option
 
-func (o Options) find(flag string) *Option {
+func (o options) find(flag string) *Option {
 	for i, opt := range o {
 		if strings.Compare(opt.Flag, flag) == 0 {
 			return o[i]
@@ -211,7 +213,7 @@ type command struct {
 	seen map[string]int
 	// options is a slice that contains pointers to all of the
 	// options that have been assigned to this command set.
-	options Options
+	options options
 }
 
 // CMD is a bitmask that defines which command a FlagSet is to be
