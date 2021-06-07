@@ -384,17 +384,11 @@ func TestConfigValues(t *testing.T) {
 				t.Errorf("%s: %s: end of case stament reached", fname, name)
 			}
 		case "errNoData", "errNoKey":
-			// errNoKey requirs that Options and Parse not be
-			// called, whereas errNoData requires that they
-			// are called and then the option data removed.
-			var err error
-			if opt.exp == "errNoData" {
-				err = c.Compose(opts...)
-				if err != nil {
-					t.Errorf("%s: %s: %s", fname, name, err)
-				}
-				c.options["one"].data = nil
+			err := c.Compose(opts...)
+			if err != nil {
+				t.Errorf("%s: %s: %s", fname, name, err)
 			}
+			c.set.options.find("one").data = nil
 			switch opt.typ {
 			case Int:
 				_, err = c.ValueInt("one")
@@ -542,10 +536,6 @@ func TestFlagSetUsageFn(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
-	// err = config.Parse()
-	// if err != nil {
-	// 	t.Errorf("%s: %s", fname, err)
-	// }
 	setUsageFn(nil, &config)
 	setUsageFn(ioutil.Discard, &config)
 	c.flagSet.Usage()

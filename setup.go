@@ -49,7 +49,6 @@ func setupConfig(c *Config) error {
 func setupMaps(c *Config) error {
 	const fname = "setupMaps"
 
-	c.options = make(map[string]*Option)
 	c.seen = make(map[string]bool)
 	for i := range c.commands {
 		c.commands[i].seen = make(map[string]int)

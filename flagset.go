@@ -68,18 +68,19 @@ func createFlagSet(c *Config, w io.Writer) {
 // TODO now the flag is not being set into the data in toFlagSet
 func optionsToFlagSet(c *Config) error {
 	const fname = "optionsToFlagSet"
-	for _, o := range c.options {
+	for _, o := range c.set.options {
 		if c.set.flag&o.Commands > 0 {
-			err := flagsToFlagSet(c, c.options[o.Flag])
+			opt := c.set.options.find(o.Flag)
+			err := flagsToFlagSet(c, opt)
 			if err != nil {
-				c.options[o.Flag].err = fmt.Errorf(
+				opt.err = fmt.Errorf(
 					"%s: %s: %w", fname, o.Flag, err)
-				c.errs = fmt.Errorf("%s|%w", c.errs.Error(),
-					c.options[o.Flag].err)
+				c.errs = fmt.Errorf(
+					"%s|%w", c.errs.Error(), opt.err)
 			}
 			if verbose {
 				log.Printf("%s: %s: option added\n",
-					fname, c.options[o.Flag].Flag)
+					fname, opt.Flag)
 			}
 		}
 	}

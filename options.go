@@ -20,7 +20,13 @@ func loadOptions(c *Config, opts ...Option) error {
 
 	for i, opt := range opts {
 		opts[i] = errCheckOption(c, opt)
-		c.options[opt.Flag] = &opts[i]
+		for j, cmd := range c.commands {
+			// If the command is in an options set, then
+			// save a pointer to the option in that command.
+			if cmd.flag&opt.Commands != 0 {
+				c.commands[j].options = append(c.commands[j].options, &opts[i])
+			}
+		}
 	}
 	if err := checkError(c, errConfig); err != nil {
 		return fmt.Errorf("%s: %w", fname, err)

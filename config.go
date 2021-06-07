@@ -56,10 +56,6 @@ type Config struct {
 	// Avoids duplicates flag names.
 	seen map[string]bool
 
-	// A map of command sequence generated from the users code at
-	// programs startup, compiled into a flagset for use at runtime.
-	options map[string]*Option
-
 	// The flagset that is composed at startup according to the
 	// predefined command line commands and their options.
 	flagSet *flag.FlagSet
@@ -110,16 +106,17 @@ func (c *Config) Compose(opts ...Option) error {
 // set if data has been provided.
 func runUserCheckFuncs(c *Config) error {
 	const fname = "runUserCheckFuncs"
-	for _, o := range c.options {
+	for _, o := range c.set.options {
 		if o.Check == nil || o.data == nil {
 			continue
 		}
 		var err error
-		c.options[o.Flag].data, err = o.Check(o.data)
+		opt := c.set.options.find(o.Flag)
+		opt.data, err = o.Check(o.data)
 		if err != nil {
 			err := fmt.Errorf("%s, %w",
 				err, ErrCheck)
-			c.options[o.Flag].err = err
+			opt.err = err
 			if c.errs != nil {
 				c.errs = fmt.Errorf("%s|%w", c.errs, err)
 			} else {
@@ -189,6 +186,17 @@ var (
  *  Commands
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
+type Options []*Option
+
+func (o Options) find(flag string) *Option {
+	for i, opt := range o {
+		if strings.Compare(opt.Flag, flag) == 0 {
+			return o[i]
+		}
+	}
+	return nil
+}
+
 // command contains the required data to create a program sub-command and
 // its flags.
 type command struct {
@@ -201,6 +209,9 @@ type command struct {
 	usage string
 	// seen makes certain that no flag duplicates exist.
 	seen map[string]int
+	// options is a slice that contains pointers to all of the
+	// options that have been assigned to this command set.
+	options Options
 }
 
 // CMD is a bitmask that defines which command a FlagSet is to be
@@ -367,9 +378,10 @@ const (
 )
 
 var (
-	errNoData = errors.New("no data")
-	errNoKey  = errors.New("key not found")
-	errStored = errors.New("stored")
+	errNoData   = errors.New("no data")
+	errNoKey    = errors.New("key not found")
+	errStored   = errors.New("stored")
+	errCommands = errors.New("commands not set")
 )
 
 func (t Type) String() string {
@@ -419,8 +431,12 @@ func (t Type) String() string {
 // error, if one has been raised during the options creation.
 func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return nil, Nil, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return nil, Nil, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -438,8 +454,12 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 // been raised during the options creation.
 func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -457,8 +477,12 @@ func (c Config) ValueInt(key string) (int, error) {
 // has been raised during the options creation.
 func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -476,8 +500,12 @@ func (c Config) ValueInt64(key string) (int64, error) {
 // been raised during the options creation.
 func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -495,8 +523,12 @@ func (c Config) ValueUint(key string) (uint, error) {
 // has been raised during the options creation.
 func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -514,8 +546,12 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 // one has been raised during the options creation.
 func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -533,8 +569,12 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 // has been raised during the options creation.
 func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return "", fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return "", fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -552,8 +592,12 @@ func (c Config) ValueString(key string) (string, error) {
 // has been raised during the options creation.
 func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
-	o, ok := c.options[key]
-	if !ok {
+	if c.set == nil {
+		return false, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
 		return false, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
@@ -571,9 +615,13 @@ func (c Config) ValueBool(key string) (bool, error) {
 // error if one has been raised during the options creation.
 func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
-	o, ok := c.options[key]
-	if !ok {
-		return time.Duration(0), fmt.Errorf("%s: %q: %w",
+	if c.set == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, errCommands)
+	}
+	o := c.set.options.find(key)
+	if o == nil {
+		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoKey)
 	}
 	if o.err != nil {
