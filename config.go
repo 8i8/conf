@@ -87,7 +87,7 @@ func (c *Config) Compose(opts ...Option) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(1) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -129,7 +129,7 @@ func runUserCheckFuncs(c *Config) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 

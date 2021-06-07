@@ -31,7 +31,7 @@ func setupFlagSet(c *Config) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -60,7 +60,7 @@ func createFlagSet(c *Config, w io.Writer) {
 		c.flagSet.VisitAll(flagUsage)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 }
@@ -78,7 +78,7 @@ func optionsToFlagSet(c *Config) error {
 				c.errs = fmt.Errorf(
 					"%s|%w", c.errs.Error(), opt.err)
 			}
-			if verbose {
+			if v(3) {
 				log.Printf("%s: %s: option added\n",
 					fname, opt.Flag)
 			}
@@ -89,7 +89,7 @@ func optionsToFlagSet(c *Config) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -268,6 +268,9 @@ func flagsToFlagSet(c *Config, o *Option) error {
 		return fmt.Errorf("%s: internal error: (%q, %s) %w",
 			fname, o.Flag, o.Type, errType)
 	}
+	if v(3) {
+		log.Printf("%s: completed\n", fname)
+	}
 	return nil
 }
 
@@ -290,7 +293,7 @@ func parseFlagSet(c *Config) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 

@@ -19,7 +19,7 @@ func configPreconditions(c *Config, opts ...Option) error {
 		return fmt.Errorf("%s: no commands set", fname)
 	}
 
-	if verbose {
+	if v(3) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -37,7 +37,7 @@ func setupConfig(c *Config) error {
 		return fmt.Errorf("%s: %w", fname, err)
 	}
 
-	if verbose {
+	if v(2) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -53,8 +53,7 @@ func setupMaps(c *Config) error {
 	for i := range c.commands {
 		c.commands[i].seen = make(map[string]int)
 	}
-
-	if verbose {
+	if v(3) {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -69,7 +68,7 @@ func ascertainCmdSet(c *Config) error {
 		if err := setCommand(c, os.Args[1]); err != nil {
 			return fmt.Errorf("%s: %w", fname, err)
 		}
-		if verbose {
+		if v(3) {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
 		}
 		return nil
@@ -79,7 +78,7 @@ func ascertainCmdSet(c *Config) error {
 		return fmt.Errorf("%s: %s", fname, event)
 	}
 	c.set = &c.commands[0]
-	if verbose {
+	if v(3) {
 		log.Printf("%s: default: set defined\n", fname)
 	}
 	return nil
