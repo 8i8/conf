@@ -298,3 +298,36 @@ func parseFlagSet(c *Config) error {
 
 	return nil
 }
+
+// runUserCheckFuncs runs all user given ckFunc functions in the command
+// set if data has been provided.
+func runUserCheckFuncs(c *Config) error {
+	const fname = "runUserCheckFuncs"
+	for _, o := range c.set.options {
+		if o.Check == nil || o.data == nil {
+			continue
+		}
+		var err error
+		opt := c.set.options.find(o.Flag)
+		opt.data, err = o.Check(o.data)
+		if err != nil {
+			err := fmt.Errorf("%s: %w", err, ErrCheck)
+			opt.err = err
+			if c.errs != nil {
+				c.errs = fmt.Errorf("%s: %w", c.errs, err)
+			} else {
+				c.errs = err
+			}
+		}
+	}
+
+	if c.errs != nil {
+		return fmt.Errorf("%s: %s: %w", fname, c.errs, ErrCheck)
+	}
+
+	if v(2) {
+		log.Printf("%s: completed\n", fname)
+	}
+
+	return nil
+}
