@@ -3,6 +3,7 @@ package conf
 import (
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -114,4 +115,91 @@ func checkDuplicate(c *Config, cmd string) error {
 	}
 
 	return nil
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  command
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// options is an array of option pointers are used to keep lists of
+// which commands contain which options.
+type options []*Option
+
+// find makes a search of the unerlying slice for the given value.
+func (o options) find(flag string) *Option {
+	for i, opt := range o {
+		if strings.Compare(opt.Flag, flag) == 0 {
+			return o[i]
+		}
+	}
+	return nil
+}
+
+// flags is a slice of flag names that is used to insure that no
+// duplicate flags can be created within the same commans set.
+type flags []string
+
+// find makes a search of the unerlying slice for the given value.
+func (f flags) find(flag string) bool {
+	for _, f := range f {
+		if strings.Compare(f, flag) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
+// command contains the data required to create flagSet for a program
+// sub command and its flags.
+type command struct {
+	// flag is the set bit that represents the command.
+	flag CMD
+	// cmd is the token used to instiage the running mode, in the
+	// case of the default set, cmd contains the defCmdSet place
+	// holder.
+	cmd string
+	// The usage output for the command displayed when -h is called or
+	// an error raised upon parsing the flagset.
+	usage string
+	// seen makes certain that no flag duplicates exist within the
+	// set.
+	seen flags
+	// options contains pointers to all of the options that have
+	// been assigned to this command set.
+	options options
+}
+
+// CMD is a bitfield that records which command a command set has been
+// registered with.
+type CMD int
+
+func (c CMD) String() string {
+	return strconv.Itoa(int(c))
+}
+
+// isInSet returns true if a command token exists within the
+// configured set of commands, false if it does not.
+func isInSet(c *Config, bitfield CMD) bool {
+	if bitfield == 0 {
+		return false
+	}
+	fullset := (c.position << 1) - 1
+	if bitfield == (fullset)&bitfield {
+		return true
+	}
+	return false
+}
+
+// setCommand sets the requested command set into the Config struct as
+// its current running state, returning an error if the named command
+// set does not exist.
+func setCommand(c *Config, name string) error {
+	const fname = "setCommand"
+	for i, m := range c.commands {
+		if strings.Compare(name, m.cmd) == 0 {
+			c.set = &c.commands[i]
+			return nil
+		}
+	}
+	return fmt.Errorf("%s: %w", fname, errNotFound)
 }

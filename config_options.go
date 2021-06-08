@@ -9,8 +9,51 @@ import (
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Load options
+ *  Options
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// ckFunc defines a function to check an options input data, the function
+// is passed into the option when it is created by the user. They are run
+// after all valid options have generated a flagset, which has in turn
+// been parsed.
+type ckFunc func(interface{}) (interface{}, error)
+
+// Option contains the data required to create a flag.
+type Option struct {
+	// Flag contains the flag as it appears on the command line.
+	Flag string
+	// The data type of the option.
+	Type
+	// Value is a flag.Value interface, used when passing user defined
+	// flag types into a flagset, for further information on using
+	// this type, refer to the go flag package.
+	Value flag.Value
+	// Var is used to pass data by reference into the 'Var' group of
+	// flag types.
+	Var interface{}
+	// Usage is the usage text that is displayed in help output when
+	// the -help -h flags are used or a flag parsing error occurs.
+	Usage string
+	// data stores either the input user data or the default value
+	// for the option, from where it is retrieved by making the
+	// approprite method call for the type, `Config.Value[T]`.
+	data interface{}
+	// Default data, is the default data to be used in the case that
+	// the flag is not called.
+	Default interface{}
+	// Commands is a bitmask, constructed from the bit flags
+	// assigned to the Option on its creation, defining which
+	// command sets the Option should appear within.
+	Commands CMD
+	// err stores any error that the option may have triggered
+	// during its setup, allowing for errors to be returned at a
+	// later time than when the options are being created.
+	err error
+	// Check is a user defined function that may be used to place
+	// constraints upon, or alter, the data in the data field that
+	// is provided by the user.
+	Check ckFunc
+}
 
 // loadOptions loads all of the defined commands into the option map,
 // running tests on each as they are loaded. Errors are accumulated into
@@ -24,7 +67,8 @@ func loadOptions(c *Config, opts ...Option) error {
 			// If the command is in an options set, then
 			// save a pointer to the option in that command.
 			if cmd.flag&opt.Commands != 0 {
-				c.commands[j].options = append(c.commands[j].options, &opts[i])
+				c.commands[j].options = append(
+					c.commands[j].options, &opts[i])
 			}
 		}
 	}
