@@ -440,7 +440,7 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return nil, Nil, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.err)
@@ -463,7 +463,7 @@ func (c Config) ValueInt(key string) (int, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
@@ -486,7 +486,7 @@ func (c Config) ValueInt64(key string) (int64, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
@@ -509,7 +509,7 @@ func (c Config) ValueUint(key string) (uint, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
@@ -532,7 +532,7 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
@@ -555,7 +555,7 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)
@@ -578,7 +578,7 @@ func (c Config) ValueString(key string) (string, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return "", fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return "", fmt.Errorf("%s: %w", fname, o.err)
@@ -601,7 +601,7 @@ func (c Config) ValueBool(key string) (bool, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return false, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return false, fmt.Errorf("%s: %w", fname, o.err)
@@ -624,7 +624,7 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 	o := c.set.options.find(key)
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoKey)
+			fname, key, errNoFlag)
 	}
 	if o.err != nil {
 		return 0, fmt.Errorf("%s: %w", fname, o.err)

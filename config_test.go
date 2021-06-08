@@ -389,47 +389,47 @@ func TestConfigValues(t *testing.T) {
 			switch opt.typ {
 			case Int:
 				_, err = c.ValueInt("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 				// Value
 				_, _, err = c.Value("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Int64:
 				_, err = c.ValueInt64("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Uint:
 				_, err := c.ValueUint("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Uint64:
 				_, err = c.ValueUint64("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Float64:
 				_, err = c.ValueFloat64("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case String:
 				_, err = c.ValueString("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Bool:
 				_, err = c.ValueBool("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			case Duration:
 				_, err = c.ValueDuration("one")
-				if !(errors.Is(err, errNoData) || errors.Is(err, errNoKey)) {
+				if !(errors.Is(err, errNoData) || errors.Is(err, errNoFlag)) {
 					t.Errorf("%s: %s: %s", fname, name, err)
 				}
 			default:
