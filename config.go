@@ -113,11 +113,10 @@ func runUserCheckFuncs(c *Config) error {
 		opt := c.set.options.find(o.Flag)
 		opt.data, err = o.Check(o.data)
 		if err != nil {
-			err := fmt.Errorf("%s, %w",
-				err, ErrCheck)
+			err := fmt.Errorf("%s: %w", err, ErrCheck)
 			opt.err = err
 			if c.errs != nil {
-				c.errs = fmt.Errorf("%s|%w", c.errs, err)
+				c.errs = fmt.Errorf("%s: %w", c.errs, err)
 			} else {
 				c.errs = err
 			}
@@ -169,16 +168,20 @@ var (
 	errNotValid  = errors.New("not valid")
 	errDuplicate = errors.New("duplicate value")
 	errSubCmd    = errors.New("sub-command error")
+	errNoData    = errors.New("no data")
+	errNoFlag    = errors.New("flag not found")
+	errCommands  = errors.New("commands not set")
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Commands
+ *  Options
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-// options is an array of option pointers that are used to maintain
+// options is an array of option pointers are used to keep lists of
 // which commands contain which options.
 type options []*Option
 
+// find makes a search of the unerlying slice for the given value.
 func (o options) find(flag string) *Option {
 	for i, opt := range o {
 		if strings.Compare(opt.Flag, flag) == 0 {
@@ -381,13 +384,6 @@ const (
 	Var
 	// Default are an unknown type.
 	Default
-)
-
-var (
-	errNoData   = errors.New("no data")
-	errNoKey    = errors.New("key not found")
-	errStored   = errors.New("stored")
-	errCommands = errors.New("commands not set")
 )
 
 func (t Type) String() string {

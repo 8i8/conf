@@ -74,8 +74,8 @@ func optionsToFlagSet(c *Config) error {
 			if err != nil {
 				opt.err = fmt.Errorf("%s: %s: %w",
 					fname, o.Flag, err)
-				c.errs = fmt.Errorf("%s: %w",
-					c.errs.Error(), opt.err)
+				c.errs = fmt.Errorf("%s: %s: %w",
+					fname, c.errs.Error(), opt.err)
 			}
 			if v(3) {
 				log.Printf("%s: %s: option added\n",
