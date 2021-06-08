@@ -1,49 +1,59 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="297px" preserveAspectRatio="none" style="width:947px;height:297px;background:#0B58A8;" version="1.1" viewBox="0 0 947 297" width="947px" zoomAndPan="magnify"><defs/><g><!--MD5=[4bf8aff396996fef456cd268939daa24]
-class Config--><rect codeLine="4" fill="#0B58A8" height="109.1875" id="Config" style="stroke:#FFFFFF;stroke-width:1.5;" width="121" x="25" y="12"/><ellipse cx="60.05" cy="26" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M63.4563,27.9688 C62.7375,28.6406 61.4406,29.8125 59.6906,29.8125 C57.4719,29.8125 56.5031,27.875 56.5031,25.9219 C56.5031,23.5313 57.9875,22.2656 59.6281,22.2656 C61.6438,22.2656 61.8625,23.7813 62.0344,24.875 L63.4563,24.6875 C63.3625,24.1094 63.2844,23.5313 63.2844,22.5625 C63.2844,21.8906 63.3313,21.3438 63.3625,20.9219 L61.9563,20.9219 L61.8469,21.875 C61.2531,21.3438 60.6125,20.7969 59.3938,20.7969 C57.3469,20.7969 54.9406,22.625 54.9406,25.9375 C54.9406,28.875 56.7063,31.2656 59.7063,31.2656 C62.1438,31.2656 63.8469,29.6406 64.4406,29.0625 L63.4563,27.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="44" x="76.95" y="30.8467">Config</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="26" x2="145" y1="40" y2="40"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="109" x="31" y="56.9951">cmdlist []flagset</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="106" x="31" y="73.292">flagset subcmd</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="104" x="31" y="89.5889">nextIndex CMD</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="93" x="31" y="105.8857">Header string</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="26" x2="145" y1="113.1875" y2="113.1875"/><!--MD5=[4148e93d2e16c6887c8119d7e6ae0ffc]
-class flagset--><rect codeLine="11" fill="#0B58A8" height="109.1875" id="flagset" style="stroke:#FFFFFF;stroke-width:1.5;" width="147" x="12" y="181"/><ellipse cx="58.75" cy="195" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M62.1563,196.9688 C61.4375,197.6406 60.1406,198.8125 58.3906,198.8125 C56.1719,198.8125 55.2031,196.875 55.2031,194.9219 C55.2031,192.5313 56.6875,191.2656 58.3281,191.2656 C60.3438,191.2656 60.5625,192.7813 60.7344,193.875 L62.1563,193.6875 C62.0625,193.1094 61.9844,192.5313 61.9844,191.5625 C61.9844,190.8906 62.0313,190.3438 62.0625,189.9219 L60.6563,189.9219 L60.5469,190.875 C59.9531,190.3438 59.3125,189.7969 58.0938,189.7969 C56.0469,189.7969 53.6406,191.625 53.6406,194.9375 C53.6406,197.875 55.4063,200.2656 58.4063,200.2656 C60.8438,200.2656 62.5469,198.6406 63.1406,198.0625 L62.1563,196.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="46" x="76.25" y="199.8467">flagset</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="13" x2="158" y1="209" y2="209"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="49" x="18" y="225.9951">id CMD</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="82" x="18" y="242.292">name string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="86" x="18" y="258.5889">usage string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="135" x="18" y="274.8857">seen map[string]int</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="13" x2="158" y1="282.1875" y2="282.1875"/><!--MD5=[e14190ae18e9497715bc25b3192ec46c]
-class FlagSet--><rect codeLine="20" fill="#0B58A8" height="109.1875" id="FlagSet" style="stroke:#FFFFFF;stroke-width:1.5;" width="199" x="181" y="12"/><ellipse cx="251.25" cy="26" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M254.6563,27.9688 C253.9375,28.6406 252.6406,29.8125 250.8906,29.8125 C248.6719,29.8125 247.7031,27.875 247.7031,25.9219 C247.7031,23.5313 249.1875,22.2656 250.8281,22.2656 C252.8438,22.2656 253.0625,23.7813 253.2344,24.875 L254.6563,24.6875 C254.5625,24.1094 254.4844,23.5313 254.4844,22.5625 C254.4844,21.8906 254.5313,21.3438 254.5625,20.9219 L253.1563,20.9219 L253.0469,21.875 C252.4531,21.3438 251.8125,20.7969 250.5938,20.7969 C248.5469,20.7969 246.1406,22.625 246.1406,25.9375 C246.1406,28.875 247.9063,31.2656 250.9063,31.2656 C253.3438,31.2656 255.0469,29.6406 255.6406,29.0625 L254.6563,27.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="51" x="268.75" y="30.8467">FlagSet</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="182" x2="379" y1="40" y2="40"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="103" x="187" y="56.9951">heading  string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="103" x="187" y="73.292">useage   string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="187" x="187" y="89.5889">commands []commandSeq</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="182" x2="379" y1="96.8906" y2="96.8906"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="149" x="187" y="113.8857">NewFlagSet() bitmask</text><!--MD5=[aa4c3f36b3c89a737571cc8b85888317]
-class CommandSeq--><rect codeLine="27" fill="#0B58A8" height="109.1875" id="CommandSeq" style="stroke:#FFFFFF;stroke-width:1.5;" width="126" x="217.5" y="181"/><ellipse cx="230.5" cy="195" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M233.9063,196.9688 C233.1875,197.6406 231.8906,198.8125 230.1406,198.8125 C227.9219,198.8125 226.9531,196.875 226.9531,194.9219 C226.9531,192.5313 228.4375,191.2656 230.0781,191.2656 C232.0938,191.2656 232.3125,192.7813 232.4844,193.875 L233.9063,193.6875 C233.8125,193.1094 233.7344,192.5313 233.7344,191.5625 C233.7344,190.8906 233.7813,190.3438 233.8125,189.9219 L232.4063,189.9219 L232.2969,190.875 C231.7031,190.3438 231.0625,189.7969 229.8438,189.7969 C227.7969,189.7969 225.3906,191.625 225.3906,194.9375 C225.3906,197.875 227.1563,200.2656 230.1563,200.2656 C232.5938,200.2656 234.2969,198.6406 234.8906,198.0625 L233.9063,196.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="98" x="242.5" y="199.8467">CommandSeq</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="218.5" x2="342.5" y1="209" y2="209"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="57" x="223.5" y="225.9951">ID string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="34" x="223.5" y="242.292">Type</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="71" x="223.5" y="258.5889">Flag string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="44" x="223.5" y="274.8857">Check</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="218.5" x2="342.5" y1="282.1875" y2="282.1875"/><path d="M433,23.5 L433,109.1641 L940,109.1641 L940,33.5 L930,23.5 L433,23.5 " fill="#0B58A8" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M930,23.5 L930,33.5 L940,33.5 L930,23.5 " fill="#0B58A8" style="stroke:#FFFFFF;stroke-width:1.0;"/><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="402" x="439" y="40.5669">The first FlagSet defined is the basic set, used to describe flags</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="469" x="443" y="55.6997">for the programs cli command. Each subsequent FlagSet represent a sub</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="482" x="443" y="70.8325">command; When the programs cli command is followed by a sub-command</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="449" x="443" y="85.9653">the user may then access any combination of the sub-set of flags that</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="421" x="443" y="101.0981">have been defined along with their accompanying documentation.</text><!--MD5=[2f9a9807dc510a2c81cc02fa1a0ee860]
-reverse link Config to flagset--><path codeLine="18" d="M85.5,126.7937 C85.5,144.4433 85.5,163.6318 85.5,180.9058 " fill="none" id="Config-backto-flagset" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="#FFFFFF" points="85.5,121.3695,81.5,130.3695,85.5,126.3695,89.5,130.3695,85.5,121.3695" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[7edb9fc0f67b91a0325e42a4fb73d027]
-reverse link FlagSet to FlagSet--><path codeLine="36" d="M393.0038,39.4919 C406.3169,44.4274 415,53.4301 415,66.5 C415,83.3984 400.4847,93.4979 380.2143,96.7984 " fill="none" id="FlagSet-backto-FlagSet" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="#FFFFFF" points="380.2143,36.2016,385.0284,41.5704,391.8358,39.1916,387.0217,33.8227,380.2143,36.2016" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[a030acc6475b8339484e660929aa09f1]
-reverse link FlagSet to CommandSeq--><path codeLine="37" d="M280.5,134.6417 C280.5,150.0264 280.5,166.1633 280.5,180.9058 " fill="none" id="FlagSet-backto-CommandSeq" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="#FFFFFF" points="280.5,121.3695,276.5,127.3695,280.5,133.3695,284.5,127.3695,280.5,121.3695" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[46ad68b16b2a04b01a250bab8d28f570]
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="742px" preserveAspectRatio="none" style="width:778px;height:742px;background:#0B58A8;" version="1.1" viewBox="0 0 778 742" width="778px" zoomAndPan="magnify"><defs/><g><!--MD5=[4bf8aff396996fef456cd268939daa24]
+class Config--><rect codeLine="4" fill="#0B58A8" height="272.1563" id="Config" style="stroke:#FFFFFF;stroke-width:1.5;" width="264" x="12" y="12"/><ellipse cx="118.25" cy="26" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M121.6563,27.9688 C120.9375,28.6406 119.6406,29.8125 117.8906,29.8125 C115.6719,29.8125 114.7031,27.875 114.7031,25.9219 C114.7031,23.5313 116.1875,22.2656 117.8281,22.2656 C119.8438,22.2656 120.0625,23.7813 120.2344,24.875 L121.6563,24.6875 C121.5625,24.1094 121.4844,23.5313 121.4844,22.5625 C121.4844,21.8906 121.5313,21.3438 121.5625,20.9219 L120.1563,20.9219 L120.0469,21.875 C119.4531,21.3438 118.8125,20.7969 117.5938,20.7969 C115.5469,20.7969 113.1406,22.625 113.1406,25.9375 C113.1406,28.875 114.9063,31.2656 117.9063,31.2656 C120.3438,31.2656 122.0469,29.6406 122.6406,29.0625 L121.6563,27.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="44" x="135.75" y="30.8467">Config</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="13" x2="275" y1="40" y2="40"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="92" x="18" y="56.9951">header string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="102" x="18" y="73.292">rawInput string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="0" x="22" y="89.5889"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="160" x="18" y="105.8857">commands []command</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="92" x="18" y="122.1826">position CMD</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="102" x="18" y="138.4795">set *command</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="0" x="22" y="154.7764"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="136" x="18" y="171.0732">flagset *flag.FlagSet</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="0" x="22" y="187.3701"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="74" x="18" y="203.667">errs []error</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="13" x2="275" y1="210.9688" y2="210.9688"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="252" x="18" y="227.9639">Command(cmd, usage string) (CMD)</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="207" x="18" y="244.2607">Compose(opts ...Option) error</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="199" x="18" y="260.5576">IsSet(flag CMD) (string, CMD)</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="79" x="18" y="276.8545">Cmd() CMD</text><!--MD5=[e6280f8904688f60355da485760ab5a6]
+class command--><rect codeLine="23" fill="#0B58A8" height="125.4844" id="command" style="stroke:#FFFFFF;stroke-width:1.5;" width="131" x="78.5" y="344"/><ellipse cx="106.8" cy="358" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M110.2063,359.9688 C109.4875,360.6406 108.1906,361.8125 106.4406,361.8125 C104.2219,361.8125 103.2531,359.875 103.2531,357.9219 C103.2531,355.5313 104.7375,354.2656 106.3781,354.2656 C108.3938,354.2656 108.6125,355.7813 108.7844,356.875 L110.2063,356.6875 C110.1125,356.1094 110.0344,355.5313 110.0344,354.5625 C110.0344,353.8906 110.0813,353.3438 110.1125,352.9219 L108.7063,352.9219 L108.5969,353.875 C108.0031,353.3438 107.3625,352.7969 106.1438,352.7969 C104.0969,352.7969 101.6906,354.625 101.6906,357.9375 C101.6906,360.875 103.4563,363.2656 106.4563,363.2656 C108.8938,363.2656 110.5969,361.6406 111.1906,361.0625 L110.2063,359.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="69" x="122.2" y="362.8467">command</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="79.5" x2="208.5" y1="372" y2="372"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="61" x="84.5" y="388.9951">flag CMD</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="73" x="84.5" y="405.292">cmd string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="86" x="84.5" y="421.5889">usage string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="88" x="84.5" y="437.8857">seen []string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="119" x="84.5" y="454.1826">options []*Option</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="79.5" x2="208.5" y1="461.4844" y2="461.4844"/><!--MD5=[b07065dfc0d0e09965ec10bfc328bb3e]
+class Option--><rect codeLine="35" fill="#0B58A8" height="206.9688" id="Option" style="stroke:#FFFFFF;stroke-width:1.5;" width="143" x="72.5" y="529"/><ellipse cx="117.25" cy="543" fill="#FFFFFF" rx="9" ry="9" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M120.6563,544.9688 C119.9375,545.6406 118.6406,546.8125 116.8906,546.8125 C114.6719,546.8125 113.7031,544.875 113.7031,542.9219 C113.7031,540.5313 115.1875,539.2656 116.8281,539.2656 C118.8438,539.2656 119.0625,540.7813 119.2344,541.875 L120.6563,541.6875 C120.5625,541.1094 120.4844,540.5313 120.4844,539.5625 C120.4844,538.8906 120.5313,538.3438 120.5625,537.9219 L119.1563,537.9219 L119.0469,538.875 C118.4531,538.3438 117.8125,537.7969 116.5938,537.7969 C114.5469,537.7969 112.1406,539.625 112.1406,542.9375 C112.1406,545.875 113.9063,548.2656 116.9063,548.2656 C119.3438,548.2656 121.0469,546.6406 121.6406,546.0625 L120.6563,544.9688 Z " fill="#0B58A8"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="46" x="134.75" y="547.8467">Option</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="73.5" x2="214.5" y1="557" y2="557"/><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="71" x="78.5" y="573.9951">Flag string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="34" x="78.5" y="590.292">Type</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="108" x="78.5" y="606.5889">Value flag.Value</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="104" x="78.5" y="622.8857">Var interface{}</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="95" x="78.5" y="639.1826">Usage   string</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="112" x="78.5" y="655.4795">data interface{}</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="131" x="78.5" y="671.7764">Default interface{}</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="116" x="78.5" y="688.0732">Commands CMD</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="56" x="78.5" y="704.3701">err error</text><text fill="#FFFFFF" font-family="Verdana" font-size="14" lengthAdjust="spacing" textLength="98" x="78.5" y="720.667">Check ckFunc</text><line style="stroke:#FFFFFF;stroke-width:1.5;" x1="73.5" x2="214.5" y1="727.9688" y2="727.9688"/><path d="M311,97.5 L311,198.2969 L771,198.2969 L771,107.5 L761,97.5 L311,97.5 " fill="#0B58A8" style="stroke:#FFFFFF;stroke-width:1.0;"/><path d="M761,97.5 L761,107.5 L771,107.5 L761,97.5 " fill="#0B58A8" style="stroke:#FFFFFF;stroke-width:1.0;"/><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="436" x="317" y="114.5669">The first command defined represents the programs default flagSet,</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="377" x="321" y="129.6997">used to describe flags for the programs cli command. Each</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="435" x="321" y="144.8325">subsequent FlagSet represent a sub command; When the programs</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="401" x="321" y="159.9653">cli command is followed by a sub-command the user may then</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="398" x="321" y="175.0981">access any combination of the sub-set of flags that have been</text><text fill="#FFFFFF" font-family="Verdana" font-size="13" lengthAdjust="spacing" textLength="350" x="321" y="190.231">defined along with their accompanying documentation.</text><!--MD5=[22492148e43fd0b085605f014c4b4f1e]
+reverse link Config to command--><path codeLine="31" d="M131.5053,304.5022 C131.7673,318.294 132.2308,331.652 132.8958,343.9089 " fill="none" id="Config-backto-command" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="none" points="124.5007,304.1438,131.2658,284.0631,138.4998,303.9797,124.5007,304.1438" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[22492148e43fd0b085605f014c4b4f1e]
+reverse link Config to command--><path codeLine="32" d="M157.3553,297.2496 C157.117,313.6007 156.5844,329.5142 155.7574,343.9089 " fill="none" id="Config-backto-command-1" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="#FFFFFF" points="157.4833,284.0631,153.4252,290.024,157.3667,296.0625,161.4248,290.1017,157.4833,284.0631" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[78b8438d24846202228a30004eac0851]
+reverse link command to Option--><path codeLine="33" d="M144,482.5366 C144,497.4422 144,513.3121 144,528.9395 " fill="none" id="command-backto-Option" style="stroke:#FFFFFF;stroke-width:1.0;"/><polygon fill="#0B58A8" points="144,469.1535,140,475.1535,144,481.1535,148,475.1535,144,469.1535" style="stroke:#FFFFFF;stroke-width:1.0;"/><!--MD5=[71f322148094139d3e94a7a884f9b6a9]
 @startuml
 
 !theme amiga
 
 class Config {
-	cmdlist []flagset
-	flagset subcmd
-	nextIndex CMD
-	Header string
+
+	header string
+	rawInput string
+
+	commands []command
+	position CMD
+	set *command
+
+	flagset *flag.FlagSet
+
+	errs []error
+
+	Command(cmd, usage string) (CMD)
+	Compose(opts ...Option) error
+	IsSet(flag CMD) (string, CMD)
+	Cmd() CMD
 }
 
-class flagset {
-	id CMD
-	name string
+class command {
+	flag CMD
+	cmd string
 	usage string
-	seen map[string]int
+	seen []string
+	options []*Option
 }
 
-Config <- - flagset
+Config <|- - command 
+Config *- - command 
+command o- - Option
 
-class FlagSet {
-	heading  string
-	useage   string
-	commands []commandSeq
-	NewFlagSet() bitmask
-}
-
-class CommandSeq {
-	ID string
-	Type
+class Option {
 	Flag string
-	Check
+	Type
+	Value flag.Value
+	Var interface{}
+	Usage   string
+	data interface{}
+	Default interface{}
+	Commands CMD
+	err error
+	Check ckFunc
 }
 
-note "The first FlagSet defined is the basic set, used to describe flags\n for the programs cli command. Each subsequent FlagSet represent a sub\n command; When the programs cli command is followed by a sub-command\n the user may then access any combination of the sub-set of flags that\n have been defined along with their accompanying documentation." as N1
-
-FlagSet *- - FlagSet
-FlagSet *- - CommandSeq
+note "The first command defined represents the programs default flagSet,\n used to describe flags for the programs cli command. Each\n subsequent FlagSet represent a sub command; When the programs\n cli command is followed by a sub-command the user may then\n access any combination of the sub-set of flags that have been\n defined along with their accompanying documentation." as N1
 
 @enduml
 
@@ -206,39 +216,50 @@ skinparam UseCaseStereoType {
 }
 
 class Config {
-	cmdlist []flagset
-	flagset subcmd
-	nextIndex CMD
-	Header string
+
+	header string
+	rawInput string
+
+	commands []command
+	position CMD
+	set *command
+
+	flagset *flag.FlagSet
+
+	errs []error
+
+	Command(cmd, usage string) (CMD)
+	Compose(opts ...Option) error
+	IsSet(flag CMD) (string, CMD)
+	Cmd() CMD
 }
 
-class flagset {
-	id CMD
-	name string
+class command {
+	flag CMD
+	cmd string
 	usage string
-	seen map[string]int
+	seen []string
+	options []*Option
 }
 
-Config <- - flagset
+Config <|- - command 
+Config *- - command 
+command o- - Option
 
-class FlagSet {
-	heading  string
-	useage   string
-	commands []commandSeq
-	NewFlagSet() bitmask
-}
-
-class CommandSeq {
-	ID string
-	Type
+class Option {
 	Flag string
-	Check
+	Type
+	Value flag.Value
+	Var interface{}
+	Usage   string
+	data interface{}
+	Default interface{}
+	Commands CMD
+	err error
+	Check ckFunc
 }
 
-note "The first FlagSet defined is the basic set, used to describe flags\n for the programs cli command. Each subsequent FlagSet represent a sub\n command; When the programs cli command is followed by a sub-command\n the user may then access any combination of the sub-set of flags that\n have been defined along with their accompanying documentation." as N1
-
-FlagSet *- - FlagSet
-FlagSet *- - CommandSeq
+note "The first command defined represents the programs default flagSet,\n used to describe flags for the programs cli command. Each\n subsequent FlagSet represent a sub command; When the programs\n cli command is followed by a sub-command the user may then\n access any combination of the sub-set of flags that have been\n defined along with their accompanying documentation." as N1
 
 @enduml
 

@@ -3,15 +3,13 @@
 !theme amiga
 
 class Config {
-	Header string
+
+	header string
 	rawInput string
 
 	commands []command
 	position CMD
-	set command
-	seen map[string]bool
-
-	options map[string]*Option
+	set *command
 
 	flagset *flag.FlagSet
 
@@ -19,37 +17,35 @@ class Config {
 
 	Command(cmd, usage string) (CMD)
 	Compose(opts ...Option) error
-	Parse() error
-	Is() (string, CMD)
-	Args() string
+	IsSet(flag CMD) (string, CMD)
+	Cmd() CMD
 }
 
 class command {
-	id CMD
-	name string
+	flag CMD
+	cmd string
 	usage string
-	seen map[string]int
+	seen []string
+	options []*Option
 }
 
-Config <-- command 
-
-class Command {
-	heading  string
-	useage   string
-	flags [Option]
-	NewFlagSet() bitmask
-}
+Config <|-- command 
+Config *-- command 
+command o-- Option
 
 class Option {
-	ID string
-	Type
 	Flag string
-	Check
+	Type
+	Value flag.Value
+	Var interface{}
+	Usage   string
+	data interface{}
+	Default interface{}
+	Commands CMD
+	err error
+	Check ckFunc
 }
 
-note "The first FlagSet defined is the basic set, used to describe flags\n for the programs cli command. Each subsequent FlagSet represent a sub\n command; When the programs cli command is followed by a sub-command\n the user may then access any combination of the sub-set of flags that\n have been defined along with their accompanying documentation." as N1
-
-FlagSet *-- FlagSet
-FlagSet *-- CommandSeq
+note "The first command defined represents the programs default flagSet,\n used to describe flags for the programs cli command. Each\n subsequent FlagSet represent a sub command; When the programs\n cli command is followed by a sub-command the user may then\n access any combination of the sub-set of flags that have been\n defined along with their accompanying documentation." as N1
 
 @enduml
