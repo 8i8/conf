@@ -147,8 +147,10 @@ func checkError(c *Config, err ...error) error {
 	return c.errs
 }
 
-// Is returns the current running sub-commands name and state.
-func (c Config) Running() CMD {
+// Cmd returns the current running commands bitflag as a token, directly
+// comparable with the tokes that are returned when registering a
+// Command() with the conf package.
+func (c Config) Cmd() CMD {
 	if c.set == nil {
 		panic("Config.set is nil")
 	}

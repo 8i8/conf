@@ -462,15 +462,15 @@ func TestParse(t *testing.T) {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
 	}
-	os.Args[1] = temp
-	mode := c.Running()
+	mode := c.Cmd()
 	if mode != cmd2 {
-		t.Errorf("%s: expected \"default\" received %q",
+		t.Errorf("%s: expected \"two\" received %q",
 			fname, mode)
 	}
 	if !isInSet(c, cmd) {
 		t.Errorf("%s: not a valid Command token", fname)
 	}
+	os.Args[1] = temp
 }
 
 func TestParseInvalidCmd(t *testing.T) {
@@ -499,7 +499,7 @@ func TestParseInvalidCmd(t *testing.T) {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
 	}
-	mode := c.Running()
+	mode := c.Cmd()
 	if mode != cmd {
 		t.Errorf("%s: expected \"*\" received %q",
 			fname, mode)

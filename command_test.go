@@ -25,7 +25,7 @@ func TestCommandGetCmd(t *testing.T) {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
 	}
-	mode := c.Running()
+	mode := c.Cmd()
 	if mode != cmd {
 		t.Errorf("%s: expected \"*\" received %q", fname, mode)
 	}
