@@ -84,8 +84,8 @@ func optionsToFlagSet(c *Config) error {
 		}
 	}
 
-	if err := checkError(c, errConfig); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if c.errs != nil {
+		return fmt.Errorf("%s: %s: %w", fname, c.errs, errConfig)
 	}
 
 	if v(2) {

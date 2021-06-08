@@ -124,8 +124,8 @@ func runUserCheckFuncs(c *Config) error {
 		}
 	}
 
-	if err := checkError(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if c.errs != nil {
+		return fmt.Errorf("%s: %s: %w", fname, c.errs, ErrCheck)
 	}
 
 	if v(2) {
@@ -135,38 +135,26 @@ func runUserCheckFuncs(c *Config) error {
 	return nil
 }
 
-// Error will return an error if any have occurred from the stored error
-// in Config.errs. Where all errors have been concatenated into one.
-func checkError(c *Config, err ...error) error {
-	if c.errs == nil {
-		return nil
-	}
-	if len(err) > 0 {
-		return fmt.Errorf("%s: %w", c.errs.Error(), err[0])
-	}
-	return c.errs
-}
-
 // Cmd returns the current running commands bitflag as a token, directly
 // comparable with the tokes that are returned when registering a
 // Command() with the conf package.
 func (c Config) Cmd() CMD {
 	if c.set == nil {
-		panic("Config.set is nil")
+		panic("Config.set is nil, have you run Config.Compose?")
 	}
 	return c.set.flag
 }
 
-// Is returns true if the flag is set withing the current running mode.
-func (c Config) Is(flag CMD) bool {
+// IsSet returns true if the flag is active in the current running mode.
+func (c Config) IsSet(flag CMD) bool {
 	if c.set == nil {
-		panic("Config.set is nil")
+		panic("Config.set is nil, have you run Config.Compose?")
 	}
 	return c.set.flag&flag > 0
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Pre Parse Option Checks
+ *  Errors
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 var (
