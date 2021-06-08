@@ -21,10 +21,6 @@ var (
 	test bool
 )
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Config
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
 // Config contains an array of commands the user can call when starting
 // the command line application, the selected command then loads its
 // corresponding flagset and operating mode, parsing any following
@@ -96,10 +92,6 @@ func (c *Config) Compose(opts ...Option) error {
 	//c.loadConfig()
 	return nil
 }
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Post Parse Option Checks
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // runUserCheckFuncs runs all user given ckFunc functions in the command
 // set if data has been provided.
@@ -191,8 +183,11 @@ func (o options) find(flag string) *Option {
 	return nil
 }
 
+// flags is a slice of flag names that is used to insure that no
+// duplicate flags can be created within the same commans set.
 type flags []string
 
+// find makes a search of the unerlying slice for the given value.
 func (f flags) find(flag string) bool {
 	for _, f := range f {
 		if strings.Compare(f, flag) == 0 {
@@ -202,8 +197,8 @@ func (f flags) find(flag string) bool {
 	return false
 }
 
-// command contains the required data to create a program sub-command and
-// its flags.
+// command contains the data required to create falgSet for a program
+// sub command and its flags.
 type command struct {
 	// flag is the set bit that represents the command.
 	flag CMD
@@ -212,17 +207,18 @@ type command struct {
 	// holder.
 	cmd string
 	// The usage output for the command displayed when -h is called or
-	// an error raised on parsing.
+	// an error raised upon parsing the flagset.
 	usage string
-	// seen makes certain that no flag duplicates exist.
+	// seen makes certain that no flag duplicates exist within the
+	// set.
 	seen flags
-	// options is a slice that contains pointers to all of the
-	// options that have been assigned to this command set.
+	// options contains pointers to all of the options that have
+	// been assigned to this command set.
 	options options
 }
 
-// CMD is a bitmask that defines which command a FlagSet is to be
-// applied to.
+// CMD is a bitfield that records which command a command set has been
+// registered with.
 type CMD int
 
 func (c CMD) String() string {
@@ -242,7 +238,9 @@ func isInSet(c *Config, bitfield CMD) bool {
 	return false
 }
 
-// setCommand defines the programs current running state.
+// setCommand sets the requested command set into the Config struct as
+// its current running state, returning an error if the named command
+// set does not exist.
 func setCommand(c *Config, name string) error {
 	const fname = "setCommand"
 	for i, m := range c.commands {
@@ -255,7 +253,7 @@ func setCommand(c *Config, name string) error {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Command sequences
+ *  Options
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 // ckFunc defines a function to check an options input data, the function
@@ -268,30 +266,36 @@ type ckFunc func(interface{}) (interface{}, error)
 type Option struct {
 	// Flag contains the flag as it appears on the command line.
 	Flag string
-	// Type is the data type of the option.
+	// The data type of the option.
 	Type
 	// Value is a flag.Value interface, used when passing user defined
-	// flag types into a flagset.
+	// flag types into a flagset, for further information on using
+	// this type, refer to the go flag package.
 	Value flag.Value
-	// Var is used to pass values by reference into the 'Var' group of
+	// Var is used to pass data by reference into the 'Var' group of
 	// flag types.
 	Var interface{}
-	// Usage string defines the usage text that is displayed in help
-	// output.
+	// Usage is the usage text that is displayed in help output when
+	// the -help -h flags are used or a flag parsing error occurs.
 	Usage string
-	// data store the input user data of the option when required.
+	// data stores either the input user data or the default value
+	// for the option, from where it is retrieved by making the
+	// approprite method call for the type, `Config.Value[T]`.
 	data interface{}
-	// Default data, is the default data used in the case that the
-	// flag is not called.
+	// Default data, is the default data to be used in the case that
+	// the flag is not called.
 	Default interface{}
-	// Commands is a set of flags that represent which commands the
-	// option should be included within.
+	// Commands is a bitmask, constructed from the bit flags
+	// assigned to the Option on its creation, defining which
+	// command sets the Option should appear within.
 	Commands CMD
-	// err stores any errors that the option may have triggered whilst
-	// being set up and parsed.
+	// err stores any error that the option may have triggered
+	// during its setup, allowing for errors to be returned at a
+	// later time than when the options are being created.
 	err error
-	// Check is a user defined function that may be used to either
-	// constrain or alter the data in the data field.
+	// Check is a user defined function that may be used to place
+	// constraints upon, or alter, the data in the data field that
+	// is provided by the user.
 	Check ckFunc
 }
 
