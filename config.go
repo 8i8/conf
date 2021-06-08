@@ -141,7 +141,7 @@ func (c Config) IsSet(flag CMD) bool {
 	if c.set == nil {
 		panic("Config.set is nil, have you run Config.Compose?")
 	}
-	return c.set.flag&flag > 0
+	return c.set.flag&flag != 0
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

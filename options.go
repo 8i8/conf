@@ -85,7 +85,7 @@ func checkFlag(c *Config, o *Option) error {
 		// If the option flag has already been registered on the
 		// current subcommand, we return an error. Duplicate flags
 		// on a differing sub-commands are OK.
-		if set.flag&o.Commands > 0 {
+		if set.flag&o.Commands != 0 {
 			if set.seen.find(o.Flag) {
 				return fmt.Errorf("%s: %w", fname, errDuplicate)
 			}

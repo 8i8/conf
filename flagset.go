@@ -68,7 +68,7 @@ func createFlagSet(c *Config, w io.Writer) {
 func optionsToFlagSet(c *Config) error {
 	const fname = "optionsToFlagSet"
 	for _, o := range c.set.options {
-		if c.set.flag&o.Commands > 0 {
+		if c.set.flag&o.Commands != 0 {
 			opt := c.set.options.find(o.Flag)
 			err := flagsToFlagSet(c, opt)
 			if err != nil {
