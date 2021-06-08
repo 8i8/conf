@@ -27,7 +27,7 @@ var (
 // arguments as flags and their parameters.
 //
 // The 'header' is best used as a formatted `string`, so that what you
-// see is what you get, and example of which might typically be:
+// see is what you get, an example of which might typically be:
 //
 // `NAME
 //	app
@@ -197,7 +197,7 @@ func (f flags) find(flag string) bool {
 	return false
 }
 
-// command contains the data required to create falgSet for a program
+// command contains the data required to create flagSet for a program
 // sub command and its flags.
 type command struct {
 	// flag is the set bit that represents the command.
