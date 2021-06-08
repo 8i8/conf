@@ -46,7 +46,7 @@ func createFlagSet(c *Config, w io.Writer) {
 	}
 
 	// Create our custom flagset.
-	c.flagSet = flag.NewFlagSet(c.set.header, flag.ExitOnError)
+	c.flagSet = flag.NewFlagSet(c.set.cmd, flag.ExitOnError)
 
 	// Define help or usage output function, overriding the default
 	// flag package help function.
@@ -284,7 +284,7 @@ func parseFlagSet(c *Config) error {
 	offset := 1 // the program call needs to be skipped.
 	// If not the default then a command has been used and we need
 	// to offset the args by one more place.
-	if c.set.header != defCmdSet {
+	if c.set.cmd != defCmdSet {
 		offset++
 	}
 	err := c.flagSet.Parse(os.Args[offset:])

@@ -47,7 +47,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 
 	// OK, set the position flag and define the command set.
 	c.position = c.position << 1
-	m := command{flag: c.position, header: cmd, usage: usage}
+	m := command{flag: c.position, cmd: cmd, usage: usage}
 	c.commands = append(c.commands, m)
 
 	if v(1) {
@@ -87,7 +87,7 @@ func setDefaultCommand(c *Config, cmd, usage string) CMD {
 	c.header = cmd
 	c.position = 1  // 1 is the first flag, 0 will not do here.
 	cmd = defCmdSet // default cmd place holder.
-	m := command{flag: c.position, header: cmd, usage: usage}
+	m := command{flag: c.position, cmd: cmd, usage: usage}
 	c.commands = append(c.commands, m)
 
 	if v(2) {
@@ -102,7 +102,7 @@ func setDefaultCommand(c *Config, cmd, usage string) CMD {
 func checkDuplicate(c *Config, cmd string) error {
 	const fname = "checkDuplicate"
 	for _, c := range c.commands {
-		if strings.Compare(c.header, cmd) == 0 {
+		if strings.Compare(c.cmd, cmd) == 0 {
 			const event = "duplicate command"
 			return fmt.Errorf("%s: %s: %s",
 				fname, cmd, event)

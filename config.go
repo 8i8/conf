@@ -214,8 +214,10 @@ func (f flags) find(flag string) bool {
 type command struct {
 	// flag is the set bit that represents the command.
 	flag CMD
-	// The options header.
-	header string
+	// cmd is the token used to instiage the running mode, in the
+	// case of the default set, cmd contains the defCmdSet place
+	// holder.
+	cmd string
 	// The usage output for the command displayed when -h is called or
 	// an error raised on parsing.
 	usage string
@@ -251,7 +253,7 @@ func isInSet(c *Config, bitfield CMD) bool {
 func setCommand(c *Config, name string) error {
 	const fname = "setCommand"
 	for i, m := range c.commands {
-		if strings.Compare(name, m.header) == 0 {
+		if strings.Compare(name, m.cmd) == 0 {
 			c.set = &c.commands[i]
 			return nil
 		}
