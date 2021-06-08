@@ -296,49 +296,6 @@ type Option struct {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *  Usage display output
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-// setUsageFn is set as flag.FlagSet.Usage, generating the usage output.
-func setUsageFn(w io.Writer, c *Config) {
-	c.flagSet.SetOutput(w)
-	if w == nil {
-		w = os.Stderr
-	}
-	c.flagSet.Usage = func() {
-		io.WriteString(w, c.header)
-		io.WriteString(w, c.set.usage)
-		c.flagSet.VisitAll(flagUsage)
-	}
-}
-
-// space sets a space after the flag name in the help output, aligning the
-// flags description correctly for output.
-func space(b []byte, l int) string {
-	w := len(b)
-	l = w - l
-	for i := 0; i < l; i++ {
-		w--
-		b[w] = ' '
-	}
-	return string(b[w:])
-}
-
-// flagUsage writes the usage message for each individual flag.
-func flagUsage(f *flag.Flag) {
-	l := len(f.Name) + 1 // for the '-' char.
-	var buf [8]byte
-	sp := space(buf[:], l)
-	s := fmt.Sprintf("        -%s%s", f.Name, sp)
-	_, usage := flag.UnquoteUsage(f)
-	if l > 6 {
-		s += "\n        \t"
-	}
-	s += strings.ReplaceAll(usage, "\n", "\n            \t")
-	fmt.Fprint(os.Stdout, s, "\n\n")
-}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Values and Types
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
@@ -633,4 +590,47 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 		return 0, fmt.Errorf("%s: %w", fname, errNoData)
 	}
 	return *o.data.(*time.Duration), nil
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Usage display
+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+// setUsageFn is set as flag.FlagSet.Usage, generating the usage output.
+func setUsageFn(w io.Writer, c *Config) {
+	c.flagSet.SetOutput(w)
+	if w == nil {
+		w = os.Stderr
+	}
+	c.flagSet.Usage = func() {
+		io.WriteString(w, c.header)
+		io.WriteString(w, c.set.usage)
+		c.flagSet.VisitAll(flagUsage)
+	}
+}
+
+// space sets a space after the flag name in the help output, aligning the
+// flags description correctly for output.
+func space(b []byte, l int) string {
+	w := len(b)
+	l = w - l
+	for i := 0; i < l; i++ {
+		w--
+		b[w] = ' '
+	}
+	return string(b[w:])
+}
+
+// flagUsage writes the usage message for each individual flag.
+func flagUsage(f *flag.Flag) {
+	l := len(f.Name) + 1 // for the '-' char.
+	var buf [8]byte
+	sp := space(buf[:], l)
+	s := fmt.Sprintf("        -%s%s", f.Name, sp)
+	_, usage := flag.UnquoteUsage(f)
+	if l > 6 {
+		s += "\n        \t"
+	}
+	s += strings.ReplaceAll(usage, "\n", "\n            \t")
+	fmt.Fprint(os.Stdout, s, "\n\n")
 }
