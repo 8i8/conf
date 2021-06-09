@@ -122,11 +122,17 @@ var opts = []conf.Option{
 }
 
 func main() {
-	err := c.Compose(opts...)
+	cmd, err := c.Compose(opts...)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("The current running mode is %v\n", c.Running())
+	fmt.Printf("The current running mode is %v\n", cmd)
+
+	switch cmd {
+	case def:
+	case one:
+	case two:
+	}
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

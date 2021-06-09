@@ -153,7 +153,7 @@ func TestConfigValues(t *testing.T) {
 		}
 		switch opt.exp {
 		case "pass":
-			err := c.Compose(opts...)
+			_, err := c.Compose(opts...)
 			if err != nil {
 				t.Errorf("%s: %s: %s", fname, name, err)
 			}
@@ -302,7 +302,7 @@ func TestConfigValues(t *testing.T) {
 			}
 		case "fail":
 			// Both Options and Parse return an errConfig.
-			err := c.Compose(opts...)
+			_, err := c.Compose(opts...)
 			if !errors.Is(err, errConfig) {
 				t.Errorf("%s: %s: %s", fname, name, err)
 			}
@@ -381,7 +381,7 @@ func TestConfigValues(t *testing.T) {
 				t.Errorf("%s: %s: end of case stament reached", fname, name)
 			}
 		case "errNoData", "errNoKey":
-			err := c.Compose(opts...)
+			_, err := c.Compose(opts...)
 			if err != nil {
 				t.Errorf("%s: %s: %s", fname, name, err)
 			}
@@ -457,7 +457,7 @@ func TestParse(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := c.Compose(opts...)
+	_, err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
@@ -489,12 +489,12 @@ func TestParseInvalidCmd(t *testing.T) {
 			Commands: cmd2,
 		},
 	}
-	err := c.Compose(opts...)
+	_, err := c.Compose(opts...)
 	if !errors.Is(err, errNotFound) {
 		t.Errorf("%s: %s", fname, err)
 	}
 	os.Args[1] = temp
-	err = c.Compose(opts...)
+	_, err = c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
@@ -529,7 +529,7 @@ func TestFlagSetUsageFn(t *testing.T) {
 			Commands: cmd,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}

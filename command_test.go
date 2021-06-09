@@ -20,7 +20,7 @@ func TestCommandGetCmd(t *testing.T) {
 			Commands: cmd,
 		},
 	}
-	err := c.Compose(opts...)
+	_, err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
@@ -55,7 +55,7 @@ func TestCommandDuplicateKeys(t *testing.T) {
 			Commands: m2,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: should not raise an error: %s",
 			fname, err)
@@ -73,7 +73,7 @@ func TestCommandTooMany(t *testing.T) {
 	for i := 0; i <= 64; i++ {
 		_ = config.Command(names[i], "")
 	}
-	err := config.Compose()
+	_, err := config.Compose()
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -93,7 +93,7 @@ func TestCommandNotThere(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -114,7 +114,7 @@ func TestCommandTokens(t *testing.T) {
 			Commands: cmd1,
 		},
 	}
-	err := c.Compose(opts...)
+	_, err := c.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}

@@ -193,13 +193,15 @@ func isInSet(c *Config, bitfield CMD) bool {
 // setCommand sets the requested command set into the Config struct as
 // its current running state, returning an error if the named command
 // set does not exist.
-func setCommand(c *Config, name string) error {
+func setCommand(c *Config, name string) (set CMD, err error) {
 	const fname = "setCommand"
 	for i, m := range c.commands {
 		if strings.Compare(name, m.cmd) == 0 {
 			c.set = &c.commands[i]
-			return nil
+			set = c.set.flag
+			return
 		}
 	}
-	return fmt.Errorf("%s: %w", fname, errNotFound)
+	err = fmt.Errorf("%s: %w", fname, errNotFound)
+	return
 }

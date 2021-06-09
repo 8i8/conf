@@ -28,24 +28,26 @@ func configPreconditions(c *Config, opts ...Option) error {
 
 // ascertainCmdSet sets the program operating mode, either the default or that
 // specified by the first argument if it is not a flag.
-func ascertainCmdSet(c *Config) error {
+func ascertainCmdSet(c *Config) (set CMD, err error) {
 	const fname = "ascertainCmdSet"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
-		if err := setCommand(c, os.Args[1]); err != nil {
-			return fmt.Errorf("%s: %w", fname, err)
+		if set, err = setCommand(c, os.Args[1]); err != nil {
+			return set, fmt.Errorf("%s: %w", fname, err)
 		}
 		if v(2) {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
 		}
-		return nil
+		return
 	}
 	if len(c.commands) == 0 {
 		const event = "empty command set"
-		return fmt.Errorf("%s: %s", fname, event)
+		err = fmt.Errorf("%s: %s", fname, event)
+		return
 	}
 	c.set = &c.commands[0]
+	set = 1
 	if v(2) {
 		log.Printf("%s: default: set defined\n", fname)
 	}
-	return nil
+	return
 }

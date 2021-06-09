@@ -25,7 +25,7 @@ func TestOptionsCheckUserFn(t *testing.T) {
 			},
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -58,7 +58,7 @@ func TestOptionsCheckUserFnError(t *testing.T) {
 			},
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, ErrCheck) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -95,7 +95,7 @@ func TestOptionsCheckName(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -113,7 +113,7 @@ func TestOptionsCheckFlagPresent(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -139,7 +139,7 @@ func TestOptionsCheckFlagDuplicate(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}
@@ -160,7 +160,7 @@ func TestOptionsEdgeCaseNoArgs(t *testing.T) {
 			Commands: m,
 		},
 	}
-	err := config.Compose(opts...)
+	_, err := config.Compose(opts...)
 	if !errors.Is(err, errConfig) {
 		t.Errorf("%s: %s", fname, err)
 	}

@@ -62,23 +62,28 @@ type Config struct {
 }
 
 // Compose initialises the programs options.
-func (c *Config) Compose(opts ...Option) error {
+func (c *Config) Compose(opts ...Option) (set CMD, err error) {
 	const fname = "Config.Compose"
 
-	if err := configPreconditions(c, opts...); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if err = configPreconditions(c, opts...); err != nil {
+		err = fmt.Errorf("%s: %w", fname, err)
+		return
 	}
-	if err := ascertainCmdSet(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if set, err = ascertainCmdSet(c); err != nil {
+		err = fmt.Errorf("%s: %w", fname, err)
+		return
 	}
-	if err := loadOptions(c, opts...); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if err = loadOptions(c, opts...); err != nil {
+		err = fmt.Errorf("%s: %w", fname, err)
+		return
 	}
-	if err := setupFlagSet(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if err = setupFlagSet(c); err != nil {
+		err = fmt.Errorf("%s: %w", fname, err)
+		return
 	}
-	if err := runUserCheckFuncs(c); err != nil {
-		return fmt.Errorf("%s: %w", fname, err)
+	if err = runUserCheckFuncs(c); err != nil {
+		err = fmt.Errorf("%s: %w", fname, err)
+		return
 	}
 
 	if v(1) {
@@ -89,7 +94,7 @@ func (c *Config) Compose(opts ...Option) error {
 	// config file when in mode 'config' and that reads in any
 	// settings that have been previously recorded.
 	//c.loadConfig()
-	return nil
+	return
 }
 
 // Cmd returns the current running commands bitflag as a token, directly
