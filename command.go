@@ -169,12 +169,20 @@ type command struct {
 	options options
 }
 
-// CMD is a bitfield that records which command a command set has been
-// registered with.
-type CMD int
+// CMD is a bitfield that records which Options have been registered
+// with a command set.
+type CMD uint64
 
 func (c CMD) String() string {
-	return strconv.Itoa(int(c))
+	var count int
+	if c < 0 {
+		panic("illegal value")
+	}
+	for c > 0 {
+		c = c >> 1
+		count++
+	}
+	return strconv.Itoa(count)
 }
 
 // isInSet returns true if a command token exists within the
