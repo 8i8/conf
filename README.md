@@ -128,6 +128,3 @@ var stringUse = ` This is the default string dooing its thing, as to best
 	exemplify the use of this package in its current state; I
 	thought it best to write something particularly wordy here.`
 ```
-
-GNU Lesser General Public License v3 (LGPL-3.0)
-See lgpl-3.0.md for a full version of the licence.
