@@ -29,33 +29,35 @@ func (c *Config) Command(cmd, usage string) CMD {
 	// If not OK store the error and leave.
 	if err := cmdPreconditions(c, cmd, usage); err != nil {
 		c.errs = fmt.Errorf("%s: %w", fname, err)
-		return 0 // no bits set
-	}
-
-	// Is this the first command set.
-	if c.position == 0 {
-		cmd := setDefaultCommand(c, cmd, usage)
-		if v(1) {
-			log.Printf("%s: completed\n", fname)
-		}
-		return cmd
-	}
-
-	if err := checkDuplicate(c, cmd); err != nil {
-		c.errs = fmt.Errorf("%s: %w", fname, err)
 		return 0
 	}
 
-	// OK, set the position flag and define the command set.
-	c.position = c.position << 1
+	// First run
+	if c.position == 0 {
+		c.position = 1
+		c.header = cmd
+	}
+
+	// We do not need to check for duplicates on either the default
+	// command set nor the first sub command.
+	if c.position > 2 {
+		if err := checkDuplicate(c, cmd); err != nil {
+			c.errs = fmt.Errorf("%s: %w", fname, err)
+			return 0
+		}
+	}
+
+	// Set the new command.
 	m := command{flag: c.position, cmd: cmd, usage: usage}
 	c.commands = append(c.commands, m)
+	set := c.position
+	c.position = c.position << 1
 
 	if v(1) {
 		log.Printf("%s: completed\n", fname)
 	}
 
-	return c.position
+	return set
 }
 
 func cmdPreconditions(c *Config, cmd, usage string) error {
@@ -78,25 +80,25 @@ func cmdPreconditions(c *Config, cmd, usage string) error {
 	return nil
 }
 
-const defCmdSet = "***"
+// const defCmdSet = "***"
 
 // This is the first command, we need to set the Config header and
 // then to define this as the default command set.
-func setDefaultCommand(c *Config, cmd, usage string) CMD {
-	const fname = "setDefaultCommand"
+// func setDefaultCommand(c *Config, cmd, usage string) CMD {
+// 	const fname = "setDefaultCommand"
 
-	c.header = cmd
-	c.position = 1  // 1 is the first flag, 0 will not do here.
-	cmd = defCmdSet // default cmd place holder.
-	m := command{flag: c.position, cmd: cmd, usage: usage}
-	c.commands = append(c.commands, m)
+// 	c.header = cmd
+// 	c.position = 1  // 1 is the first flag, 0 will not do here.
+// 	cmd = defCmdSet // default cmd place holder.
+// 	m := command{flag: c.position, cmd: cmd, usage: usage}
+// 	c.commands = append(c.commands, m)
 
-	if v(2) {
-		log.Printf("%s: completed\n", fname)
-	}
+// 	if v(2) {
+// 		log.Printf("%s: completed\n", fname)
+// 	}
 
-	return c.position
-}
+// 	return c.position
+// }
 
 // checkDuplicate returns an error if the given command name is already
 // in use.
@@ -188,9 +190,6 @@ func (c CMD) String() string {
 // isInSet returns true if a command token exists within the
 // configured set of commands, false if it does not.
 func isInSet(c *Config, bitfield CMD) bool {
-	if bitfield == 0 {
-		return false
-	}
 	fullset := (c.position << 1) - 1
 	if bitfield == (fullset)&bitfield {
 		return true

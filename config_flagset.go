@@ -42,7 +42,7 @@ func createFlagSet(c *Config, w io.Writer) {
 	const fname = "createFlagSet"
 
 	if c.set == nil {
-		panic("")
+		panic(fname + ": c.set is nil")
 	}
 
 	// Create our custom flagset.
@@ -284,7 +284,7 @@ func parseFlagSet(c *Config) error {
 	offset := 1 // the program call needs to be skipped.
 	// If not the default then a command has been used and we need
 	// to offset the args by one more place.
-	if c.set.cmd != defCmdSet {
+	if c.set.flag != 1 {
 		offset++
 	}
 	err := c.flagSet.Parse(os.Args[offset:])

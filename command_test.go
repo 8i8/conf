@@ -118,11 +118,7 @@ func TestCommandTokens(t *testing.T) {
 	if err != nil {
 		t.Errorf("%s: %s", fname, err)
 	}
-	v := isInSet(c, 0)
-	if v {
-		t.Errorf("%s: received true expected false", fname)
-	}
-	v = isInSet(c, cmd1)
+	v := isInSet(c, cmd1)
 	if !v {
 		t.Errorf("%s: received false expected true", fname)
 	}
