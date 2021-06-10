@@ -36,6 +36,8 @@ func (c *Config) Command(cmd, usage string) CMD {
 	if c.position == 0 {
 		c.position = 1
 		c.header = cmd
+		// As we know the max length we can make the backing array now.
+		c.commands = make([]command, 0, 64)
 	}
 
 	// We do not need to check for duplicates on either the default
