@@ -90,6 +90,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 	const fname = "errCheckOption"
 	var temperr error
 	if c.errs == nil {
+		// Empty output so as to go unnoticed when wrapped.
 		temperr = errors.New("")
 	} else {
 		temperr = fmt.Errorf("%s: ", c.errs)
@@ -119,7 +120,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 }
 
 // checkFlag checks that the flag field is not empty and that it is not
-// a duplicate value within that set.
+// a duplicate value within any one set.
 func checkFlag(c *Config, o *Option) error {
 	const fname = "checkFlag"
 	if len(o.Flag) == 0 {
