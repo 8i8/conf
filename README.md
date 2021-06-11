@@ -124,7 +124,7 @@ var intUse = `This is the very default value in the most simplest of modes, to
 	test if another way of writing the messages might could possibly
 	be better.`
 
-var stringUse = ` This is the default string dooing its thing, as to best
+var stringUse = `This is the default string doodling its thing, as to best
 	exemplify the use of this package in its current state; I
 	thought it best to write something particularly wordy here.`
-```
+``
