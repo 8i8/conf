@@ -1,20 +1,29 @@
 package conf
 
-import "log"
+import (
+	"log"
+	"sync/atomic"
+)
 
 const (
-	nop = 1 << iota
+	none uint32 = 1 << iota
 	one
 	two
 	three
 )
 
-var v = nop
+var level = none
 
 func init() {
 	log.SetFlags(log.Llongfile)
 }
 
-func v1() bool { return one&v != 0 }
-func v2() bool { return two&v != 0 }
-func v3() bool { return three&v != 0 }
+func v1() bool { return level >= one }
+func v2() bool { return level >= two }
+func v3() bool { return level >= three }
+
+func v(l uint32) uint32 {
+	prev := level
+	atomic.StoreUint32(&level, l)
+	return prev
+}
