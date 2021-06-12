@@ -2,15 +2,19 @@ package conf
 
 import "log"
 
-var verbose = 0
+const (
+	nop = 1 << iota
+	one
+	two
+	three
+)
+
+var v = nop
 
 func init() {
 	log.SetFlags(log.Llongfile)
 }
 
-func v(i int) bool {
-	if verbose >= i {
-		return true
-	}
-	return false
-}
+func v1() bool { return one&v != 0 }
+func v2() bool { return two&v != 0 }
+func v3() bool { return three&v != 0 }

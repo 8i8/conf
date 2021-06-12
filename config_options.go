@@ -77,7 +77,7 @@ func loadOptions(c *Config, opts ...Option) error {
 		return fmt.Errorf("%s: %s: %w", fname, c.errs, errConfig)
 	}
 
-	if v(2) {
+	if v2() {
 		log.Printf("%s: completed\n", fname)
 	}
 	return nil
@@ -112,7 +112,7 @@ func errCheckOption(c *Config, cmd Option) Option {
 		c.errs = fmt.Errorf("%s%w", temperr, cmd.err)
 	}
 
-	if v(3) && c.errs == nil {
+	if v3() && c.errs == nil {
 		log.Printf("%s: %s: no errors\n", fname, cmd.Flag)
 	}
 
@@ -137,7 +137,7 @@ func checkFlag(c *Config, o *Option) error {
 			c.commands[i].seen = append(c.commands[i].seen, o.Flag)
 		}
 	}
-	if v(3) {
+	if v3() {
 		log.Printf("%s: completed\n", fname)
 	}
 	return nil
@@ -200,7 +200,7 @@ func checkDefault(c *Config, o Option) error {
 		return fmt.Errorf("%s: %s: %w",
 			fname, o.Type, errType)
 	}
-	if v(3) {
+	if v3() {
 		log.Printf("%s: completed\n", fname)
 	}
 	return nil
@@ -271,7 +271,7 @@ func checkVar(c *Config, o Option) error {
 		return fmt.Errorf("%s: %s: %w",
 			fname, o.Type, errType)
 	}
-	if v(3) {
+	if v3() {
 		log.Printf("%s: completed\n", fname)
 	}
 	return nil
@@ -285,7 +285,7 @@ func checkCmd(c *Config, o Option) error {
 	if !isInSet(c, o.Commands) {
 		return fmt.Errorf("%s: %w", fname, errSubCmd)
 	}
-	if v(3) {
+	if v3() {
 		log.Printf("%s: completed\n", fname)
 	}
 	return nil

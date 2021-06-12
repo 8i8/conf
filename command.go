@@ -55,7 +55,7 @@ func (c *Config) Command(cmd, usage string) CMD {
 	set := c.position
 	c.position = c.position << 1
 
-	if v(1) {
+	if v1() {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -75,7 +75,7 @@ func cmdPreconditions(c *Config, cmd, usage string) error {
 			c.errs, fname, event, errConfig)
 	}
 
-	if v(2) {
+	if v2() {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -95,7 +95,7 @@ func cmdPreconditions(c *Config, cmd, usage string) error {
 // 	m := command{flag: c.position, cmd: cmd, usage: usage}
 // 	c.commands = append(c.commands, m)
 
-// 	if v(2) {
+// 	if v2() {
 // 		log.Printf("%s: completed\n", fname)
 // 	}
 
@@ -114,7 +114,7 @@ func checkDuplicate(c *Config, cmd string) error {
 		}
 	}
 
-	if v(2) {
+	if v2() {
 		log.Printf("%s: completed\n", fname)
 	}
 

@@ -19,7 +19,7 @@ func configPreconditions(c *Config, opts ...Option) error {
 		return fmt.Errorf("%s: no commands set", fname)
 	}
 
-	if v(3) {
+	if v3() {
 		log.Printf("%s: completed\n", fname)
 	}
 
@@ -34,7 +34,7 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 		if set, err = setCommand(c, os.Args[1]); err != nil {
 			return set, fmt.Errorf("%s: %w", fname, err)
 		}
-		if v(2) {
+		if v2() {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
 		}
 		return
@@ -46,7 +46,7 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 	}
 	c.set = &c.commands[0]
 	set = 1
-	if v(2) {
+	if v2() {
 		log.Printf("%s: default: set defined\n", fname)
 	}
 	return

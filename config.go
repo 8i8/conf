@@ -86,7 +86,7 @@ func (c *Config) Compose(opts ...Option) (set CMD, err error) {
 		return
 	}
 
-	if v(1) {
+	if v1() {
 		log.Printf("%s: completed\n", fname)
 	}
 
