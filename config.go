@@ -115,6 +115,23 @@ func (c Config) IsSet(flag CMD) bool {
 	return c.set.flag&flag != 0
 }
 
+// NArg returns the number of arguments remaining after the flags have
+// been processed.
+func (c Config) NArg() int {
+	if c.flagSet == nil {
+		panic("Config.flagSet is nil, have you run Config.Compose?")
+	}
+	return c.flagSet.NArg()
+}
+
+// Args returns the non-flag arguments.
+func (c Config) Args() []string {
+	if c.flagSet == nil {
+		panic("Config.flagSet is nil, have you run Config.Compose?")
+	}
+	return c.flagSet.Args()
+}
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *  Errors
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
