@@ -32,7 +32,17 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 	const fname = "ascertainCmdSet"
 	if len(os.Args) > 1 && os.Args[1][0] != '-' {
 		if set, err = setCommand(c, os.Args[1]); err != nil {
-			return set, fmt.Errorf("%s: %w", fname, err)
+			// Avoid an error in the case when a argument is
+			// required and no flags nor operating commands
+			// have been given, this should not raise and
+			// error.
+			if v2() {
+				log.Printf("%s: default: set defined, file: %s\n",
+					fname, os.Args[1])
+			}
+			c.set = &c.commands[0]
+			set = 1
+			return set, nil
 		}
 		if v2() {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
