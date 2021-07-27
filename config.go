@@ -98,8 +98,8 @@ func (c *Config) Compose(opts ...Option) (set CMD, err error) {
 }
 
 // Cmd returns the current running commands bitflag as a token, directly
-// comparable with the tokes that are returned when registering a
-// Command() with the conf package.
+// comparable with the tokens returned when registering a Command() with
+// the conf package.
 func (c Config) Cmd() CMD {
 	if c.set == nil {
 		panic("Config.set is nil, have you run Config.Compose?")
