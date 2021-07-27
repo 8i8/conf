@@ -64,7 +64,7 @@ var opts = []conf.Option{
 }
 
 func main() {
-	err := c.Compose(opts...)
+	_, err := c.Compose(opts...)
 	if err != nil {
 		fmt.Println(err)
 	}
