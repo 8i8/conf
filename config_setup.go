@@ -34,7 +34,7 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 		if set, err = setCommand(c, os.Args[1]); err != nil {
 			// Avoid an error in the case when a argument is
 			// required and no flags nor operating commands
-			// have been given, this should not raise and
+			// have been given, this should not raise an
 			// error.
 			if v2() {
 				log.Printf("%s: default: set defined, file: %s\n",
