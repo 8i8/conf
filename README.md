@@ -1,6 +1,72 @@
 ### conf
 
-#### Example use
+Package conf helps you to organise and maintain a packages flags, their
+options and their documention.
+
+COMMANDS sub-commands can be created by using the conf.Command function
+which returns a token set to designate the command as a target when
+creating an option. The first command created is the default set which
+requires no sub command be called to initiate it; The standard flagset,
+for this set the first argument is the base header for the programs -h
+flag, for all consiquent calls to Command the first argument is the
+actual command token that is used on the command line to instigate the
+sub command.
+
+```go
+	c := conf.Config{}
+	base = c.Command("MyHeader", MyUsageString)
+	cmd1 = c.Command("greet", MyUsageString)
+
+	app greet -s "Hello, World!"
+```
+
+The cmd token is then used when defining an option, instructing the
+package that the option is to be assigned to the command. The option
+will appear in all of the commands for which tokens are provided, the
+tokes are separated by the | character, indicating that all the
+delineated tokens are to be used.
+
+```go
+	c.Options{
+		{
+			Type:     conf.String,
+			Flag:     "s",
+			Default:  "Some string",
+			Usage:    stringUse,
+			Commands: base | cmd1 | cmd2,
+		},
+	}
+```
+
+OPTIONS contain the data required to create a flag, which is done when
+the option has been assigned to the active command.
+
+The `Check:` field takes a function value that may be defined whilst
+creating an option. This function has the signature `func(interface{})
+(interface{}, error)` which can be used to either specify tests and
+conditions upons the options value, or, to change the value as it is
+passed.
+
+```go
+	c.Options{
+		{
+			Type:     conf.String,
+			Flag:     "s",
+			Default:  "Some string",
+			Usage:    stringUse,
+			Commands: cmd | cmd1 | cmd2,
+			Check: func(interface{})(interface{}, error) {
+				str := *v.(*string)
+				if len(str) == 0 {
+					return v, fmt.Errorf("-s is empty)
+				}
+				return v, nil
+			},
+		},
+	}
+```
+
+The following is an example of the conf package in use:
 
 ```go
 package main
@@ -64,11 +130,17 @@ var opts = []conf.Option{
 }
 
 func main() {
-	_, err := c.Compose(opts...)
+	cmd, err := c.Compose(opts...)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("The current running mode is %v\n", c.Running())
+	fmt.Printf("The current running mode is %v\n", cmd)
+
+	switch cmd {
+	case def:
+	case one:
+	case two:
+	}
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -124,7 +196,7 @@ var intUse = `This is the very default value in the most simplest of modes, to
 	test if another way of writing the messages might could possibly
 	be better.`
 
-var stringUse = `This is the default string doodling its thing, as to best
+var stringUse = ` This is the default string dooing its thing, as to best
 	exemplify the use of this package in its current state; I
 	thought it best to write something particularly wordy here.`
-``
+```
