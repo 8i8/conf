@@ -58,7 +58,7 @@ passed.
 			Check: func(interface{})(interface{}, error) {
 				str := *v.(*string)
 				if len(str) == 0 {
-					return v, fmt.Errorf("-s is empty)
+					return v, fmt.Errorf("-s is empty")
 				}
 				return v, nil
 			},
