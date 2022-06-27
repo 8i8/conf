@@ -42,7 +42,7 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 			}
 			c.set = &c.commands[0]
 			set = 1
-			return set, nil
+			return set, err
 		}
 		if v2() {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])
