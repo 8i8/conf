@@ -61,14 +61,16 @@ type Option struct {
 func loadOptions(c *Config, opts ...Option) error {
 	const fname = "loadOptions"
 
-	for i, opt := range opts {
-		opts[i] = errCheckOption(c, opt)
+	for i := range opts {
+		opt := &opts[i]
+		c.all = append(c.all, opt)
+		opts[i] = errCheckOption(c, *opt)
 		for j, cmd := range c.commands {
 			// If the command is in an options set, then
 			// save a pointer to the option in that command.
 			if cmd.flag&opt.Commands != 0 {
 				c.commands[j].options = append(
-					c.commands[j].options, &opts[i])
+					c.commands[j].options, opt)
 			}
 		}
 	}

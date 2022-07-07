@@ -47,6 +47,9 @@ type Config struct {
 	commands []command
 	// The next available bit for use as a command bit mask
 	position CMD
+
+	// All possible flags.
+	all options
 	// The current running command set.
 	set *command
 
@@ -97,6 +100,16 @@ func (c *Config) Compose(opts ...Option) (set CMD, err error) {
 	return
 }
 
+// Is returns true of the option flag is in any set.
+func (c *Config) Is(flag string) bool {
+	for _, o := range c.all {
+		if strings.Compare(o.Flag, flag) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // Cmd returns the current running commands bitflag as a token, directly
 // comparable with the tokens returned when registering a Command() with
 // the conf package.
@@ -139,18 +152,19 @@ func (c Config) Args() []string {
 var (
 	// ErrCheck is the error that is returned when a user defined
 	// check function fails.
-	ErrCheck     = errors.New("user defined error")
-	errConfig    = errors.New("configuration error")
-	errType      = errors.New("type error")
-	errTypeNil   = errors.New("the type is not defined")
-	errNoValue   = errors.New("value required")
-	errNotFound  = errors.New("not found")
-	errNotValid  = errors.New("not valid")
-	errDuplicate = errors.New("duplicate value")
-	errSubCmd    = errors.New("sub-command error")
-	errNoData    = errors.New("no data")
-	errNoFlag    = errors.New("flag not found")
-	errCommands  = errors.New("commands not set")
+	ErrCheck           = errors.New("user defined error")
+	errConfig          = errors.New("configuration error")
+	errType            = errors.New("type error")
+	errTypeNil         = errors.New("the type is not defined")
+	errNoValue         = errors.New("value required")
+	errNotFound        = errors.New("not found")
+	errNotValid        = errors.New("not valid")
+	errDuplicate       = errors.New("duplicate value")
+	errSubCmd          = errors.New("sub-command error")
+	errNoData          = errors.New("no data")
+	errNoFlag          = errors.New("flag not found")
+	ErrNotInCurrentSet = errors.New("flag not available in this set")
+	errCommands        = errors.New("commands not set")
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -253,6 +267,10 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return nil, Nil, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return nil, Nil, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -276,6 +294,10 @@ func (c Config) ValueInt(key string) (int, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -299,6 +321,10 @@ func (c Config) ValueInt64(key string) (int64, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -322,6 +348,10 @@ func (c Config) ValueUint(key string) (uint, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -345,6 +375,10 @@ func (c Config) ValueUint64(key string) (uint64, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -368,6 +402,10 @@ func (c Config) ValueFloat64(key string) (float64, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -391,6 +429,10 @@ func (c Config) ValueString(key string) (string, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return "", fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return "", fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -414,6 +456,10 @@ func (c Config) ValueBool(key string) (bool, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return false, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return false, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
@@ -437,6 +483,10 @@ func (c Config) ValueDuration(key string) (time.Duration, error) {
 			fname, key, errCommands)
 	}
 	o := c.set.options.find(key)
+	if o == nil && c.Is(key) {
+		return 0, fmt.Errorf("%s: %q: %w",
+			fname, key, ErrNotInCurrentSet)
+	}
 	if o == nil {
 		return 0, fmt.Errorf("%s: %q: %w",
 			fname, key, errNoFlag)
