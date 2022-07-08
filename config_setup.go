@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -42,7 +43,10 @@ func ascertainCmdSet(c *Config) (set CMD, err error) {
 			}
 			c.set = &c.commands[0]
 			set = 1
-			return set, err
+			if errors.Is(err, ErrUnknownCMD) {
+				err = nil
+			}
+			return
 		}
 		if v2() {
 			log.Printf("%s: %s: set defined\n", fname, os.Args[1])

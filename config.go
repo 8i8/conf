@@ -165,6 +165,7 @@ var (
 	errNoFlag          = errors.New("flag not found")
 	ErrNotInCurrentSet = errors.New("flag not available in this set")
 	errCommands        = errors.New("commands not set")
+	ErrUnknownCMD    = errors.New("unknown CMD token")
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -215,6 +216,10 @@ const (
 	Default
 )
 
+func want(want, got any) error {
+	return fmt.Errorf("want %T got %T: %w", want, got, errType)
+}
+
 func (t Type) String() string {
 	switch t {
 	case Nil:
@@ -262,25 +267,24 @@ func (t Type) String() string {
 // error, if one has been raised during the options creation.
 func (c Config) Value(key string) (interface{}, Type, error) {
 	const fname = "Value"
+	fail := func(err error) (interface{}, Type, error) {
+		return nil, Nil, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return nil, Nil, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return nil, Nil, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return nil, Nil, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return o.data, o.Type, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
 	if o.data == nil {
-		return nil, Nil, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+		return fail(errNoData)
 	}
 	return o.data, o.Type, nil
 }
@@ -289,215 +293,256 @@ func (c Config) Value(key string) (interface{}, Type, error) {
 // been raised during the options creation.
 func (c Config) ValueInt(key string) (int, error) {
 	const fname = "ValueInt"
+	var out int
+	fail := func(err error) (int, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *int:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*int), nil
+	return out, nil
 }
 
 // ValueInt64 returns the value of an int64 option, else an error if one
 // has been raised during the options creation.
 func (c Config) ValueInt64(key string) (int64, error) {
 	const fname = "ValueInt64"
+	var out int64
+	fail := func(err error) (int64, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *int64:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*int64), nil
+	return out, nil
 }
 
 // ValueUint returns the value of an uint option, else an error if one has
 // been raised during the options creation.
 func (c Config) ValueUint(key string) (uint, error) {
 	const fname = "ValueUint"
+	var out uint
+	fail := func(err error) (uint, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *uint:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*uint), nil
+	return out, nil
 }
 
 // ValueUint64 returns the value of an uint64 option, else an error if one
 // has been raised during the options creation.
 func (c Config) ValueUint64(key string) (uint64, error) {
 	const fname = "ValueUint64"
+	var out uint64
+	fail := func(err error) (uint64, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *uint64:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*uint64), nil
+	return out, nil
 }
 
 // ValueFloat64 returns the value of an float64 option, else an error if
 // one has been raised during the options creation.
 func (c Config) ValueFloat64(key string) (float64, error) {
 	const fname = "ValueFloat64"
+	var out float64
+	fail := func(err error) (float64, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *float64:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*float64), nil
+	return out, nil
 }
 
 // ValueString returns the value of an string option, else an error if one
 // has been raised during the options creation.
 func (c Config) ValueString(key string) (string, error) {
 	const fname = "ValueString"
+	var out string
+	fail := func(err error) (string, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return "", fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return "", fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return "", fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return "", fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return "", fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *string:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*string), nil
+	return out, nil
 }
 
 // ValueBool returns the value of an string option, else an error if one
 // has been raised during the options creation.
 func (c Config) ValueBool(key string) (bool, error) {
 	const fname = "ValueBool"
+	var out bool
+	fail := func(err error) (bool, error) {
+		return out, fmt.Errorf("%s: %w", fname, err)
+	}
 	if c.set == nil {
-		return false, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return false, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return false, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return false, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return false, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *bool:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*bool), nil
+	return out, nil
 }
 
 // ValueDuration returns the value of an time.Duration option, else an
 // error if one has been raised during the options creation.
 func (c Config) ValueDuration(key string) (time.Duration, error) {
 	const fname = "ValueDuration"
+	var out time.Duration
+	fail := func(err error) (time.Duration, error) {
+		return out, fmt.Errorf("%s: %w:", fname, err)
+	}
 	if c.set == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errCommands)
+		return fail(errCommands)
 	}
 	o := c.set.options.find(key)
 	if o == nil && c.Is(key) {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, ErrNotInCurrentSet)
+		return fail(ErrNotInCurrentSet)
 	}
 	if o == nil {
-		return 0, fmt.Errorf("%s: %q: %w",
-			fname, key, errNoFlag)
+		return fail(errNoFlag)
 	}
 	if o.err != nil {
-		return 0, fmt.Errorf("%s: %w", fname, o.err)
+		return fail(o.err)
 	}
-	if o.data == nil {
-		return 0, fmt.Errorf("%s: %w", fname, errNoData)
+	switch t := o.data.(type) {
+	case nil:
+		return fail(errNoData)
+	case *time.Duration:
+		out = *t
+	default:
+		return fail(want(out, t))
 	}
-	return *o.data.(*time.Duration), nil
+	return out, nil
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

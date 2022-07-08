@@ -191,6 +191,6 @@ func setCommand(c *Config, name string) (set CMD, err error) {
 			return
 		}
 	}
-	err = fmt.Errorf("%s: %w", fname, errNotFound)
+	err = fmt.Errorf("%s: %w", fname, ErrUnknownCMD)
 	return
 }
