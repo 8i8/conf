@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-// Command defines a set of flags for a command line applications.
-// Upon its first call, Command creates a base flagset, that which
-// acts upon the programs execution upon its command line arguments as
-// flags and their options.
+// Command defines a set of flags for a command line applications. With
+// its first call, Command creates a base flagset, that which will act on
+// standard program execution, reading basic command line arguments, flags
+// and their options.
 //
 // app [-flag] [-flag] [opt] [-flag] [opt] [-flag] ...
 //

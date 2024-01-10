@@ -29,14 +29,16 @@ var (
 // see is what you get, an example of which might typically be:
 //
 // `NAME
+//
 //	app
 //
 // SYNOPSIS
+//
 //	app | [cmd] | -[flag] | -[flag] [opt] | -[flag] ['opt,opt,opt']
 //
 // EXAMPLE
-//	app write -n 36 -s "Hello, World!"`
 //
+//	app write -n 36 -s "Hello, World!"`
 type Config struct {
 
 	// Command line help flags output header.
@@ -165,7 +167,7 @@ var (
 	errNoFlag          = errors.New("flag not found")
 	ErrNotInCurrentSet = errors.New("flag not available in this set")
 	errCommands        = errors.New("commands not set")
-	ErrUnknownCMD    = errors.New("unknown CMD token")
+	ErrUnknownCMD      = errors.New("unknown CMD token")
 )
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
